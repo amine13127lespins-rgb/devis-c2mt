@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C2MT — Demande de Devis</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0d1b2a;
+  --blue: #1a73e8;
+  --cyan: #00c6d7;
+  --light: #f4f8ff;
+  --white: #ffffff;
+  --grey: #6b7a8d;
+  --border: #dde5f0;
+  --green: #00c07f;
+  --orange: #ff6b35;
+  --red: #e53935;
+  --yellow: #f9a825;
+  --shadow: 0 4px 24px rgba(13,27,42,0.10);
+  --shadow-lg: 0 8px 40px rgba(13,27,42,0.18);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: linear-gradient(150deg, #071524 0%, #0d2a3d 50%, #0d1b2a 100%);
+  min-height: 100vh;
+  padding: 40px 16px 80px;
+  color: var(--navy);
+}
+
+.container { max-width: 760px; margin: 0 auto; }
+
+/* HEADER */
+.header { text-align: center; margin-bottom: 40px; }
+.logo {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--white); border-radius: 18px;
+  padding: 12px 28px; margin-bottom: 20px;
+  box-shadow: 0 4px 30px rgba(0,198,215,0.2);
+}
+.logo span {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 2rem; color: var(--blue); letter-spacing: 3px;
+}
+.logo .tagline { font-size: 0.72rem; color: var(--grey); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+.header h1 {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1.7rem; color: var(--white); margin-bottom: 10px;
+}
+.header p { color: rgba(255,255,255,0.6); font-size: 0.95rem; line-height: 1.6; }
+
+/* PROGRESS BAR */
+.progress-bar {
+  background: rgba(255,255,255,0.1); border-radius: 20px;
+  height: 6px; margin-bottom: 32px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  border-radius: 20px;
+  transition: width 0.5s ease;
+  width: 10%;
+}
+
+/* CARD */
+.card {
+  background: var(--white); border-radius: 20px;
+  padding: 28px 26px; margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid rgba(255,255,255,0.05);
+  transition: box-shadow 0.3s;
+}
+.card:hover { box-shadow: var(--shadow-lg); }
+
+.section-title {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1rem; color: var(--navy);
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title .icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.section-badge {
+  font-size: 0.68rem; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; color: var(--orange);
+  background: #fff3ee; padding: 2px 8px; border-radius: 20px;
+  margin-left: auto; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* FORM ELEMENTS */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-row.full { grid-template-columns: 1fr; }
+.form-row.thirds { grid-template-columns: 1fr 1fr 1fr; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+label {
+  font-size: 0.8rem; font-weight: 500; color: var(--grey);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+label .req { color: var(--red); margin-left: 2px; }
+
+input, select, textarea {
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 11px 14px; font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem; color: var(--navy); background: var(--light);
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+  background: var(--white);
+}
+textarea { resize: vertical; min-height: 80px; }
+
+/* TYPE DE LOCAL GRID */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.type-card {
+  border: 2px solid var(--border); border-radius: 14px;
+  padding: 14px 8px; text-align: center; cursor: pointer;
+  transition: all 0.2s; background: var(--light); user-select: none;
+  position: relative;
+}
+.type-card:hover { border-color: var(--blue); background: #eef3ff; transform: translateY(-2px); }
+.type-card.selected {
+  border-color: var(--blue);
+  background: linear-gradient(135deg, #eef3ff, #e0f7fa);
+  box-shadow: 0 4px 16px rgba(26,115,232,0.18);
+}
+.type-card .emoji { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+.type-card span { font-size: 0.76rem; font-weight: 500; color: var(--navy); line-height: 1.3; }
+.type-card .check-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--blue); display: none;
+  align-items: center; justify-content: center;
+  font-size: 0.55rem; color: white;
+}
+.type-card.selected .check-dot { display: flex; }
+
+/* DYNAMIC SECTION */
+.dynamic-section {
+  display: none;
+  animation: fadeSlide 0.35s ease forwards;
+}
+.dynamic-section.visible { display: block; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* SOL GRID */
+.sol-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 4px;
+}
+.sol-card {
+  border: 2px solid var(--border); border-radius: 12px;
+  padding: 12px 10px; text-align: center; cursor: pointer;
+  transition: all 0.2s; background: var(--light); user-select: none;
+}
+.sol-card:hover { border-color: var(--cyan); }
+.sol-card.selected { border-color: var(--cyan); background: #e0f7fa; }
+.sol-card .sol-icon { font-size: 1.4rem; margin-bottom: 4px; }
+.sol-card span { font-size: 0.76rem; font-weight: 500; color: var(--navy); }
+
+/* MULTI-SELECT CHECKBOX BUTTONS */
+.check-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.check-btn {
+  border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 7px 12px; cursor: pointer; transition: all 0.18s;
+  background: var(--light); user-select: none;
+  font-size: 0.82rem; font-weight: 500; color: var(--grey);
+}
+.check-btn:hover { border-color: var(--blue); color: var(--navy); }
+.check-btn.checked { border-color: var(--blue); background: var(--blue); color: white; }
+
+/* PHOTO UPLOAD */
+.photo-zone {
+  border: 2px dashed var(--border); border-radius: 14px;
+  padding: 24px; text-align: center; cursor: pointer;
+  background: var(--light); transition: all 0.2s;
+  position: relative;
+}
+.photo-zone:hover { border-color: var(--blue); background: #eef3ff; }
+.photo-zone.dragover { border-color: var(--cyan); background: #e0f7fa; }
+.photo-zone .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+.photo-zone p { font-size: 0.85rem; color: var(--grey); line-height: 1.5; }
+.photo-zone p strong { color: var(--blue); }
+.photo-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.photo-previews {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; margin-top: 14px;
+}
+.photo-thumb {
+  position: relative; border-radius: 10px; overflow: hidden;
+  aspect-ratio: 1; background: var(--border);
+}
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.photo-thumb .remove-photo {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.65); color: white;
+  border-radius: 50%; width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; cursor: pointer;
+}
+.photo-label {
+  font-size: 0.72rem; color: var(--grey); text-align: center;
+  margin-top: 4px; padding: 0 4px; line-height: 1.3;
+}
+.photo-add { display: flex; flex-direction: column; gap: 4px; }
+
+/* PACK CARDS */
+.pack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 4px; }
+.pack-card {
+  border: 2px solid var(--border); border-radius: 14px;
+  padding: 16px 12px; cursor: pointer; transition: all 0.2s;
+  background: var(--light); user-select: none; position: relative;
+}
+.pack-card:hover { border-color: var(--blue); transform: translateY(-2px); }
+.pack-card.selected {
+  border-color: var(--blue);
+  background: linear-gradient(135deg, #eef3ff, #e0f7fa);
+  box-shadow: 0 4px 16px rgba(26,115,232,0.18);
+}
+.pack-badge {
+  position: absolute; top: -9px; right: 10px;
+  background: var(--orange); color: white;
+  font-size: 0.62rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; text-transform: uppercase;
+}
+.pack-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--navy); margin-bottom: 4px; }
+.pack-price { font-size: 0.78rem; color: var(--blue); font-weight: 500; margin-bottom: 6px; }
+.pack-desc { font-size: 0.72rem; color: var(--grey); line-height: 1.4; }
+
+/* FREQ */
+.freq-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.freq-btn {
+  border: 2px solid var(--border); border-radius: 10px;
+  padding: 10px 6px; text-align: center; cursor: pointer;
+  transition: all 0.2s; background: var(--light);
+  font-size: 0.8rem; font-weight: 500; color: var(--navy); user-select: none;
+}
+.freq-btn:hover { border-color: var(--blue); }
+.freq-btn.selected { border-color: var(--blue); background: var(--blue); color: white; }
+
+/* OPTIONS */
+.options-list { display: flex; flex-direction: column; gap: 10px; }
+.option-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border: 1.5px solid var(--border);
+  border-radius: 10px; cursor: pointer; transition: all 0.2s;
+  background: var(--light); user-select: none;
+}
+.option-item:hover { border-color: var(--blue); background: #eef3ff; }
+.option-item.checked { border-color: var(--blue); background: #eef3ff; }
+.checkmark {
+  width: 20px; height: 20px; border: 2px solid var(--border);
+  border-radius: 6px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; transition: all 0.2s;
+}
+.option-item.checked .checkmark { background: var(--blue); border-color: var(--blue); color: white; }
+.option-text { font-size: 0.86rem; color: var(--navy); font-weight: 500; flex: 1; }
+.option-price { font-size: 0.8rem; color: var(--blue); font-weight: 600; white-space: nowrap; }
+
+/* ALERTE INFO */
+.info-box {
+  background: linear-gradient(135deg, #eef3ff, #e0f7fa);
+  border: 1.5px solid #c5d9ff; border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 16px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.info-box .info-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.info-box p { font-size: 0.82rem; color: #2c4e8a; line-height: 1.5; }
+
+/* RESUME OPERATIONNEL */
+.resume-ops {
+  background: linear-gradient(135deg, #0d1b2a, #1a2e45);
+  border-radius: 16px; padding: 20px; margin-top: 16px; color: white;
+}
+.resume-ops h4 { font-family: 'Syne', sans-serif; font-size: 0.85rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+.resume-line { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.resume-line .rl { font-size: 0.75rem; opacity: 0.6; min-width: 130px; flex-shrink: 0; }
+.resume-line .rv { font-size: 0.82rem; font-weight: 500; }
+.resume-hidden { display: none; }
+
+/* PRICE BOX */
+.price-box {
+  background: linear-gradient(135deg, var(--navy), #1a2e45);
+  border-radius: 18px; padding: 26px; color: white; margin-top: 8px;
+}
+.price-box h3 {
+  font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+  margin-bottom: 18px; opacity: 0.75; text-transform: uppercase; letter-spacing: 1px;
+}
+.price-line {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.88rem;
+}
+.price-line .label { opacity: 0.65; }
+.price-line .val { font-weight: 600; }
+.price-total {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 14px; padding-top: 14px; border-top: 2px solid rgba(255,255,255,0.18);
+}
+.price-total .label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+.price-total .amount { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.9rem; color: var(--cyan); }
+.price-total .amount small { font-size: 0.85rem; opacity: 0.65; }
+.no-selection { text-align: center; opacity: 0.45; padding: 18px 0; font-size: 0.88rem; line-height: 1.6; }
+
+/* SUBMIT */
+.btn-submit {
+  width: 100%; background: linear-gradient(135deg, var(--blue), var(--cyan));
+  color: white; border: none; border-radius: 14px; padding: 17px;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+}
+.btn-submit:hover { opacity: 0.92; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,115,232,0.35); }
+.btn-submit:active { transform: translateY(0); }
+
+/* CONFIRMATION */
+.confirm-box {
+  display: none; background: linear-gradient(135deg, #00c07f, #00a06a);
+  border-radius: 18px; padding: 30px; text-align: center; color: white; margin-top: 8px;
+}
+.confirm-box .big { font-size: 2.5rem; margin-bottom: 10px; }
+.confirm-box h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 8px; }
+.confirm-box p { opacity: 0.85; font-size: 0.9rem; line-height: 1.6; }
+
+/* FOOTER */
+.footer { text-align: center; margin-top: 26px; color: rgba(255,255,255,0.4); font-size: 0.78rem; line-height: 1.8; }
+.footer a { color: var(--cyan); text-decoration: none; }
+
+/* SEPARATOR */
+.sep { height: 1px; background: var(--border); margin: 18px 0; }
+
+/* STAR RATING */
+.star-row { display: flex; gap: 6px; }
+.star-btn {
+  font-size: 1.3rem; cursor: pointer; opacity: 0.3;
+  transition: all 0.15s; user-select: none;
+}
+.star-btn.active { opacity: 1; }
+
+/* RANGE SLIDER */
+.range-wrap { display: flex; align-items: center; gap: 12px; }
+.range-wrap input[type=range] {
+  flex: 1; -webkit-appearance: none; height: 6px;
+  background: var(--border); border-radius: 3px; border: none;
+  padding: 0; outline: none;
+}
+.range-wrap input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px;
+  background: var(--blue); border-radius: 50%; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(26,115,232,0.3);
+}
+.range-val {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1.1rem; color: var(--blue); min-width: 60px; text-align: right;
+}
+
+/* TOOLTIP */
+.tooltip {
+  font-size: 0.72rem; color: var(--grey); margin-top: 4px;
+  font-style: italic;
+}
+
+@media (max-width: 580px) {
+  .form-row { grid-template-columns: 1fr; }
+  .form-row.thirds { grid-template-columns: 1fr 1fr; }
+  .type-grid { grid-template-columns: repeat(2, 1fr); }
+  .sol-grid { grid-template-columns: repeat(2, 1fr); }
+  .pack-grid { grid-template-columns: 1fr; }
+  .freq-grid { grid-template-columns: 1fr 1fr; }
+  .photo-previews { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <span>C2MT</span>
+    <div class="tagline">Nettoyage Professionnel</div>
+  </div>
+  <h1>Demande de Devis Gratuit</h1>
+  <p>Renseignez votre local en détail — je prépare ma tournée, mon matériel et mon devis personnalisé 🧹</p>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+<!-- ===== 1. INFOS CLIENT ===== -->
+<div class="card">
+  <div class="section-title"><div class="icon">👤</div> Vos informations de contact</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Prénom & Nom <span class="req">*</span></label>
+      <input type="text" id="nom" placeholder="Jean Dupont" oninput="updateProgress()">
+    </div>
+    <div class="form-group">
+      <label>Société / Enseigne</label>
+      <input type="text" id="societe" placeholder="Ex : Boutique ABC">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Téléphone <span class="req">*</span></label>
+      <input type="tel" id="tel" placeholder="06 00 00 00 00" oninput="updateProgress()">
+    </div>
+    <div class="form-group">
+      <label>Email <span class="req">*</span></label>
+      <input type="email" id="email" placeholder="vous@email.com" oninput="updateProgress()">
+    </div>
+  </div>
+  <div class="form-row full">
+    <div class="form-group">
+      <label>Adresse complète du local <span class="req">*</span></label>
+      <input type="text" id="adresse" placeholder="Ex : 12 rue de la Paix, 13001 Marseille" oninput="updateProgress()">
+    </div>
+  </div>
+  <div class="form-row full">
+    <div class="form-group">
+      <label>Comment avez-vous connu C2MT ?</label>
+      <select id="source">
+        <option value="">— Sélectionner —</option>
+        <option value="bouche">Bouche à oreille</option>
+        <option value="google">Recherche Google</option>
+        <option value="rs">Réseaux sociaux</option>
+        <option value="flyer">Flyer / Prospection</option>
+        <option value="autre">Autre</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2. TYPE DE LOCAL ===== -->
+<div class="card">
+  <div class="section-title">
+    <div class="icon">🏢</div> Type de local
+    <span class="section-badge">Questions adaptées</span>
+  </div>
+  <div class="info-box">
+    <div class="info-icon">💡</div>
+    <p>Les questions suivantes <strong>s'adaptent automatiquement</strong> selon votre type de local — pour que je sache exactement quoi prévoir.</p>
+  </div>
+  <div class="type-grid">
+    <div class="type-card" onclick="selectType('commerce')" id="t-commerce">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🛍️</span><span>Commerce / Boutique</span>
+    </div>
+    <div class="type-card" onclick="selectType('bureau')" id="t-bureau">
+      <div class="check-dot">✓</div>
+      <span class="emoji">💼</span><span>Bureau / Open space</span>
+    </div>
+    <div class="type-card" onclick="selectType('restaurant')" id="t-restaurant">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🍽️</span><span>Restaurant / Café</span>
+    </div>
+    <div class="type-card" onclick="selectType('cabinet')" id="t-cabinet">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🩺</span><span>Cabinet médical / Paramédical</span>
+    </div>
+    <div class="type-card" onclick="selectType('salon')" id="t-salon">
+      <div class="check-dot">✓</div>
+      <span class="emoji">💈</span><span>Salon de coiffure / Esthétique</span>
+    </div>
+    <div class="type-card" onclick="selectType('gym')" id="t-gym">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🏋️</span><span>Salle de sport / Studio</span>
+    </div>
+    <div class="type-card" onclick="selectType('entrepot')" id="t-entrepot">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🏭</span><span>Entrepôt / Local technique</span>
+    </div>
+    <div class="type-card" onclick="selectType('copro')" id="t-copro">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🏘️</span><span>Copropriété / Parties communes</span>
+    </div>
+    <div class="type-card" onclick="selectType('creche')" id="t-creche">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🧒</span><span>Crèche / École / Collectivité</span>
+    </div>
+    <div class="type-card" onclick="selectType('hotel')" id="t-hotel">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🏨</span><span>Hôtel / Résidence</span>
+    </div>
+    <div class="type-card" onclick="selectType('pharmacie')" id="t-pharmacie">
+      <div class="check-dot">✓</div>
+      <span class="emoji">💊</span><span>Pharmacie / Parapharmacie</span>
+    </div>
+    <div class="type-card" onclick="selectType('autre')" id="t-autre">
+      <div class="check-dot">✓</div>
+      <span class="emoji">🏗️</span><span>Autre local</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3. INFOS DU LOCAL ===== -->
+<div class="card">
+  <div class="section-title"><div class="icon">📐</div> Dimensions & structure du local</div>
+  <div class="form-row thirds">
+    <div class="form-group">
+      <label>Surface totale (m²) <span class="req">*</span></label>
+      <input type="number" id="surface" placeholder="Ex : 80" min="1" oninput="calcPrix(); updateProgress()">
+    </div>
+    <div class="form-group">
+      <label>Nombre de pièces / espaces</label>
+      <input type="number" id="nb_pieces" placeholder="Ex : 4" min="1" oninput="updateProgress()">
+    </div>
+    <div class="form-group">
+      <label>Nombre d'étages concernés</label>
+      <select id="nb_etages" onchange="updateProgress()">
+        <option value="">—</option>
+        <option value="0">RDC uniquement</option>
+        <option value="1">RDC + 1 étage</option>
+        <option value="2">RDC + 2 étages</option>
+        <option value="3">3 étages et plus</option>
+        <option value="ss">Avec sous-sol</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Tranche de surface (tarification)</label>
+      <select id="tranche" onchange="calcPrix()">
+        <option value="">— Sélectionner —</option>
+        <option value="50">Jusqu'à 50 m²</option>
+        <option value="100">51 à 100 m²</option>
+        <option value="200">101 à 200 m²</option>
+        <option value="350">201 à 350 m²</option>
+        <option value="999">Au-delà de 350 m²</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Nombre de sanitaires / WC</label>
+      <select id="nb_sanitaires">
+        <option value="">—</option>
+        <option value="0">Aucun</option>
+        <option value="1">1 WC / sanitaire</option>
+        <option value="2">2 sanitaires</option>
+        <option value="3">3 sanitaires</option>
+        <option value="4">4 et plus</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- TYPE DE SOL -->
+  <div class="sep"></div>
+  <label style="margin-bottom:10px; display:block;">Type(s) de sol dans le local <span class="req">*</span></label>
+  <div class="sol-grid" id="sol-grid">
+    <div class="sol-card" onclick="toggleSol(this,'carrelage')">
+      <div class="sol-icon">🟫</div><span>Carrelage / Céramique</span>
+    </div>
+    <div class="sol-card" onclick="toggleSol(this,'parquet')">
+      <div class="sol-icon">🪵</div><span>Parquet bois / Stratifié</span>
+    </div>
+    <div class="sol-card" onclick="toggleSol(this,'moquette')">
+      <div class="sol-icon">🟦</div><span>Moquette / Tapis</span>
+    </div>
+    <div class="sol-card" onclick="toggleSol(this,'beton')">
+      <div class="sol-icon">⬜</div><span>Béton ciré / Résine</span>
+    </div>
+    <div class="sol-card" onclick="toggleSol(this,'vinyle')">
+      <div class="sol-icon">🔲</div><span>Vinyle / PVC / Lino</span>
+    </div>
+    <div class="sol-card" onclick="toggleSol(this,'marbre')">
+      <div class="sol-icon">🪨</div><span>Marbre / Pierre naturelle</span>
+    </div>
+    <div class="sol-card" onclick="toggleSol(this,'antiderapant')">
+      <div class="sol-icon">⚡</div><span>Antidérapant (cuisine / sport)</span>
+    </div>
+    <div class="sol-card" onclick="toggleSol(this,'exterieur')">
+      <div class="sol-icon">🌿</div><span>Dalles extérieures / Terrasse</span>
+    </div>
+    <div class="sol-card" onclick="toggleSol(this,'autre_sol')">
+      <div class="sol-icon">❓</div><span>Autre / Mixte</span>
+    </div>
+  </div>
+  <div class="tooltip">💡 Important : le type de sol détermine le matériel et les produits à utiliser</div>
+
+  <div class="sep"></div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Vitres / baies vitrées</label>
+      <select id="vitres">
+        <option value="non">Pas de vitres</option>
+        <option value="petites">Petites vitres (< 5 m²)</option>
+        <option value="moyennes">Surface vitrée moyenne</option>
+        <option value="grandes">Grande façade vitrée</option>
+        <option value="hauteur">Vitres en hauteur (nécessite matériel spécifique)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Accessibilité au local</label>
+      <select id="acces">
+        <option value="libre">Accès libre (clé / badge)</option>
+        <option value="surveille">Accès sur rendez-vous</option>
+        <option value="code">Code d'entrée / Interphone</option>
+        <option value="gardien">Présence d'un gardien</option>
+        <option value="digicode">Digicode + ascenseur</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 4. SECTION DYNAMIQUE PAR TYPE ===== -->
+
+<!-- RESTAURANT -->
+<div class="card dynamic-section" id="dyn-restaurant">
+  <div class="section-title"><div class="icon">🍽️</div> Détails — Restaurant / Café</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Nombre de couverts</label>
+      <select id="couverts">
+        <option value="">—</option>
+        <option value="<20">Moins de 20 couverts</option>
+        <option value="20-50">20 à 50 couverts</option>
+        <option value="50-100">50 à 100 couverts</option>
+        <option value=">100">Plus de 100 couverts</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Cuisine professionnelle ?</label>
+      <select id="cuisine_pro">
+        <option value="non">Non / Petite cuisine</option>
+        <option value="oui">Oui, cuisine équipée</option>
+        <option value="centrale">Cuisine centrale / Grande capacité</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Zones à nettoyer (cochez tout ce qui s'applique)</label>
+    <div class="check-grid" id="zones-restaurant">
+      <div class="check-btn" onclick="toggleCheck(this)">🍳 Cuisine / Fourneaux</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🪣 Hottes / Filtres</div>
+      <div class="check-btn" onclick="toggleCheck(this)">❄️ Chambre froide</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🍽️ Salle de restaurant</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚽 Sanitaires clients</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🔙 Vestiaires / Couloirs</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🏪 Bar / Comptoir</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🌿 Terrasse extérieure</div>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Niveau d'encrassement habituel</label>
+      <select id="encrassement_resto">
+        <option value="normal">Normal (entretien régulier)</option>
+        <option value="eleve">Élevé (graisses, projections)</option>
+        <option value="tres_eleve">Très élevé (remise en état nécessaire)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Évacuations / Siphons de sol</label>
+      <select id="siphons">
+        <option value="non">Non</option>
+        <option value="1-2">1 à 2 siphons</option>
+        <option value="3+">3 et plus</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- BUREAU -->
+<div class="card dynamic-section" id="dyn-bureau">
+  <div class="section-title"><div class="icon">💼</div> Détails — Bureau / Open space</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Nombre de postes de travail</label>
+      <input type="number" id="postes" placeholder="Ex : 12" min="1">
+    </div>
+    <div class="form-group">
+      <label>Salle de réunion ?</label>
+      <select id="salle_reunion">
+        <option value="non">Non</option>
+        <option value="1">Oui, 1 salle</option>
+        <option value="2+">Oui, plusieurs salles</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Espaces à inclure dans le nettoyage</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">🖥️ Open space / Bureaux</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🍵 Cuisine / Espace repas</div>
+      <div class="check-btn" onclick="toggleCheck(this)">📦 Salle archives / Stockage</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚽 Sanitaires</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚪 Couloirs / Accueil</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🔒 Salle serveur</div>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Dépoussiérage du mobilier ?</label>
+      <select id="mobilier">
+        <option value="basique">Basique (surfaces visibles)</option>
+        <option value="complet">Complet (écrans, claviers, étagères)</option>
+        <option value="non">Pas nécessaire</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Gestion des poubelles incluse ?</label>
+      <select id="poubelles">
+        <option value="oui">Oui</option>
+        <option value="non">Non, je gère</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- CABINET MÉDICAL -->
+<div class="card dynamic-section" id="dyn-cabinet">
+  <div class="section-title"><div class="icon">🩺</div> Détails — Cabinet médical / Paramédical</div>
+  <div class="info-box">
+    <div class="info-icon">⚠️</div>
+    <p>Les cabinets médicaux requièrent des produits <strong>désinfectants homologués</strong> et un protocole rigoureux. Je m'assure de respecter les normes d'hygiène en vigueur.</p>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Spécialité médicale</label>
+      <select id="specialite">
+        <option value="">—</option>
+        <option value="generaliste">Généraliste</option>
+        <option value="dentiste">Dentiste</option>
+        <option value="kine">Kinésithérapeute</option>
+        <option value="psy">Psy / Orthophoniste</option>
+        <option value="podologue">Podologue</option>
+        <option value="autre_med">Autre</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Nombre de salles de consultation</label>
+      <input type="number" id="salles_consult" placeholder="Ex : 3" min="1">
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Zones à désinfecter</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">🛏️ Salle(s) de soins</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🪑 Salle d'attente</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚽 Sanitaires</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🏢 Accueil / Secrétariat</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🧪 Salle de stérilisation</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Protocole de désinfection spécifique ?</label>
+    <select id="protocole_med">
+      <option value="standard">Standard (produits pro)</option>
+      <option value="renforce">Renforcé (désinfection complète entre patients)</option>
+      <option value="preciser">À préciser selon les normes du cabinet</option>
+    </select>
+  </div>
+</div>
+
+<!-- SALON COIFFURE / ESTHÉTIQUE -->
+<div class="card dynamic-section" id="dyn-salon">
+  <div class="section-title"><div class="icon">💈</div> Détails — Salon de coiffure / Esthétique</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Nombre de postes (fauteuils / cabines)</label>
+      <input type="number" id="postes_salon" placeholder="Ex : 5" min="1">
+    </div>
+    <div class="form-group">
+      <label>Bac à shampooing / Lavabo professionnel</label>
+      <select id="bac_shampoo">
+        <option value="non">Non</option>
+        <option value="1-2">1 à 2 bacs</option>
+        <option value="3+">3 et plus</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Points spécifiques à traiter</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">💇 Sol avec cheveux (quotidien)</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🪞 Miroirs / Vitrines</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🛁 Bacs / Lavabos</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🧴 Étagères / Présentoirs produits</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚽 Sanitaires</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🔙 Arrière-boutique / Réserve</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Produits chimiques utilisés (coloration, permanente...)</label>
+    <select id="produits_chimiques">
+      <option value="oui">Oui (tâches fréquentes)</option>
+      <option value="parfois">Parfois</option>
+      <option value="non">Non / Peu</option>
+    </select>
+  </div>
+</div>
+
+<!-- SALLE DE SPORT -->
+<div class="card dynamic-section" id="dyn-gym">
+  <div class="section-title"><div class="icon">🏋️</div> Détails — Salle de sport / Studio</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Surface des machines / zone sport</label>
+      <input type="number" id="surf_sport" placeholder="Ex : 200" min="1">
+    </div>
+    <div class="form-group">
+      <label>Vestiaires / Douches</label>
+      <select id="vestiaires">
+        <option value="non">Non</option>
+        <option value="oui_simple">Oui, simples</option>
+        <option value="oui_douches">Oui, avec douches</option>
+        <option value="oui_complet">Oui, complets (WC + douches + vestiaires)</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Zones à nettoyer et désinfecter</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">🏋️ Machines / Équipements</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🧘 Salle de cours collectifs</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚿 Douches</div>
+      <div class="check-btn" onclick="toggleCheck(this)">👔 Vestiaires</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚽 Sanitaires</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🏊 Piscine / Sauna</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🔆 Accueil / Couloirs</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Fréquence de transpiration / usage intensif</label>
+    <select id="usage_sport">
+      <option value="normal">Normal</option>
+      <option value="intense">Intense (désinfection complète nécessaire)</option>
+    </select>
+  </div>
+</div>
+
+<!-- COPROPRIÉTÉ -->
+<div class="card dynamic-section" id="dyn-copro">
+  <div class="section-title"><div class="icon">🏘️</div> Détails — Copropriété / Parties communes</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Nombre d'étages du bâtiment</label>
+      <input type="number" id="etages_copro" placeholder="Ex : 6" min="1">
+    </div>
+    <div class="form-group">
+      <label>Nombre d'appartements / lots</label>
+      <input type="number" id="nb_lots" placeholder="Ex : 24" min="1">
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Espaces communs concernés</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">🚪 Hall d'entrée</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🪜 Cage d'escalier</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🛗 Ascenseur</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🏊 Local poubelles / Vide-ordures</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚗 Parking / Sous-sol</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🌿 Espaces verts</div>
+      <div class="check-btn" onclick="toggleCheck(this)">📬 Local boîtes aux lettres</div>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Ascenseur présent ?</label>
+      <select id="ascenseur">
+        <option value="non">Non</option>
+        <option value="oui">Oui (à inclure)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Interlocuteur</label>
+      <select id="interlocuteur_copro">
+        <option value="syndic">Syndic professionnel</option>
+        <option value="benevole">Syndic bénévole</option>
+        <option value="proprietaire">Propriétaire direct</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ENTREPÔT -->
+<div class="card dynamic-section" id="dyn-entrepot">
+  <div class="section-title"><div class="icon">🏭</div> Détails — Entrepôt / Local technique</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Hauteur sous plafond (m)</label>
+      <input type="number" id="hauteur" placeholder="Ex : 5" min="1" step="0.5">
+    </div>
+    <div class="form-group">
+      <label>Présence de quais / chargement</label>
+      <select id="quais">
+        <option value="non">Non</option>
+        <option value="oui">Oui</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Type d'activité / salissures spécifiques</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">📦 Stockage marchandises</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🔧 Atelier mécanique</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🎨 Peinture / Solvants</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🍖 Agroalimentaire</div>
+      <div class="check-btn" onclick="toggleCheck(this)">💧 Milieu humide / Frigorifique</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🖨️ Imprimerie / Papier</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Équipement spécifique nécessaire (auto-laveuse, etc.) ?</label>
+    <select id="equipement_entrepot">
+      <option value="standard">Matériel standard</option>
+      <option value="autolaveuse">Auto-laveuse / Monobrosse</option>
+      <option value="haute_pression">Nettoyeur haute pression</option>
+      <option value="incertain">Je ne sais pas</option>
+    </select>
+  </div>
+</div>
+
+<!-- CRÈCHE / ÉCOLE -->
+<div class="card dynamic-section" id="dyn-creche">
+  <div class="section-title"><div class="icon">🧒</div> Détails — Crèche / École / Collectivité</div>
+  <div class="info-box">
+    <div class="info-icon">🌿</div>
+    <p>Pour les structures accueillant des enfants, j'utilise exclusivement des produits <strong>écologiques et non toxiques</strong>, adaptés aux jeunes enfants.</p>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Capacité d'accueil</label>
+      <input type="number" id="capacite" placeholder="Ex : 40 enfants" min="1">
+    </div>
+    <div class="form-group">
+      <label>Tranche d'âge</label>
+      <select id="tranche_age">
+        <option value="bebe">Bébés / Nourrissons</option>
+        <option value="petite_enfance">Petite enfance (0-3 ans)</option>
+        <option value="maternelle">Maternelle (3-6 ans)</option>
+        <option value="primaire">Primaire (6-11 ans)</option>
+        <option value="mixte">Mixte</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Zones à traiter</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">🧸 Salles de jeux</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🛏️ Salles de sieste</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🍽️ Réfectoire / Cuisine</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚽 Sanitaires enfants</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🏃 Couloirs / Accueil</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🌿 Cour extérieure</div>
+    </div>
+  </div>
+</div>
+
+<!-- HÔTEL -->
+<div class="card dynamic-section" id="dyn-hotel">
+  <div class="section-title"><div class="icon">🏨</div> Détails — Hôtel / Résidence</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Nombre de chambres / logements</label>
+      <input type="number" id="nb_chambres" placeholder="Ex : 20" min="1">
+    </div>
+    <div class="form-group">
+      <label>Classement / Standing</label>
+      <select id="standing">
+        <option value="1-2">1-2 étoiles</option>
+        <option value="3">3 étoiles</option>
+        <option value="4-5">4-5 étoiles</option>
+        <option value="residence">Résidence / Appart-hôtel</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Services à couvrir</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">🛏️ Chambres (recouche)</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🔄 Chambres (départ)</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🏊 Piscine / Spa</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🍳 Petit-déjeuner / Restaurant</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🏢 Hall / Réception</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚗 Parking</div>
+    </div>
+  </div>
+</div>
+
+<!-- PHARMACIE -->
+<div class="card dynamic-section" id="dyn-pharmacie">
+  <div class="section-title"><div class="icon">💊</div> Détails — Pharmacie / Parapharmacie</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Surface de vente (m²)</label>
+      <input type="number" id="surf_vente" placeholder="Ex : 80" min="1">
+    </div>
+    <div class="form-group">
+      <label>Arrière-boutique / Réserve</label>
+      <select id="reserve">
+        <option value="non">Non</option>
+        <option value="petit">Oui, petit espace</option>
+        <option value="grand">Oui, grande réserve</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Exigences spécifiques</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">💊 Linéaires / Rayonnages</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🧪 Zone de préparation</div>
+      <div class="check-btn" onclick="toggleCheck(this)">❄️ Réfrigérateur médicaments</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚽 Sanitaires</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🖥️ Espace conseil / Cabines</div>
+    </div>
+  </div>
+</div>
+
+<!-- COMMERCE -->
+<div class="card dynamic-section" id="dyn-commerce">
+  <div class="section-title"><div class="icon">🛍️</div> Détails — Commerce / Boutique</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Type de commerce</label>
+      <select id="type_commerce">
+        <option value="">—</option>
+        <option value="pret_a_porter">Prêt-à-porter / Mode</option>
+        <option value="alimentaire">Alimentaire / Épicerie</option>
+        <option value="bijouterie">Bijouterie / Luxe</option>
+        <option value="bricolage">Bricolage / Quincaillerie</option>
+        <option value="auto">Automobile / Garage</option>
+        <option value="general">Commerce général</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Vitrine extérieure ?</label>
+      <select id="vitrine">
+        <option value="non">Non</option>
+        <option value="simple">Oui, simple</option>
+        <option value="grande">Oui, grande vitrine</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>Zones à inclure</label>
+    <div class="check-grid">
+      <div class="check-btn" onclick="toggleCheck(this)">🛒 Espace de vente</div>
+      <div class="check-btn" onclick="toggleCheck(this)">📦 Réserve / Stock</div>
+      <div class="check-btn" onclick="toggleCheck(this)">👔 Cabines d'essayage</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🚽 Sanitaires</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🏢 Caisse / Accueil</div>
+      <div class="check-btn" onclick="toggleCheck(this)">🌿 Devanture / Trottoir</div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTRE -->
+<div class="card dynamic-section" id="dyn-autre">
+  <div class="section-title"><div class="icon">🏗️</div> Décrivez votre local</div>
+  <div class="form-group">
+    <label>Type de local et activité exercée</label>
+    <textarea id="desc_autre" placeholder="Ex : Atelier de couture avec salle de vente, 3 pièces au rez-de-chaussée..."></textarea>
+  </div>
+  <div class="form-group" style="margin-top:14px">
+    <label>Contraintes ou besoins spécifiques</label>
+    <textarea id="besoins_autre" placeholder="Ex : Présence de produits chimiques, sol fragile, accès restreint..."></textarea>
+  </div>
+</div>
+
+<!-- ===== 5. PHOTOS DU LOCAL ===== -->
+<div class="card">
+  <div class="section-title">
+    <div class="icon">📸</div> Photos du local
+    <span class="section-badge">Fortement recommandé</span>
+  </div>
+  <div class="info-box">
+    <div class="info-icon">📷</div>
+    <p>Les photos me permettent de <strong>préparer le bon matériel</strong>, d'évaluer le niveau d'encrassement et de vous faire un devis précis. Pas de surprise à l'arrivée !</p>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:14px">
+    <!-- Zone globale -->
+    <div class="photo-add">
+      <div class="photo-zone" id="zone-global" onclick="document.getElementById('upload-global').click()">
+        <input type="file" id="upload-global" accept="image/*" multiple onchange="addPhotos(this, 'global')">
+        <div class="upload-icon">🏢</div>
+        <p><strong>Vue globale du local</strong><br>Prenez une photo depuis l'entrée qui montre l'ensemble de l'espace</p>
+      </div>
+      <div class="photo-label">Vue d'ensemble</div>
+      <div class="photo-previews" id="prev-global"></div>
+    </div>
+
+    <!-- Sol -->
+    <div class="photo-add">
+      <div class="photo-zone" id="zone-sol" onclick="document.getElementById('upload-sol').click()">
+        <input type="file" id="upload-sol" accept="image/*" multiple onchange="addPhotos(this, 'sol')">
+        <div class="upload-icon">🟫</div>
+        <p><strong>Type de sol</strong><br>Photo du sol pour identifier le revêtement et son état</p>
+      </div>
+      <div class="photo-label">Sol & revêtement</div>
+      <div class="photo-previews" id="prev-sol"></div>
+    </div>
+
+    <!-- Sanitaires -->
+    <div class="photo-add">
+      <div class="photo-zone" id="zone-sanit" onclick="document.getElementById('upload-sanit').click()">
+        <input type="file" id="upload-sanit" accept="image/*" multiple onchange="addPhotos(this, 'sanit')">
+        <div class="upload-icon">🚽</div>
+        <p><strong>Sanitaires / WC</strong><br>Photo des sanitaires à nettoyer</p>
+      </div>
+      <div class="photo-label">Sanitaires</div>
+      <div class="photo-previews" id="prev-sanit"></div>
+    </div>
+
+    <!-- Zone problématique -->
+    <div class="photo-add">
+      <div class="photo-zone" id="zone-prob" onclick="document.getElementById('upload-prob').click()">
+        <input type="file" id="upload-prob" accept="image/*" multiple onchange="addPhotos(this, 'prob')">
+        <div class="upload-icon">⚠️</div>
+        <p><strong>Zone problématique</strong><br>Encrassement, tâches, zone difficile d'accès...</p>
+      </div>
+      <div class="photo-label">Points particuliers</div>
+      <div class="photo-previews" id="prev-prob"></div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Niveau d'encrassement global estimé</label>
+    <div style="margin-top:8px">
+      <div class="star-row" id="star-row">
+        <div class="star-btn" onclick="setStar(1)">🟢</div>
+        <div class="star-btn" onclick="setStar(2)">🟡</div>
+        <div class="star-btn" onclick="setStar(3)">🟠</div>
+        <div class="star-btn" onclick="setStar(4)">🔴</div>
+        <div class="star-btn" onclick="setStar(5)">🔥</div>
+      </div>
+      <div id="star-label" style="font-size:0.8rem; color:var(--grey); margin-top:6px">Cliquez pour évaluer</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 6. FORMULE & FRÉQUENCE ===== -->
+<div class="card">
+  <div class="section-title"><div class="icon">📦</div> Formule souhaitée</div>
+  <div class="pack-grid">
+    <div class="pack-card" onclick="selectPack('essentiel')" id="p-essentiel">
+      <div class="pack-name">ESSENTIEL</div>
+      <div class="pack-price">À partir de 140€/mois</div>
+      <div class="pack-desc">1 passage/semaine · Sols, surfaces, sanitaires · Vitres 1×/mois</div>
+    </div>
+    <div class="pack-card" onclick="selectPack('confort')" id="p-confort">
+      <div class="pack-badge">Populaire</div>
+      <div class="pack-name">CONFORT</div>
+      <div class="pack-price">À partir de 260€/mois</div>
+      <div class="pack-desc">2× /semaine · Désinfection · Vitres int. 2×/mois + ext. 1×/mois</div>
+    </div>
+    <div class="pack-card" onclick="selectPack('premium')" id="p-premium">
+      <div class="pack-badge" style="background:var(--blue)">Premium</div>
+      <div class="pack-name">PREMIUM</div>
+      <div class="pack-price">Sur devis personnalisé</div>
+      <div class="pack-desc">Sur-mesure · Décapage · Urgences 24h · Rapport photos</div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+  <div class="section-title" style="font-size:0.9rem; margin-bottom:14px;"><div class="icon">🗓️</div> Fréquence de passage</div>
+  <div class="freq-grid">
+    <div class="freq-btn" onclick="selectFreq('1')" id="f-1">1×/semaine</div>
+    <div class="freq-btn" onclick="selectFreq('2')" id="f-2">2×/semaine</div>
+    <div class="freq-btn" onclick="selectFreq('3')" id="f-3">3×/semaine</div>
+    <div class="freq-btn" onclick="selectFreq('5')" id="f-5">5×/semaine</div>
+  </div>
+</div>
+
+<!-- ===== 7. HORAIRES & CONTRAT ===== -->
+<div class="card">
+  <div class="section-title"><div class="icon">🕐</div> Créneaux & organisation</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Horaire d'intervention souhaité</label>
+      <select id="horaire" onchange="calcPrix()">
+        <option value="normal">Matin / Journée (tarif normal)</option>
+        <option value="soir">Soir après 20h (+10%)</option>
+        <option value="dimanche">Dimanche (+10%)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Durée du contrat</label>
+      <select id="duree" onchange="calcPrix()">
+        <option value="1">Sans engagement (mois)</option>
+        <option value="3">3 mois (-5%)</option>
+        <option value="6">6 mois (-10%)</option>
+        <option value="12">12 mois (-15%)</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Heure de début souhaitée</label>
+      <select id="heure_debut">
+        <option value="">—</option>
+        <option value="6h">Avant 7h (très tôt)</option>
+        <option value="7h">7h – 9h</option>
+        <option value="12h">12h – 14h (pause déjeuner)</option>
+        <option value="18h">18h – 20h (fermeture)</option>
+        <option value="20h">Après 20h</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Démarrage souhaité</label>
+      <select id="demarrage">
+        <option value="urgent">Le plus tôt possible</option>
+        <option value="semaine">Dans la semaine</option>
+        <option value="mois">Ce mois-ci</option>
+        <option value="date">À une date précise</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row full" id="date-row" style="display:none">
+    <div class="form-group">
+      <label>Date souhaitée</label>
+      <input type="date" id="date_demarrage">
+    </div>
+  </div>
+</div>
+
+<!-- ===== 8. OPTIONS ===== -->
+<div class="card">
+  <div class="section-title"><div class="icon">✨</div> Options supplémentaires</div>
+  <div class="options-list">
+    <label class="option-item" onclick="toggleOption(this, 15)">
+      <div class="checkmark">✓</div>
+      <span class="option-text">🪟 Nettoyage des vitres extérieures inclus</span>
+      <span class="option-price">+15%</span>
+    </label>
+    <label class="option-item" onclick="toggleOption(this, 0)">
+      <div class="checkmark">✓</div>
+      <span class="option-text">🧴 Fourniture consommables (savon, sacs, essuie-mains)</span>
+      <span class="option-price">+20€/mois</span>
+    </label>
+    <label class="option-item" onclick="toggleOption(this, 0)">
+      <div class="checkmark">✓</div>
+      <span class="option-text">📸 Rapport d'intervention avec photos après chaque passage</span>
+      <span class="option-price">Inclus</span>
+    </label>
+    <label class="option-item" onclick="toggleOption(this, 0)">
+      <div class="checkmark">✓</div>
+      <span class="option-text">⚡ Disponibilité urgence sous 24h</span>
+      <span class="option-price">Sur devis</span>
+    </label>
+    <label class="option-item" onclick="toggleOption(this, 10)">
+      <div class="checkmark">✓</div>
+      <span class="option-text">🧪 Désinfection renforcée (bactéricides / virucides homologués)</span>
+      <span class="option-price">+10%</span>
+    </label>
+    <label class="option-item" onclick="toggleOption(this, 0)">
+      <div class="checkmark">✓</div>
+      <span class="option-text">🌿 Produits éco-certifiés uniquement</span>
+      <span class="option-price">Inclus</span>
+    </label>
+    <label class="option-item" onclick="toggleOption(this, 20)">
+      <div class="checkmark">✓</div>
+      <span class="option-text">✨ Remise en état initiale (avant démarrage du contrat)</span>
+      <span class="option-price">+20%</span>
+    </label>
+  </div>
+</div>
+
+<!-- ===== 9. COMMENTAIRE ===== -->
+<div class="card">
+  <div class="section-title"><div class="icon">💬</div> Informations complémentaires</div>
+  <div class="form-group">
+    <label>Précisez vos besoins, contraintes ou questions</label>
+    <textarea id="commentaire" placeholder="Ex : accès le matin avant 8h, présence d'un chien, code d'entrée à fournir, besoin d'une remise en état initiale, sol très sensible..."></textarea>
+  </div>
+</div>
+
+<!-- ===== 10. RÉCAPITULATIF OPÉRATIONNEL ===== -->
+<div class="card">
+  <div class="section-title"><div class="icon">🗂️</div> Mon résumé pour l'intervention</div>
+  <p style="font-size:0.82rem; color:var(--grey); margin-bottom:16px">Ce récapitulatif se construit automatiquement selon vos réponses — c'est ce que je consulte avant de venir.</p>
+  <div class="resume-ops">
+    <h4>📋 Fiche d'intervention C2MT</h4>
+    <div class="resume-line"><span class="rl">📍 Adresse :</span><span class="rv" id="ro-adresse">—</span></div>
+    <div class="resume-line"><span class="rl">🏢 Type de local :</span><span class="rv" id="ro-type">—</span></div>
+    <div class="resume-line"><span class="rl">📐 Surface :</span><span class="rv" id="ro-surface">—</span></div>
+    <div class="resume-line"><span class="rl">🚪 Pièces / Étages :</span><span class="rv" id="ro-pieces">—</span></div>
+    <div class="resume-line"><span class="rl">🟫 Type de sol :</span><span class="rv" id="ro-sol">—</span></div>
+    <div class="resume-line"><span class="rl">🪟 Vitres :</span><span class="rv" id="ro-vitres">—</span></div>
+    <div class="resume-line"><span class="rl">🔑 Accès :</span><span class="rv" id="ro-acces">—</span></div>
+    <div class="resume-line"><span class="rl">🕐 Horaire :</span><span class="rv" id="ro-horaire">—</span></div>
+    <div class="resume-line"><span class="rl">📦 Formule :</span><span class="rv" id="ro-pack">—</span></div>
+  </div>
+</div>
+
+<!-- ===== 11. ESTIMATION TARIFAIRE ===== -->
+<div class="card">
+  <div class="section-title"><div class="icon">💰</div> Votre estimation tarifaire</div>
+  <div class="price-box" id="price-box">
+    <div class="no-selection" id="price-placeholder">
+      Sélectionnez le type de local, la surface et la formule pour voir votre estimation 👆
+    </div>
+    <div id="price-details" style="display:none">
+      <h3>Récapitulatif de votre devis</h3>
+      <div class="price-line"><span class="label">Type de local</span><span class="val" id="r-type">—</span></div>
+      <div class="price-line"><span class="label">Surface</span><span class="val" id="r-surface">—</span></div>
+      <div class="price-line"><span class="label">Formule</span><span class="val" id="r-pack">—</span></div>
+      <div class="price-line"><span class="label">Fréquence</span><span class="val" id="r-freq">—</span></div>
+      <div class="price-line" id="r-promo-line" style="display:none">
+        <span class="label">Réduction contrat</span>
+        <span class="val" id="r-promo" style="color:var(--green)">—</span>
+      </div>
+      <div class="price-line" id="r-suppl-line" style="display:none">
+        <span class="label">Supplément horaire</span>
+        <span class="val" id="r-suppl" style="color:var(--orange)">—</span>
+      </div>
+      <div class="price-total">
+        <span class="label">Estimation mensuelle</span>
+        <span class="amount" id="r-total">— €<small>/mois</small></span>
+      </div>
+      <p style="font-size:0.73rem; opacity:0.45; margin-top:12px; text-align:center;">
+        Prix indicatif TTC · Devis définitif après visite · Micro-entreprise (art. 293B CGI)
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT -->
+<div class="card">
+  <button class="btn-submit" onclick="envoyer()">
+    📨 Envoyer ma demande de devis — C2MT vous répond sous 24h
+  </button>
+  <div class="confirm-box" id="confirm-box">
+    <div class="big">🎉</div>
+    <h3>Demande envoyée avec succès !</h3>
+    <p>Merci ! C2MT vous contactera dans les <strong>24 heures</strong> pour confirmer votre devis et planifier une visite si nécessaire.<br><br>📧 c2mt.entreprise@gmail.com &nbsp;·&nbsp; 📱 07 49 42 98 10</p>
+  </div>
+</div>
+
+<div class="footer">
+  <strong style="color:rgba(255,255,255,0.7)">C2MT — Nettoyage Professionnel</strong><br>
+  Marseille & alentours · <a href="mailto:c2mt.entreprise@gmail.com">c2mt.entreprise@gmail.com</a> · 07 49 42 98 10<br>
+  SIRET : 938 662 210 00013
+</div>
+
+</div>
+
+<script>
+let selectedType = '';
+let selectedPack = '';
+let selectedFreq = '';
+let selectedSols = [];
+let optionsPct = 0;
+let optionsFixed = 0;
+let starLevel = 0;
+const photos = { global: [], sol: [], sanit: [], prob: [] };
+
+const tarifs = {
+  commerce:   { 50:[35,50],   100:[50,75],   200:[75,110],  350:[110,160] },
+  bureau:     { 50:[30,45],   100:[45,70],   200:[70,100],  350:[100,150] },
+  restaurant: { 50:[38,55],   100:[55,82],   200:[82,121],  350:[121,176] },
+  cabinet:    { 50:[40,58],   100:[58,88],   200:[88,130],  350:[130,190] },
+  salon:      { 50:[34,50],   100:[50,74],   200:[74,110],  350:[110,160] },
+  gym:        { 50:[32,48],   100:[48,72],   200:[72,108],  350:[108,158] },
+  entrepot:   { 50:[28,42],   100:[42,65],   200:[65,95],   350:[95,140]  },
+  copro:      { 50:[30,45],   100:[45,68],   200:[68,100],  350:[100,145] },
+  creche:     { 50:[42,60],   100:[60,90],   200:[90,135],  350:[135,195] },
+  hotel:      { 50:[45,65],   100:[65,98],   200:[98,145],  350:[145,210] },
+  pharmacie:  { 50:[36,52],   100:[52,78],   200:[78,115],  350:[115,168] },
+  autre:      { 50:[35,52],   100:[52,78],   200:[78,115],  350:[115,168] },
+};
+
+const typeLabels = {
+  commerce:'🛍️ Commerce / Boutique', bureau:'💼 Bureau / Open space',
+  restaurant:'🍽️ Restaurant / Café', cabinet:'🩺 Cabinet médical',
+  salon:'💈 Salon de coiffure / Esthétique', gym:'🏋️ Salle de sport',
+  entrepot:'🏭 Entrepôt / Local technique', copro:'🏘️ Copropriété',
+  creche:'🧒 Crèche / École', hotel:'🏨 Hôtel / Résidence',
+  pharmacie:'💊 Pharmacie', autre:'🏗️ Autre local'
+};
+
+const allTypes = Object.keys(typeLabels);
+
+function selectType(t) {
+  selectedType = t;
+  allTypes.forEach(x => document.getElementById('t-'+x).classList.remove('selected'));
+  document.getElementById('t-'+t).classList.add('selected');
+
+  // Hide all dynamic sections
+  document.querySelectorAll('.dynamic-section').forEach(s => s.classList.remove('visible'));
+
+  // Show relevant
+  const el = document.getElementById('dyn-'+t);
+  if (el) el.classList.add('visible');
+
+  calcPrix();
+  updateProgress();
+  updateResume();
+}
+
+function selectPack(p) {
+  selectedPack = p;
+  ['essentiel','confort','premium'].forEach(x => document.getElementById('p-'+x).classList.remove('selected'));
+  document.getElementById('p-'+p).classList.add('selected');
+  calcPrix();
+  updateProgress();
+  updateResume();
+}
+
+function selectFreq(f) {
+  selectedFreq = f;
+  ['1','2','3','5'].forEach(x => document.getElementById('f-'+x).classList.remove('selected'));
+  document.getElementById('f-'+f).classList.add('selected');
+  calcPrix();
+  updateResume();
+}
+
+function toggleSol(el, sol) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) {
+    if (!selectedSols.includes(sol)) selectedSols.push(sol);
+  } else {
+    selectedSols = selectedSols.filter(s => s !== sol);
+  }
+  updateResume();
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+}
+
+function toggleOption(el, pct) {
+  el.classList.toggle('checked');
+  optionsPct = 0; optionsFixed = 0;
+  document.querySelectorAll('.option-item.checked').forEach(o => {
+    const priceText = o.querySelector('.option-price').textContent;
+    if (priceText.includes('%')) optionsPct += parseInt(priceText);
+    else if (priceText.includes('20€')) optionsFixed += 20;
+  });
+  calcPrix();
+}
+
+function setStar(n) {
+  starLevel = n;
+  const labels = ['', '🟢 Très propre', '🟡 Correct', '🟠 Encrassé', '🔴 Très sale', '🔥 Remise en état nécessaire'];
+  document.querySelectorAll('.star-btn').forEach((b, i) => b.classList.toggle('active', i < n));
+  document.getElementById('star-label').textContent = labels[n];
+}
+
+function addPhotos(input, zone) {
+  const prev = document.getElementById('prev-'+zone);
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      photos[zone].push(e.target.result);
+      const wrap = document.createElement('div');
+      wrap.className = 'photo-thumb';
+      wrap.innerHTML = `<img src="${e.target.result}"><div class="remove-photo" onclick="removePhoto(this, '${zone}')">✕</div>`;
+      prev.appendChild(wrap);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removePhoto(btn, zone) {
+  btn.parentElement.remove();
+}
+
+function calcPrix() {
+  const tranche = parseInt(document.getElementById('tranche').value) || 0;
+  const horaire = document.getElementById('horaire').value;
+  const duree = parseInt(document.getElementById('duree').value) || 1;
+
+  if (!selectedType || !tranche || !selectedPack || selectedPack === 'premium') {
+    document.getElementById('price-placeholder').style.display = 'block';
+    document.getElementById('price-details').style.display = 'none';
+    if (selectedPack === 'premium') {
+      document.getElementById('price-placeholder').textContent = '🌟 Pack PREMIUM — Devis personnalisé après visite gratuite. Contactez-nous !';
+    }
+    return;
+  }
+
+  const t = tarifs[selectedType]?.[tranche];
+  if (!t) return;
+
+  let base = 0;
+  const freq = parseInt(selectedFreq) || 1;
+  const mid = (t[0] + t[1]) / 2;
+
+  if (freq === 1)      base = mid * 4;
+  else if (freq === 2) base = mid * 8;
+  else if (freq === 3) base = mid * 12;
+  else                 base = mid * 20;
+
+  base = base * (1 + optionsPct/100) + optionsFixed;
+
+  let supplPct = 0;
+  if (horaire === 'soir' || horaire === 'dimanche') supplPct = 10;
+  base = base * (1 + supplPct/100);
+
+  let remise = 0;
+  if (duree === 3) remise = 5;
+  else if (duree === 6) remise = 10;
+  else if (duree === 12) remise = 15;
+  base = base * (1 - remise/100);
+
+  const min = Math.round(base * 0.9);
+  const max = Math.round(base * 1.1);
+
+  document.getElementById('price-placeholder').style.display = 'none';
+  document.getElementById('price-details').style.display = 'block';
+
+  const trancheLabels = { 50:'Jusqu\'à 50 m²', 100:'51–100 m²', 200:'101–200 m²', 350:'201–350 m²', 999:'+350 m²' };
+  const packLabels = { essentiel:'Pack ESSENTIEL', confort:'Pack CONFORT', premium:'Pack PREMIUM' };
+  const freqLabels = { '1':'1×/semaine', '2':'2×/semaine', '3':'3×/semaine', '5':'5×/semaine' };
+
+  document.getElementById('r-type').textContent = typeLabels[selectedType];
+  document.getElementById('r-surface').textContent = trancheLabels[tranche];
+  document.getElementById('r-pack').textContent = packLabels[selectedPack];
+  document.getElementById('r-freq').textContent = freqLabels[selectedFreq] || '1×/semaine';
+
+  if (remise > 0) {
+    document.getElementById('r-promo-line').style.display = 'flex';
+    document.getElementById('r-promo').textContent = '-' + remise + '% (contrat ' + duree + ' mois)';
+  } else {
+    document.getElementById('r-promo-line').style.display = 'none';
+  }
+  if (supplPct > 0) {
+    document.getElementById('r-suppl-line').style.display = 'flex';
+    document.getElementById('r-suppl').textContent = '+' + supplPct + '% (' + (horaire === 'soir' ? 'soir après 20h' : 'dimanche') + ')';
+  } else {
+    document.getElementById('r-suppl-line').style.display = 'none';
+  }
+
+  document.getElementById('r-total').innerHTML = min + ' – ' + max + ' €<small>/mois</small>';
+}
+
+function updateResume() {
+  const solLabels = {
+    carrelage:'Carrelage', parquet:'Parquet/Stratifié', moquette:'Moquette',
+    beton:'Béton ciré', vinyle:'Vinyle/PVC', marbre:'Marbre/Pierre',
+    antiderapant:'Antidérapant', exterieur:'Dalles ext.', autre_sol:'Autre'
+  };
+  const vitresLabels = {
+    non:'Pas de vitres', petites:'Petites vitres',
+    moyennes:'Surface moyenne', grandes:'Grande façade', hauteur:'En hauteur (matériel spécifique)'
+  };
+  const accesLabels = {
+    libre:'Accès libre', surveille:'Sur rendez-vous', code:'Code/Interphone',
+    gardien:'Gardien', digicode:'Digicode + ascenseur'
+  };
+  const horaireLabels = {
+    normal:'Matin / Journée', soir:'Soir après 20h (+10%)', dimanche:'Dimanche (+10%)'
+  };
+
+  const adresse = document.getElementById('adresse').value || '—';
+  const surf = document.getElementById('surface').value;
+  const pieces = document.getElementById('nb_pieces').value;
+  const etages = document.getElementById('nb_etages').value;
+  const vitres = document.getElementById('vitres').value;
+  const acces = document.getElementById('acces').value;
+  const horaire = document.getElementById('horaire').value;
+
+  document.getElementById('ro-adresse').textContent = adresse;
+  document.getElementById('ro-type').textContent = selectedType ? typeLabels[selectedType] : '—';
+  document.getElementById('ro-surface').textContent = surf ? surf + ' m²' : '—';
+
+  let piecesStr = '—';
+  if (pieces || etages) {
+    piecesStr = (pieces ? pieces + ' pièce(s)' : '') + (etages ? (pieces ? ' · ' : '') + etageLabel(etages) : '');
+  }
+  document.getElementById('ro-pieces').textContent = piecesStr;
+  document.getElementById('ro-sol').textContent = selectedSols.length ? selectedSols.map(s => solLabels[s]).join(', ') : '—';
+  document.getElementById('ro-vitres').textContent = vitresLabels[vitres] || '—';
+  document.getElementById('ro-acces').textContent = accesLabels[acces] || '—';
+  document.getElementById('ro-horaire').textContent = horaireLabels[horaire] || '—';
+  document.getElementById('ro-pack').textContent = selectedPack ? selectedPack.toUpperCase() : '—';
+}
+
+function etageLabel(v) {
+  const m = { '0':'RDC uniquement', '1':'RDC + 1 étage', '2':'RDC + 2 étages', '3':'3 étages+', 'ss':'Avec sous-sol' };
+  return m[v] || '';
+}
+
+function updateProgress() {
+  let filled = 0;
+  const nom = document.getElementById('nom').value;
+  const tel = document.getElementById('tel').value;
+  const email = document.getElementById('email').value;
+  const adresse = document.getElementById('adresse').value;
+  const surface = document.getElementById('surface').value;
+  if (nom) filled++;
+  if (tel) filled++;
+  if (email) filled++;
+  if (adresse) filled++;
+  if (selectedType) filled++;
+  if (surface) filled++;
+  if (selectedSols.length) filled++;
+  if (selectedPack) filled++;
+  const pct = Math.round((filled / 8) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  updateResume();
+}
+
+// Horaire → date
+document.getElementById('demarrage').addEventListener('change', function() {
+  document.getElementById('date-row').style.display = this.value === 'date' ? 'grid' : 'none';
+});
+
+// Sync surface → tranche auto
+document.getElementById('surface').addEventListener('input', function() {
+  const v = parseInt(this.value);
+  if (!v) return;
+  const sel = document.getElementById('tranche');
+  if (v <= 50) sel.value = '50';
+  else if (v <= 100) sel.value = '100';
+  else if (v <= 200) sel.value = '200';
+  else if (v <= 350) sel.value = '350';
+  else sel.value = '999';
+  calcPrix();
+});
+
+document.getElementById('horaire').addEventListener('change', updateResume);
+document.getElementById('vitres').addEventListener('change', updateResume);
+document.getElementById('acces').addEventListener('change', updateResume);
+
+function envoyer() {
+  const nom = document.getElementById('nom').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const tel = document.getElementById('tel').value.trim();
+  const adresse = document.getElementById('adresse').value.trim();
+
+  if (!nom) { alert('Merci de renseigner votre nom.'); return; }
+  if (!email) { alert('Merci de renseigner votre email.'); return; }
+  if (!tel) { alert('Merci de renseigner votre téléphone.'); return; }
+  if (!selectedType) { alert('Merci de sélectionner le type de local.'); return; }
+  if (selectedSols.length === 0) { alert('Merci d\'indiquer le(s) type(s) de sol.'); return; }
+
+  const btn = document.querySelector('.btn-submit');
+  btn.style.display = 'none';
+  document.getElementById('confirm-box').style.display = 'block';
+  document.getElementById('confirm-box').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
