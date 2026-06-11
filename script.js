@@ -469,7 +469,17 @@ async function sendWhatsApp() {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
-  // typing effect removed (logo is now an image)
+  // Scroll reveal for product cards
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.product-card').forEach(card => observer.observe(card));
+
   document.addEventListener('click', () => {
     if (window._ac && window._ac.state === 'suspended') window._ac.resume();
   }, { once: true });

@@ -935,19 +935,16 @@ body::after {
 }
 .product-card:hover::after { transform: translateX(100%); }
 
-/* 4. Card entrance pop */
-@keyframes cardPop {
-  from { opacity: 0; transform: translateY(18px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0)   scale(1); }
+/* Card scroll reveal */
+.product-card {
+  opacity: 0;
+  transform: translateY(30px) scale(0.96);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
-.product-card { animation: cardPop 0.4s ease both; }
-.product-card:nth-child(1) { animation-delay: 0.05s; }
-.product-card:nth-child(2) { animation-delay: 0.10s; }
-.product-card:nth-child(3) { animation-delay: 0.15s; }
-.product-card:nth-child(4) { animation-delay: 0.20s; }
-.product-card:nth-child(5) { animation-delay: 0.25s; }
-.product-card:nth-child(6) { animation-delay: 0.30s; }
-.product-card:nth-child(7) { animation-delay: 0.35s; }
+.product-card.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
 
 /* 5. Bounce on add button */
 @keyframes btnBounce {
