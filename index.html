@@ -11,6 +11,9 @@
 
 <!-- BACKGROUND -->
 <div class="bg-overlay"></div>
+<!-- CONFETTI + FLY DOT -->
+<div class="confetti-container" id="confetti-container"></div>
+<div class="fly-dot" id="fly-dot"></div>
 
 <!-- HEADER -->
 <header class="header">
@@ -63,7 +66,7 @@
           <p class="product-desc">Double steak haché, sauce spéciale, salade, cornichons, oignons, fromage</p>
           <div class="product-footer">
             <span class="product-price">12,25 €</span>
-            <button class="add-btn" onclick="openCustomize(1)">+ Ajouter</button>
+            <button class="add-btn" onclick="openCustomize(1, this)">+ Ajouter</button>
           </div>
         </div>
       </div>
@@ -79,7 +82,7 @@
           <p class="product-desc">Double steak haché, double fromage fondu, cornichons, oignons, ketchup, moutarde</p>
           <div class="product-footer">
             <span class="product-price">13,60 €</span>
-            <button class="add-btn" onclick="openCustomize(2)">+ Ajouter</button>
+            <button class="add-btn" onclick="openCustomize(2, this)">+ Ajouter</button>
           </div>
         </div>
       </div>
@@ -95,7 +98,7 @@
           <p class="product-desc">Big Mac doré croustillant + cheeseburger offert, frites et boisson</p>
           <div class="product-footer">
             <span class="product-price">16,05 €</span>
-            <button class="add-btn" onclick="openCustomize(3)">+ Ajouter</button>
+            <button class="add-btn" onclick="openCustomize(3, this)">+ Ajouter</button>
           </div>
         </div>
       </div>
@@ -111,23 +114,58 @@
           <p class="product-desc">Double filet de poisson pané, sauce tartare, fromage fondu</p>
           <div class="product-footer">
             <span class="product-price">12,75 €</span>
-            <button class="add-btn" onclick="openCustomize(4)">+ Ajouter</button>
+            <button class="add-btn" onclick="openCustomize(4, this)">+ Ajouter</button>
           </div>
         </div>
       </div>
 
-      <!-- MENU NUGGETS -->
+      <!-- WINGS X10 -->
       <div class="product-card" data-cat="menus nuggets" data-id="5">
         <div class="product-img-wrap">
-          <div class="product-img-placeholder">🍗</div>
-          <div class="product-badge">Menu</div>
+          <img src="menu-wings.jpg" alt="Wings x10" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="product-img-placeholder" style="display:none">🍗</div>
+          <div class="product-badge hot">🔥 Hot</div>
         </div>
         <div class="product-info">
-          <h3 class="product-name">Menu Nuggets</h3>
-          <p class="product-desc">9 nuggets croustillants, frites et boisson au choix</p>
+          <h3 class="product-name">Wings x10</h3>
+          <p class="product-desc">10 ailes de poulet croustillantes et épicées, frites et boisson</p>
           <div class="product-footer">
-            <span class="product-price">12,15 €</span>
-            <button class="add-btn" onclick="openCustomize(5)">+ Ajouter</button>
+            <span class="product-price">15,00 €</span>
+            <button class="add-btn" onclick="openCustomize(5, this)">+ Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LONG FISH -->
+      <div class="product-card" data-cat="menus" data-id="6">
+        <div class="product-img-wrap">
+          <img src="menu-longfish.jpg" alt="Long Fish" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="product-img-placeholder" style="display:none">🐟</div>
+          <div class="product-badge new">Nouveau</div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">Long Fish</h3>
+          <p class="product-desc">Pain long aux céréales, filet de poisson blanc pané, sauce tartare</p>
+          <div class="product-footer">
+            <span class="product-price">14,00 €</span>
+            <button class="add-btn" onclick="openCustomize(6, this)">+ Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLASSIQ CRISPY ONIONS BEEF -->
+      <div class="product-card" data-cat="menus burgers" data-id="7">
+        <div class="product-img-wrap">
+          <img src="menu-classiq.jpg" alt="ClassiQ Crispy Onions Beef" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="product-img-placeholder" style="display:none">🧅</div>
+          <div class="product-badge new">Nouveau</div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">ClassiQ Crispy Onions Beef</h3>
+          <p class="product-desc">Double steak haché bœuf, fromage fondu, oignons croustillants, sauce poivrée</p>
+          <div class="product-footer">
+            <span class="product-price">10,00 €</span>
+            <button class="add-btn" onclick="openCustomize(7, this)">+ Ajouter</button>
           </div>
         </div>
       </div>
