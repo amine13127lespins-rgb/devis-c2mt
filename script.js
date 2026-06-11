@@ -1,6 +1,6 @@
 // ===== CONFIGURATION =====
 // Modifier ce numéro WhatsApp (format international, sans + ni espaces)
-const WHATSAPP_NUMBER = '33600000000';
+const WHATSAPP_NUMBER = '33749429810';
 
 // ===== PRODUCTS DATA =====
 const products = {
