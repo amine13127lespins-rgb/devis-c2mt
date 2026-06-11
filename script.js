@@ -9,22 +9,16 @@ const WA_API = {
 };
 
 async function sendViaBusinessAPI(message) {
-  const res = await fetch(
-    `https://graph.facebook.com/v19.0/${WA_API.phoneNumberId}/messages`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${WA_API.token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to: WA_API.recipient,
-        type: 'text',
-        text: { body: message },
-      }),
-    }
-  );
+  const res = await fetch('https://thebenediners.amine13127lespins.workers.dev/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      to: WA_API.recipient,
+      type: 'text',
+      text: { body: message },
+    }),
+  });
   return res.json();
 }
 
