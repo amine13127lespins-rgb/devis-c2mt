@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Snack Délices — Menu</title>
+<title>The Béné diner's — Menu</title>
 <link rel="stylesheet" href="style.css">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -19,11 +19,7 @@
 <header class="header">
   <div class="header-inner">
     <div class="logo">
-      <span class="logo-icon">🍔</span>
-      <div class="logo-text">
-        <span class="logo-name">Snack Délices</span>
-        <span class="logo-sub">American Diner</span>
-      </div>
+      <img src="logo-bene.webp" alt="The Béné diner's" class="logo-img">
     </div>
     <div class="header-search">
       <input type="text" id="search-input" placeholder="🔍 Rechercher..." oninput="filterSearch(this.value)">
@@ -40,12 +36,9 @@
 <nav class="categories-bar" id="categories-bar">
   <button class="cat-btn active" onclick="filterCat('all', this)">Tout</button>
   <button class="cat-btn" onclick="filterCat('menus', this)">🍱 Menus</button>
-  <button class="cat-btn" onclick="filterCat('burgers', this)">🍔 Burgers</button>
-  <button class="cat-btn" onclick="filterCat('tacos', this)">🌮 Tacos</button>
-  <button class="cat-btn" onclick="filterCat('sandwichs', this)">🥖 Sandwichs</button>
-  <button class="cat-btn" onclick="filterCat('nuggets', this)">🍗 Nuggets</button>
-  <button class="cat-btn" onclick="filterCat('boissons', this)">🥤 Boissons</button>
-  <button class="cat-btn" onclick="filterCat('sauces', this)">🥫 Sauces</button>
+  <button class="cat-btn" onclick="filterCat('boeuf', this)">🥩 Bœuf</button>
+  <button class="cat-btn" onclick="filterCat('poulet', this)">🍗 Poulet</button>
+  <button class="cat-btn" onclick="filterCat('poisson', this)">🐟 Poisson</button>
 </nav>
 
 <!-- MAIN -->
@@ -56,7 +49,7 @@
     <div class="products-grid" id="products-grid">
 
       <!-- MENU BIG MAC -->
-      <div class="product-card" data-cat="menus" data-id="1">
+      <div class="product-card" data-cat="menus boeuf" data-id="1">
         <div class="product-img-wrap">
           <img src="menu-bigmac.jpg" alt="Menu Big Mac" class="product-img" loading="lazy">
           <div class="product-badge">Menu</div>
@@ -72,7 +65,7 @@
       </div>
 
       <!-- MENU DOUBLE CHEESEBURGER -->
-      <div class="product-card" data-cat="menus" data-id="2">
+      <div class="product-card" data-cat="menus boeuf" data-id="2">
         <div class="product-img-wrap">
           <img src="menu-cheeseburger.jpg" alt="Menu Double Cheeseburger" class="product-img" loading="lazy">
           <div class="product-badge">Menu</div>
@@ -88,7 +81,7 @@
       </div>
 
       <!-- MENU GOLDEN BIG MAC -->
-      <div class="product-card" data-cat="menus" data-id="3">
+      <div class="product-card" data-cat="menus boeuf" data-id="3">
         <div class="product-img-wrap">
           <img src="menu-golden.jpg" alt="Menu Golden Big Mac" class="product-img" loading="lazy">
           <div class="product-badge gold">Premium</div>
@@ -104,7 +97,7 @@
       </div>
 
       <!-- MENU DOUBLE FILET FISH -->
-      <div class="product-card" data-cat="menus" data-id="4">
+      <div class="product-card" data-cat="menus poisson" data-id="4">
         <div class="product-img-wrap">
           <img src="menu-filetfish.jpg" alt="Menu Double Filet Fish" class="product-img" loading="lazy">
           <div class="product-badge">Menu</div>
@@ -120,7 +113,7 @@
       </div>
 
       <!-- WINGS X10 -->
-      <div class="product-card" data-cat="menus nuggets" data-id="5">
+      <div class="product-card" data-cat="menus poulet" data-id="5">
         <div class="product-img-wrap">
           <img src="menu-wings.jpg" alt="Wings x10" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="product-img-placeholder" style="display:none">🍗</div>
@@ -137,7 +130,7 @@
       </div>
 
       <!-- LONG FISH -->
-      <div class="product-card" data-cat="menus" data-id="6">
+      <div class="product-card" data-cat="menus poisson" data-id="6">
         <div class="product-img-wrap">
           <img src="menu-longfish.jpg" alt="Long Fish" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="product-img-placeholder" style="display:none">🐟</div>
@@ -154,7 +147,7 @@
       </div>
 
       <!-- CLASSIQ CRISPY ONIONS BEEF -->
-      <div class="product-card" data-cat="menus burgers" data-id="7">
+      <div class="product-card" data-cat="menus boeuf" data-id="7">
         <div class="product-img-wrap">
           <img src="menu-classiq.jpg" alt="ClassiQ Crispy Onions Beef" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="product-img-placeholder" style="display:none">🧅</div>
@@ -215,14 +208,14 @@
   <button class="mobile-nav-btn" onclick="filterCat('menus', this); setMobileNav(this)">
     <span>🍱</span><small>Menus</small>
   </button>
-  <button class="mobile-nav-btn" onclick="filterCat('burgers', this); setMobileNav(this)">
-    <span>🍔</span><small>Burgers</small>
+  <button class="mobile-nav-btn" onclick="filterCat('boeuf', this); setMobileNav(this)">
+    <span>🥩</span><small>Bœuf</small>
   </button>
-  <button class="mobile-nav-btn" onclick="filterCat('nuggets', this); setMobileNav(this)">
-    <span>🍗</span><small>Nuggets</small>
+  <button class="mobile-nav-btn" onclick="filterCat('poulet', this); setMobileNav(this)">
+    <span>🍗</span><small>Poulet</small>
   </button>
-  <button class="mobile-nav-btn" onclick="filterCat('boissons', this); setMobileNav(this)">
-    <span>🥤</span><small>Boissons</small>
+  <button class="mobile-nav-btn" onclick="filterCat('poisson', this); setMobileNav(this)">
+    <span>🐟</span><small>Poisson</small>
   </button>
 </nav>
 

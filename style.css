@@ -30,7 +30,7 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: url('bg-diner.png') center center / cover no-repeat;
+  background: url('bg-night.webp') center center / cover no-repeat;
   z-index: 0;
 }
 .bg-overlay {
@@ -64,25 +64,13 @@ body::before {
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
   flex-shrink: 0;
 }
-.logo-icon { font-size: 1.8rem; filter: drop-shadow(0 0 8px var(--neon-orange)); }
-.logo-text { display: flex; flex-direction: column; }
-.logo-name {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 1.6rem;
-  color: var(--neon-yellow);
-  letter-spacing: 2px;
-  text-shadow: 0 0 10px var(--neon-yellow), 0 0 20px rgba(255,215,0,0.4);
-  line-height: 1;
-}
-.logo-sub {
-  font-size: 0.6rem;
-  color: var(--neon-red);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  text-shadow: 0 0 8px var(--neon-red);
+.logo-img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(255,100,0,0.7));
 }
 
 .header-search {
@@ -915,7 +903,7 @@ body::before {
   }
   20%,24%,55% { text-shadow: none; opacity: 0.75; }
 }
-.logo-name { animation: neonFlicker 8s infinite; }
+.logo-img { animation: neonFlicker 8s infinite; }
 
 /* 2. CRT scanlines overlay */
 body::after {

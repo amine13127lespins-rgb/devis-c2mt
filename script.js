@@ -469,8 +469,7 @@ async function sendWhatsApp() {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
-  const sub = document.querySelector('.logo-sub');
-  if (sub) setTimeout(() => typeEffect(sub, 'American Diner', 75), 600);
+  // typing effect removed (logo is now an image)
   document.addEventListener('click', () => {
     if (window._ac && window._ac.state === 'suspended') window._ac.resume();
   }, { once: true });
