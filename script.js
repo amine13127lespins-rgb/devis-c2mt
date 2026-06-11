@@ -438,6 +438,7 @@ async function sendWhatsApp() {
   try {
     const result = await sendViaBusinessAPI(msg);
 
+    if (!result.messages) alert('Réponse Meta: ' + JSON.stringify(result));
     if (result.messages && result.messages[0]?.id) {
       // Succès
       playFanfare();
@@ -457,13 +458,9 @@ async function sendWhatsApp() {
       throw new Error(JSON.stringify(result));
     }
   } catch (err) {
-    // Fallback wa.me si l'API échoue
-    console.warn('API WA échouée, fallback wa.me :', err);
     btn.disabled = false;
     btn.textContent = 'Envoyer la commande sur WhatsApp';
-    playFanfare();
-    launchConfetti();
-    setTimeout(() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank'), 500);
+    alert('Erreur API: ' + JSON.stringify(err?.message || err));
   }
 }
 
