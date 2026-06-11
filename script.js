@@ -46,6 +46,7 @@ function fmt(n) {
 // ===== SOUNDS (Web Audio API) =====
 function getAudioCtx() {
   if (!window._ac) window._ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (window._ac.state === 'suspended') window._ac.resume();
   return window._ac;
 }
 
@@ -58,9 +59,9 @@ function playBlip() {
     osc.type = 'square';
     osc.frequency.setValueAtTime(660, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.05);
-    g.gain.setValueAtTime(0.06, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.12);
+    g.gain.setValueAtTime(0.12, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.14);
   } catch(e) {}
 }
 
@@ -73,9 +74,9 @@ function playDing() {
       osc.connect(g); g.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, ctx.currentTime + t);
-      g.gain.setValueAtTime(0.12, ctx.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.4);
-      osc.start(ctx.currentTime + t); osc.stop(ctx.currentTime + t + 0.45);
+      g.gain.setValueAtTime(0.18, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.5);
+      osc.start(ctx.currentTime + t); osc.stop(ctx.currentTime + t + 0.55);
     });
   } catch(e) {}
 }
@@ -89,7 +90,7 @@ function playFanfare() {
       osc.connect(g); g.connect(ctx.destination);
       osc.type = 'square';
       osc.frequency.setValueAtTime(freq, ctx.currentTime + t);
-      g.gain.setValueAtTime(0.09, ctx.currentTime + t);
+      g.gain.setValueAtTime(0.12, ctx.currentTime + t);
       g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.38);
       osc.start(ctx.currentTime + t); osc.stop(ctx.currentTime + t + 0.4);
     });
@@ -478,8 +479,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.product-card').forEach(card => observer.observe(card));
 
   document.addEventListener('click', () => {
-    if (window._ac && window._ac.state === 'suspended') window._ac.resume();
-  }, { once: true });
+    if (!window._ac) window._ac = new (window.AudioContext || window.webkitAudioContext)();
+    window._ac.resume();
+  });
 });
 
 renderCart();
