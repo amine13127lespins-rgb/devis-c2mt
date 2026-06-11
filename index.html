@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Snack Délices — Menu</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<div class="bg-overlay"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">🍔</span>
+      <div class="logo-text">
+        <span class="logo-name">Snack Délices</span>
+        <span class="logo-sub">American Diner</span>
+      </div>
+    </div>
+    <div class="header-search">
+      <input type="text" id="search-input" placeholder="🔍 Rechercher..." oninput="filterSearch(this.value)">
+    </div>
+    <button class="cart-btn" onclick="toggleCart()">
+      <span class="cart-icon">🛒</span>
+      <span class="cart-count" id="cart-count">0</span>
+      <span class="cart-total" id="cart-total-header">0,00 €</span>
+    </button>
+  </div>
+</header>
+
+<!-- CATEGORIES (desktop) -->
+<nav class="categories-bar" id="categories-bar">
+  <button class="cat-btn active" onclick="filterCat('all', this)">Tout</button>
+  <button class="cat-btn" onclick="filterCat('menus', this)">🍱 Menus</button>
+  <button class="cat-btn" onclick="filterCat('burgers', this)">🍔 Burgers</button>
+  <button class="cat-btn" onclick="filterCat('tacos', this)">🌮 Tacos</button>
+  <button class="cat-btn" onclick="filterCat('sandwichs', this)">🥖 Sandwichs</button>
+  <button class="cat-btn" onclick="filterCat('nuggets', this)">🍗 Nuggets</button>
+  <button class="cat-btn" onclick="filterCat('boissons', this)">🥤 Boissons</button>
+  <button class="cat-btn" onclick="filterCat('sauces', this)">🥫 Sauces</button>
+</nav>
+
+<!-- MAIN -->
+<main class="main-layout">
+
+  <!-- PRODUCTS GRID -->
+  <section class="products-section">
+    <div class="products-grid" id="products-grid">
+
+      <!-- MENU BIG MAC -->
+      <div class="product-card" data-cat="menus" data-id="1">
+        <div class="product-img-wrap">
+          <img src="menu-bigmac.jpg" alt="Menu Big Mac" class="product-img" loading="lazy">
+          <div class="product-badge">Menu</div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">Menu Big Mac</h3>
+          <p class="product-desc">Double steak haché, sauce spéciale, salade, cornichons, oignons, fromage</p>
+          <div class="product-footer">
+            <span class="product-price">12,25 €</span>
+            <button class="add-btn" onclick="openCustomize(1)">+ Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU DOUBLE CHEESEBURGER -->
+      <div class="product-card" data-cat="menus" data-id="2">
+        <div class="product-img-wrap">
+          <img src="menu-cheeseburger.jpg" alt="Menu Double Cheeseburger" class="product-img" loading="lazy">
+          <div class="product-badge">Menu</div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">Menu Double Cheeseburger</h3>
+          <p class="product-desc">Double steak haché, double fromage fondu, cornichons, oignons, ketchup, moutarde</p>
+          <div class="product-footer">
+            <span class="product-price">13,60 €</span>
+            <button class="add-btn" onclick="openCustomize(2)">+ Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU GOLDEN BIG MAC -->
+      <div class="product-card" data-cat="menus" data-id="3">
+        <div class="product-img-wrap">
+          <img src="menu-golden.jpg" alt="Menu Golden Big Mac" class="product-img" loading="lazy">
+          <div class="product-badge gold">Premium</div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">Menu Golden Big Mac</h3>
+          <p class="product-desc">Big Mac doré croustillant + cheeseburger offert, frites et boisson</p>
+          <div class="product-footer">
+            <span class="product-price">16,05 €</span>
+            <button class="add-btn" onclick="openCustomize(3)">+ Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU DOUBLE FILET FISH -->
+      <div class="product-card" data-cat="menus" data-id="4">
+        <div class="product-img-wrap">
+          <img src="menu-filetfish.jpg" alt="Menu Double Filet Fish" class="product-img" loading="lazy">
+          <div class="product-badge">Menu</div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">Menu Double Filet Fish</h3>
+          <p class="product-desc">Double filet de poisson pané, sauce tartare, fromage fondu</p>
+          <div class="product-footer">
+            <span class="product-price">12,75 €</span>
+            <button class="add-btn" onclick="openCustomize(4)">+ Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU NUGGETS -->
+      <div class="product-card" data-cat="menus nuggets" data-id="5">
+        <div class="product-img-wrap">
+          <div class="product-img-placeholder">🍗</div>
+          <div class="product-badge">Menu</div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">Menu Nuggets</h3>
+          <p class="product-desc">9 nuggets croustillants, frites et boisson au choix</p>
+          <div class="product-footer">
+            <span class="product-price">12,15 €</span>
+            <button class="add-btn" onclick="openCustomize(5)">+ Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="no-results" id="no-results" style="display:none">
+      <span>😕</span>
+      <p>Aucun produit trouvé</p>
+    </div>
+  </section>
+
+  <!-- CART SIDEBAR (desktop) -->
+  <aside class="cart-sidebar" id="cart-sidebar">
+    <div class="cart-header">
+      <h2>🛒 Mon Panier</h2>
+    </div>
+    <div class="cart-items" id="cart-items">
+      <div class="cart-empty" id="cart-empty">
+        <span>🍔</span>
+        <p>Votre panier est vide</p>
+        <small>Ajoutez des produits pour commander</small>
+      </div>
+    </div>
+    <div class="cart-footer" id="cart-footer" style="display:none">
+      <div class="cart-subtotal">
+        <span>Sous-total</span>
+        <span id="cart-subtotal">0,00 €</span>
+      </div>
+      <div class="cart-total-row">
+        <span>Total</span>
+        <span id="cart-total">0,00 €</span>
+      </div>
+      <button class="order-btn" onclick="openOrderForm()">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z'/%3E%3C/svg%3E" alt="WhatsApp" style="width:20px;height:20px;margin-right:8px">
+        Commander via WhatsApp
+      </button>
+    </div>
+  </aside>
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav">
+  <button class="mobile-nav-btn active" onclick="filterCat('all', this); setMobileNav(this)">
+    <span>🏠</span><small>Tout</small>
+  </button>
+  <button class="mobile-nav-btn" onclick="filterCat('menus', this); setMobileNav(this)">
+    <span>🍱</span><small>Menus</small>
+  </button>
+  <button class="mobile-nav-btn" onclick="filterCat('burgers', this); setMobileNav(this)">
+    <span>🍔</span><small>Burgers</small>
+  </button>
+  <button class="mobile-nav-btn" onclick="filterCat('nuggets', this); setMobileNav(this)">
+    <span>🍗</span><small>Nuggets</small>
+  </button>
+  <button class="mobile-nav-btn" onclick="filterCat('boissons', this); setMobileNav(this)">
+    <span>🥤</span><small>Boissons</small>
+  </button>
+</nav>
+
+<!-- FLOATING CART BUTTON (mobile) -->
+<button class="fab-cart" id="fab-cart" onclick="toggleCart()" style="display:none">
+  🛒 <span id="fab-count">0</span> · <span id="fab-total">0,00 €</span>
+</button>
+
+<!-- CART MOBILE OVERLAY -->
+<div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+<div class="cart-mobile" id="cart-mobile">
+  <div class="cart-mobile-header">
+    <h2>🛒 Mon Panier</h2>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items-mobile">
+    <div class="cart-empty">
+      <span>🍔</span>
+      <p>Votre panier est vide</p>
+    </div>
+  </div>
+  <div class="cart-footer" id="cart-footer-mobile" style="display:none">
+    <div class="cart-subtotal">
+      <span>Sous-total</span>
+      <span id="cart-subtotal-mobile">0,00 €</span>
+    </div>
+    <div class="cart-total-row">
+      <span>Total</span>
+      <span id="cart-total-mobile">0,00 €</span>
+    </div>
+    <button class="order-btn" onclick="openOrderForm()">
+      Commander via WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- CUSTOMIZE MODAL -->
+<div class="modal-overlay" id="customize-overlay" onclick="closeCustomize(event)">
+  <div class="modal" id="customize-modal">
+    <button class="modal-close" onclick="closeCustomizeBtn()">✕</button>
+    <div class="modal-product-header">
+      <h2 id="modal-product-name">Produit</h2>
+      <span class="modal-price" id="modal-product-price">0,00 €</span>
+    </div>
+
+    <div class="modal-section">
+      <h3 class="modal-section-title">🥤 Choisir une boisson</h3>
+      <div class="drink-tabs">
+        <button class="drink-tab active" onclick="switchDrinkTab('small', this)">33cl / 20cl / 50cl</button>
+        <button class="drink-tab" onclick="switchDrinkTab('large', this)">Grand format</button>
+      </div>
+      <div class="drink-options active" id="drinks-small">
+        <label class="option-row"><input type="radio" name="drink" value="Coca Cola 33cl"> Coca Cola 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Coca Zero 33cl"> Coca Zero 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Coca Cherry 33cl"> Coca Cherry 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Fuze Tea Citron Vert Menthe 33cl"> Fuze Tea Citron Vert Menthe 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Fuze Tea Pêche 33cl"> Fuze Tea Pêche 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Oasis Fraise 33cl"> Oasis Fraise 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Oasis Tropical 33cl"> Oasis Tropical 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Oasis Pomme Cassis 33cl"> Oasis Pomme Cassis 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Orangina 33cl"> Orangina 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Schweppes Agrumes 33cl"> Schweppes Agrumes 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Sprite 33cl"> Sprite 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Cristaline Gazeuse 33cl"> Cristaline Gazeuse 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Mini Tropico 20cl"> Mini Tropico 20cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Cristaline 50cl"> Cristaline 50cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Fanta Orange 33cl"> Fanta Orange 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Fanta Fruit du Dragon 33cl"> Fanta Fruit du Dragon 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Fanta Citron 33cl"> Fanta Citron 33cl</label>
+        <label class="option-row"><input type="radio" name="drink" value="Hawaï Tropical 33cl"> Hawaï Tropical 33cl</label>
+      </div>
+      <div class="drink-options" id="drinks-large">
+        <label class="option-row"><input type="radio" name="drink" value="Coca Cola 1,25L"> Coca Cola 1,25L</label>
+        <label class="option-row"><input type="radio" name="drink" value="Coca Zero 1,25L"> Coca Zero 1,25L</label>
+        <label class="option-row"><input type="radio" name="drink" value="Fuze Tea Pêche 1,25L"> Fuze Tea Pêche 1,25L</label>
+        <label class="option-row"><input type="radio" name="drink" value="Oasis Tropical 2L"> Oasis Tropical 2L</label>
+        <label class="option-row"><input type="radio" name="drink" value="Schweppes Agrumes 1,5L"> Schweppes Agrumes 1,5L</label>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h3 class="modal-section-title">🥫 Choisir une sauce</h3>
+      <div class="sauce-grid">
+        <label class="sauce-card"><input type="radio" name="sauce" value="Mayonnaise"><span>🟡 Mayonnaise</span></label>
+        <label class="sauce-card"><input type="radio" name="sauce" value="Ketchup"><span>🔴 Ketchup</span></label>
+        <label class="sauce-card"><input type="radio" name="sauce" value="Biggy"><span>🟠 Biggy</span></label>
+        <label class="sauce-card"><input type="radio" name="sauce" value="Samouraï"><span>🌶️ Samouraï</span></label>
+        <label class="sauce-card"><input type="radio" name="sauce" value="Barbecue"><span>🟤 Barbecue</span></label>
+        <label class="sauce-card"><input type="radio" name="sauce" value="Algérienne"><span>🧡 Algérienne</span></label>
+      </div>
+    </div>
+
+    <button class="modal-add-btn" onclick="addToCart()">
+      ✅ Ajouter au panier
+    </button>
+  </div>
+</div>
+
+<!-- ORDER FORM MODAL -->
+<div class="modal-overlay" id="order-overlay" onclick="closeOrderForm(event)">
+  <div class="modal" id="order-modal">
+    <button class="modal-close" onclick="closeOrderFormBtn()">✕</button>
+    <h2 class="order-title">📋 Votre commande</h2>
+    <p class="order-subtitle">Renseignez vos informations pour finaliser</p>
+
+    <div class="order-form">
+      <div class="form-group-order">
+        <label>Nom complet <span class="req">*</span></label>
+        <input type="text" id="client-name" placeholder="Votre prénom et nom" autocomplete="name">
+      </div>
+      <div class="form-group-order">
+        <label>Numéro de téléphone <span class="req">*</span></label>
+        <input type="tel" id="client-phone" placeholder="06 00 00 00 00" autocomplete="tel">
+      </div>
+    </div>
+
+    <div class="order-recap" id="order-recap"></div>
+
+    <div class="order-total-line">
+      <span>Total commande</span>
+      <span id="order-total-display">0,00 €</span>
+    </div>
+
+    <button class="whatsapp-btn" onclick="sendWhatsApp()">
+      <svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Envoyer la commande sur WhatsApp
+    </button>
+    <p class="order-hint">Vous serez redirigé vers WhatsApp avec votre commande préremplie</p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
