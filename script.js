@@ -1,6 +1,33 @@
 // ===== CONFIGURATION =====
 const WHATSAPP_NUMBER = '33749429810';
 
+// ===== WHATSAPP BUSINESS API =====
+const WA_API = {
+  phoneNumberId: '1204205212767520',
+  token: 'EAAZA3Aw68cpQBRux9f3BiWoMCG6PpSGqGrWZC7DY6wg9YwSoD3elzyMG0Ar3F9dGTC3sxA8uVVtIvfkDuD00mtkqzZCvCgyZAyyyacqHGos9ztBckgky06LEmIZBPei4QZA1D8PrgcrtH2LgkG6znLvp2aleezhZCs6mRlQ4xtSF8ipINGVRkNLgZBfldDfggPDKrwiQ0PjgUCSqS5utEvN1kvmsNRgi5fRCLghVhnNlNu2CnWQg9JstAwZDZD',
+  recipient: '33749429810',
+};
+
+async function sendViaBusinessAPI(message) {
+  const res = await fetch(
+    `https://graph.facebook.com/v19.0/${WA_API.phoneNumberId}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${WA_API.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to: WA_API.recipient,
+        type: 'text',
+        text: { body: message },
+      }),
+    }
+  );
+  return res.json();
+}
+
 // ===== PRODUCTS DATA =====
 const products = {
   1: { name: 'Menu Big Mac', price: 12.25 },
@@ -390,24 +417,60 @@ function closeOrderFormBtn() {
   document.body.style.overflow = '';
 }
 
+// ===== BUILD ORDER MESSAGE =====
+function buildOrderMessage(name, phone) {
+  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  let msg = `🛎️ Nouvelle commande !\n\n👤 Nom : ${name}\n📞 Téléphone : ${phone}\n\n🍽️ Commande :\n\n`;
+  cart.forEach(item => {
+    msg += `• ${item.qty}x ${item.name}\n  🥤 ${item.drink}\n  🥫 ${item.sauce}\n  💰 ${fmt(item.price * item.qty)}\n\n`;
+  });
+  msg += `━━━━━━━━━━━━\n💵 Total : ${fmt(total)}`;
+  return msg;
+}
+
 // ===== SEND WHATSAPP =====
-function sendWhatsApp() {
+async function sendWhatsApp() {
   const name  = document.getElementById('client-name').value.trim();
   const phone = document.getElementById('client-phone').value.trim();
-  if (!name)  { alert('Veuillez saisir votre nom.');              document.getElementById('client-name').focus();  return; }
+  if (!name)  { alert('Veuillez saisir votre nom.');                 document.getElementById('client-name').focus();  return; }
   if (!phone) { alert('Veuillez saisir votre numéro de téléphone.'); document.getElementById('client-phone').focus(); return; }
 
-  playFanfare();
-  launchConfetti();
+  const btn = document.querySelector('.whatsapp-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi en cours...';
 
-  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
-  let msg = `Bonjour,\n\nNouvelle commande :\n\nNom : ${name}\nTéléphone : ${phone}\n\nCommande :\n\n`;
-  cart.forEach(item => {
-    msg += `${item.qty}x ${item.name}\nBoisson : ${item.drink}\nSauce : ${item.sauce}\nPrix : ${fmt(item.price * item.qty)}\n\n`;
-  });
-  msg += `Total : ${fmt(total)}\n\nMerci.`;
+  const msg = buildOrderMessage(name, phone);
 
-  setTimeout(() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank'), 900);
+  try {
+    const result = await sendViaBusinessAPI(msg);
+
+    if (result.messages && result.messages[0]?.id) {
+      // Succès
+      playFanfare();
+      launchConfetti();
+      btn.textContent = '✅ Commande envoyée !';
+      btn.style.background = '#1a9e4f';
+      setTimeout(() => {
+        closeOrderFormBtn();
+        cart = [];
+        renderCart();
+        updateCartHeader();
+        btn.disabled = false;
+        btn.textContent = 'Envoyer la commande sur WhatsApp';
+        btn.style.background = '';
+      }, 2500);
+    } else {
+      throw new Error(JSON.stringify(result));
+    }
+  } catch (err) {
+    // Fallback wa.me si l'API échoue
+    console.warn('API WA échouée, fallback wa.me :', err);
+    btn.disabled = false;
+    btn.textContent = 'Envoyer la commande sur WhatsApp';
+    playFanfare();
+    launchConfetti();
+    setTimeout(() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank'), 500);
+  }
 }
 
 // ===== INIT =====
