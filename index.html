@@ -2,351 +2,240 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>The Béné diner's — Menu</title>
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Béné diner's — Bienvenue</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#ff1a1a;--red-glow:rgba(255,26,26,0.5);
+  --yellow:#ffd700;--orange:#ff6a00;
+  --bg:#07000a;
+}
+html,body{height:100%}
+body{
+  font-family:'Open Sans',sans-serif;
+  background:var(--bg);color:#f0e6d3;
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:url('bg-night.webp') center/cover no-repeat;z-index:0;
+}
+body::after{
+  content:'';position:fixed;inset:0;
+  background:rgba(7,0,10,0.82);z-index:1;
+}
+
+/* CRT scanlines */
+body::after{
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px),
+    rgba(7,0,10,0.82);
+}
+
+.page{
+  position:relative;z-index:2;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:40px 20px 60px;
+}
+
+/* LOGO */
+.logo-wrap{
+  margin-bottom:8px;
+  animation:neonFlicker 4s ease-in-out infinite;
+}
+.logo-wrap img{
+  height:90px;
+  filter:drop-shadow(0 0 16px rgba(255,100,0,0.7)) drop-shadow(0 0 40px rgba(255,26,26,0.4));
+}
+@keyframes neonFlicker{
+  0%,92%,96%,100%{opacity:1}
+  93%,95%{opacity:0.85}
+  94%{opacity:0.6}
+}
+
+/* HERO */
+.hero{text-align:center;margin-bottom:40px}
+.hero-title{
+  font-family:'Bebas Neue',cursive;
+  font-size:clamp(2rem,7vw,3.5rem);
+  color:var(--yellow);
+  text-shadow:0 0 20px rgba(255,215,0,0.6),0 0 40px rgba(255,215,0,0.3);
+  line-height:1.1;margin-bottom:12px;
+}
+.hero-sub{
+  font-size:clamp(0.9rem,2.5vw,1.05rem);
+  color:#c0a880;max-width:480px;margin:0 auto;
+  line-height:1.6;
+}
+
+/* STEPS */
+.steps-title{
+  font-family:'Bebas Neue',cursive;
+  font-size:1.4rem;color:var(--red);
+  text-shadow:0 0 10px var(--red-glow);
+  letter-spacing:1px;margin-bottom:20px;
+  text-align:center;
+}
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+  width:100%;max-width:900px;
+  margin-bottom:44px;
+}
+.step-card{
+  background:rgba(15,5,20,0.92);
+  border:1px solid rgba(255,26,26,0.2);
+  border-radius:18px;
+  padding:24px 20px;
+  text-align:center;
+  transition:transform 0.25s,box-shadow 0.25s;
+  opacity:0;transform:translateY(24px);
+}
+.step-card.visible{
+  opacity:1;transform:translateY(0);
+  transition:opacity 0.5s ease,transform 0.5s ease;
+}
+.step-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 8px 32px rgba(255,26,26,0.2);
+  border-color:rgba(255,26,26,0.4);
+}
+.step-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;
+  background:var(--red);color:#fff;
+  font-family:'Bebas Neue',cursive;font-size:1.1rem;
+  box-shadow:0 0 10px var(--red-glow);
+  margin-bottom:12px;
+}
+.step-icon{font-size:2rem;display:block;margin-bottom:10px}
+.step-name{
+  font-family:'Oswald',sans-serif;font-size:1rem;font-weight:600;
+  color:var(--yellow);margin-bottom:8px;
+}
+.step-desc{font-size:0.82rem;color:#9a8a7a;line-height:1.5}
+
+/* CTA */
+.cta-btn{
+  display:inline-flex;align-items:center;gap:12px;
+  background:var(--red);
+  border:none;border-radius:50px;
+  padding:18px 44px;
+  font-family:'Bebas Neue',cursive;font-size:1.5rem;
+  color:#fff;letter-spacing:1px;
+  text-decoration:none;
+  box-shadow:0 0 24px var(--red-glow),0 0 60px rgba(255,26,26,0.2);
+  transition:all 0.2s;
+  cursor:pointer;
+  animation:pulse 2.5s ease-in-out infinite;
+}
+.cta-btn:hover{
+  background:#ff3333;
+  transform:translateY(-3px) scale(1.03);
+  box-shadow:0 0 36px var(--red-glow),0 0 80px rgba(255,26,26,0.3);
+  animation:none;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 24px var(--red-glow),0 0 60px rgba(255,26,26,0.2)}
+  50%{box-shadow:0 0 36px var(--red-glow),0 0 80px rgba(255,26,26,0.35)}
+}
+
+/* INFO BAND */
+.info-band{
+  margin-top:40px;
+  display:flex;flex-wrap:wrap;justify-content:center;gap:12px 32px;
+  opacity:0.55;font-size:0.78rem;color:#9a8a7a;
+  text-align:center;
+}
+.info-item{display:flex;align-items:center;gap:6px}
+
+@media(max-width:500px){
+  .steps{grid-template-columns:1fr 1fr}
+  .cta-btn{padding:16px 32px;font-size:1.3rem}
+  .logo-wrap img{height:70px}
+}
+@media(max-width:360px){
+  .steps{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
+<div class="page">
 
-<!-- BACKGROUND -->
-<div class="bg-overlay"></div>
-<!-- CONFETTI + FLY DOT -->
-<div class="confetti-container" id="confetti-container"></div>
-<div class="fly-dot" id="fly-dot"></div>
-
-<!-- HEADER -->
-<header class="header">
-  <div class="header-inner">
-    <div class="logo">
-      <img src="logo-bene.webp" alt="The Béné diner's" class="logo-img">
-    </div>
-    <div class="header-search">
-      <input type="text" id="search-input" placeholder="🔍 Rechercher..." oninput="filterSearch(this.value)">
-    </div>
-    <button class="cart-btn" onclick="toggleCart()">
-      <span class="cart-icon">🛒</span>
-      <span class="cart-count" id="cart-count">0</span>
-      <span class="cart-total" id="cart-total-header">0,00 €</span>
-    </button>
+  <!-- LOGO -->
+  <div class="logo-wrap">
+    <img src="logo-bene.webp" alt="The Béné diner's">
   </div>
-</header>
 
-<!-- CATEGORIES (desktop) -->
-<nav class="categories-bar" id="categories-bar">
-  <button class="cat-btn active" onclick="filterCat('all', this)">Tout</button>
-  <button class="cat-btn" onclick="filterCat('menus', this)">🍱 Menus</button>
-  <button class="cat-btn" onclick="filterCat('boeuf', this)">🥩 Bœuf</button>
-  <button class="cat-btn" onclick="filterCat('poulet', this)">🍗 Poulet</button>
-  <button class="cat-btn" onclick="filterCat('poisson', this)">🐟 Poisson</button>
-</nav>
-
-<!-- MAIN -->
-<main class="main-layout">
-
-  <!-- PRODUCTS GRID -->
-  <section class="products-section">
-    <div class="products-grid" id="products-grid">
-
-      <!-- MENU BIG MAC -->
-      <div class="product-card" data-cat="menus boeuf" data-id="1">
-        <div class="product-img-wrap">
-          <img src="menu-bigmac.jpg" alt="Menu Big Mac" class="product-img" loading="lazy">
-          <div class="product-badge">Menu</div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-name">Menu Big Mac</h3>
-          <p class="product-desc">Double steak haché, sauce spéciale, salade, cornichons, oignons, fromage</p>
-          <div class="product-footer">
-            <span class="product-price">12,25 €</span>
-            <button class="add-btn" onclick="openCustomize(1, this)">+ Ajouter</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- MENU DOUBLE CHEESEBURGER -->
-      <div class="product-card" data-cat="menus boeuf" data-id="2">
-        <div class="product-img-wrap">
-          <img src="menu-cheeseburger.jpg" alt="Menu Double Cheeseburger" class="product-img" loading="lazy">
-          <div class="product-badge">Menu</div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-name">Menu Double Cheeseburger</h3>
-          <p class="product-desc">Double steak haché, double fromage fondu, cornichons, oignons, ketchup, moutarde</p>
-          <div class="product-footer">
-            <span class="product-price">13,60 €</span>
-            <button class="add-btn" onclick="openCustomize(2, this)">+ Ajouter</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- MENU GOLDEN BIG MAC -->
-      <div class="product-card" data-cat="menus boeuf" data-id="3">
-        <div class="product-img-wrap">
-          <img src="menu-golden.jpg" alt="Menu Golden Big Mac" class="product-img" loading="lazy">
-          <div class="product-badge gold">Premium</div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-name">Menu Golden Big Mac</h3>
-          <p class="product-desc">Big Mac doré croustillant + cheeseburger offert, frites et boisson</p>
-          <div class="product-footer">
-            <span class="product-price">16,05 €</span>
-            <button class="add-btn" onclick="openCustomize(3, this)">+ Ajouter</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- MENU DOUBLE FILET FISH -->
-      <div class="product-card" data-cat="menus poisson" data-id="4">
-        <div class="product-img-wrap">
-          <img src="menu-filetfish.jpg" alt="Menu Double Filet Fish" class="product-img" loading="lazy">
-          <div class="product-badge">Menu</div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-name">Menu Double Filet Fish</h3>
-          <p class="product-desc">Double filet de poisson pané, sauce tartare, fromage fondu</p>
-          <div class="product-footer">
-            <span class="product-price">12,75 €</span>
-            <button class="add-btn" onclick="openCustomize(4, this)">+ Ajouter</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- WINGS X10 -->
-      <div class="product-card" data-cat="menus poulet" data-id="5">
-        <div class="product-img-wrap">
-          <img src="menu-wings.jpg" alt="Wings x10" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="product-img-placeholder" style="display:none">🍗</div>
-          <div class="product-badge hot">🔥 Hot</div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-name">Wings x10</h3>
-          <p class="product-desc">10 ailes de poulet croustillantes et épicées, frites et boisson</p>
-          <div class="product-footer">
-            <span class="product-price">15,00 €</span>
-            <button class="add-btn" onclick="openCustomize(5, this)">+ Ajouter</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- LONG FISH -->
-      <div class="product-card" data-cat="menus poisson" data-id="6">
-        <div class="product-img-wrap">
-          <img src="menu-longfish.jpg" alt="Long Fish" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="product-img-placeholder" style="display:none">🐟</div>
-          <div class="product-badge new">Nouveau</div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-name">Long Fish</h3>
-          <p class="product-desc">Pain long aux céréales, filet de poisson blanc pané, sauce tartare</p>
-          <div class="product-footer">
-            <span class="product-price">14,00 €</span>
-            <button class="add-btn" onclick="openCustomize(6, this)">+ Ajouter</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- CLASSIQ CRISPY ONIONS BEEF -->
-      <div class="product-card" data-cat="menus boeuf" data-id="7">
-        <div class="product-img-wrap">
-          <img src="menu-classiq.jpg" alt="ClassiQ Crispy Onions Beef" class="product-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div class="product-img-placeholder" style="display:none">🧅</div>
-          <div class="product-badge new">Nouveau</div>
-        </div>
-        <div class="product-info">
-          <h3 class="product-name">ClassiQ Crispy Onions Beef</h3>
-          <p class="product-desc">Double steak haché bœuf, fromage fondu, oignons croustillants, sauce poivrée</p>
-          <div class="product-footer">
-            <span class="product-price">10,00 €</span>
-            <button class="add-btn" onclick="openCustomize(7, this)">+ Ajouter</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="no-results" id="no-results" style="display:none">
-      <span>😕</span>
-      <p>Aucun produit trouvé</p>
-    </div>
-  </section>
-
-  <!-- CART SIDEBAR (desktop) -->
-  <aside class="cart-sidebar" id="cart-sidebar">
-    <div class="cart-header">
-      <h2>🛒 Mon Panier</h2>
-    </div>
-    <div class="cart-items" id="cart-items">
-      <div class="cart-empty" id="cart-empty">
-        <span>🍔</span>
-        <p>Votre panier est vide</p>
-        <small>Ajoutez des produits pour commander</small>
-      </div>
-    </div>
-    <div class="cart-footer" id="cart-footer" style="display:none">
-      <div class="cart-subtotal">
-        <span>Sous-total</span>
-        <span id="cart-subtotal">0,00 €</span>
-      </div>
-      <div class="cart-total-row">
-        <span>Total</span>
-        <span id="cart-total">0,00 €</span>
-      </div>
-      <button class="order-btn" onclick="openOrderForm()">
-        🛎️ Commander
-      </button>
-    </div>
-  </aside>
-</main>
-
-<!-- MOBILE BOTTOM NAV -->
-<nav class="mobile-nav">
-  <button class="mobile-nav-btn active" onclick="filterCat('all', this); setMobileNav(this)">
-    <span>🏠</span><small>Tout</small>
-  </button>
-  <button class="mobile-nav-btn" onclick="filterCat('menus', this); setMobileNav(this)">
-    <span>🍱</span><small>Menus</small>
-  </button>
-  <button class="mobile-nav-btn" onclick="filterCat('boeuf', this); setMobileNav(this)">
-    <span>🥩</span><small>Bœuf</small>
-  </button>
-  <button class="mobile-nav-btn" onclick="filterCat('poulet', this); setMobileNav(this)">
-    <span>🍗</span><small>Poulet</small>
-  </button>
-  <button class="mobile-nav-btn" onclick="filterCat('poisson', this); setMobileNav(this)">
-    <span>🐟</span><small>Poisson</small>
-  </button>
-</nav>
-
-<!-- FLOATING CART BUTTON (mobile) -->
-<button class="fab-cart" id="fab-cart" onclick="toggleCart()" style="display:none">
-  🛒 <span id="fab-count">0</span> · <span id="fab-total">0,00 €</span>
-</button>
-
-<!-- CART MOBILE OVERLAY -->
-<div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
-<div class="cart-mobile" id="cart-mobile">
-  <div class="cart-mobile-header">
-    <h2>🛒 Mon Panier</h2>
-    <button class="cart-close" onclick="toggleCart()">✕</button>
+  <!-- HERO -->
+  <div class="hero">
+    <h1 class="hero-title">Bienvenue chez<br>The Béné diner's</h1>
+    <p class="hero-sub">Commandez en ligne en quelques clics — choisissez vos plats, personnalisez votre menu et envoyez votre commande directement au restaurant.</p>
   </div>
-  <div class="cart-items" id="cart-items-mobile">
-    <div class="cart-empty">
-      <span>🍔</span>
-      <p>Votre panier est vide</p>
+
+  <!-- HOW IT WORKS -->
+  <div class="steps-title">🍔 COMMENT ÇA MARCHE ?</div>
+  <div class="steps">
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <span class="step-icon">🍔</span>
+      <div class="step-name">Choisissez votre plat</div>
+      <div class="step-desc">Parcourez le menu et cliquez sur <strong>+ Ajouter</strong> pour le plat qui vous fait envie.</div>
     </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <span class="step-icon">🥤</span>
+      <div class="step-name">Personnalisez</div>
+      <div class="step-desc">Choisissez votre <strong>boisson</strong> (33cl, 1,25L…) et votre <strong>sauce</strong> préférée.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <span class="step-icon">🛒</span>
+      <div class="step-name">Vérifiez le panier</div>
+      <div class="step-desc">Ajoutez plusieurs articles, modifiez les <strong>quantités</strong> ou supprimez ce que vous ne voulez plus.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <span class="step-icon">🛎️</span>
+      <div class="step-name">Passez commande</div>
+      <div class="step-desc">Entrez votre <strong>nom</strong> et votre <strong>téléphone</strong>, puis envoyez — la commande arrive directement au restaurant !</div>
+    </div>
+
   </div>
-  <div class="cart-footer" id="cart-footer-mobile" style="display:none">
-    <div class="cart-subtotal">
-      <span>Sous-total</span>
-      <span id="cart-subtotal-mobile">0,00 €</span>
-    </div>
-    <div class="cart-total-row">
-      <span>Total</span>
-      <span id="cart-total-mobile">0,00 €</span>
-    </div>
-    <button class="order-btn" onclick="openOrderForm()">
-      🛎️ Commander
-    </button>
+
+  <!-- CTA -->
+  <a href="menu.html" class="cta-btn">
+    🍔 Voir le menu
+  </a>
+
+  <!-- INFO -->
+  <div class="info-band">
+    <span class="info-item">📍 Livraison & sur place</span>
+    <span class="info-item">⏱️ Préparation rapide</span>
+    <span class="info-item">🔒 Commande sécurisée</span>
   </div>
+
 </div>
 
-<!-- CUSTOMIZE MODAL -->
-<div class="modal-overlay" id="customize-overlay" onclick="closeCustomize(event)">
-  <div class="modal" id="customize-modal">
-    <button class="modal-close" onclick="closeCustomizeBtn()">✕</button>
-    <div class="modal-product-header">
-      <h2 id="modal-product-name">Produit</h2>
-      <span class="modal-price" id="modal-product-price">0,00 €</span>
-    </div>
-
-    <div class="modal-section">
-      <h3 class="modal-section-title">🥤 Choisir une boisson</h3>
-      <div class="drink-tabs">
-        <button class="drink-tab active" onclick="switchDrinkTab('small', this)">33cl / 20cl / 50cl</button>
-        <button class="drink-tab" onclick="switchDrinkTab('large', this)">Grand format</button>
-      </div>
-      <div class="drink-options active" id="drinks-small">
-        <label class="option-row"><input type="radio" name="drink" value="Coca Cola 33cl"> Coca Cola 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Coca Zero 33cl"> Coca Zero 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Coca Cherry 33cl"> Coca Cherry 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Fuze Tea Citron Vert Menthe 33cl"> Fuze Tea Citron Vert Menthe 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Fuze Tea Pêche 33cl"> Fuze Tea Pêche 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Oasis Fraise 33cl"> Oasis Fraise 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Oasis Tropical 33cl"> Oasis Tropical 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Oasis Pomme Cassis 33cl"> Oasis Pomme Cassis 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Orangina 33cl"> Orangina 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Schweppes Agrumes 33cl"> Schweppes Agrumes 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Sprite 33cl"> Sprite 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Cristaline Gazeuse 33cl"> Cristaline Gazeuse 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Mini Tropico 20cl"> Mini Tropico 20cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Cristaline 50cl"> Cristaline 50cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Fanta Orange 33cl"> Fanta Orange 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Fanta Fruit du Dragon 33cl"> Fanta Fruit du Dragon 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Fanta Citron 33cl"> Fanta Citron 33cl</label>
-        <label class="option-row"><input type="radio" name="drink" value="Hawaï Tropical 33cl"> Hawaï Tropical 33cl</label>
-      </div>
-      <div class="drink-options" id="drinks-large">
-        <label class="option-row"><input type="radio" name="drink" value="Coca Cola 1,25L"> Coca Cola 1,25L</label>
-        <label class="option-row"><input type="radio" name="drink" value="Coca Zero 1,25L"> Coca Zero 1,25L</label>
-        <label class="option-row"><input type="radio" name="drink" value="Fuze Tea Pêche 1,25L"> Fuze Tea Pêche 1,25L</label>
-        <label class="option-row"><input type="radio" name="drink" value="Oasis Tropical 2L"> Oasis Tropical 2L</label>
-        <label class="option-row"><input type="radio" name="drink" value="Schweppes Agrumes 1,5L"> Schweppes Agrumes 1,5L</label>
-      </div>
-    </div>
-
-    <div class="modal-section">
-      <h3 class="modal-section-title">🥫 Choisir une sauce</h3>
-      <div class="sauce-grid">
-        <label class="sauce-card"><input type="radio" name="sauce" value="Mayonnaise"><span>🟡 Mayonnaise</span></label>
-        <label class="sauce-card"><input type="radio" name="sauce" value="Ketchup"><span>🔴 Ketchup</span></label>
-        <label class="sauce-card"><input type="radio" name="sauce" value="Biggy"><span>🟠 Biggy</span></label>
-        <label class="sauce-card"><input type="radio" name="sauce" value="Samouraï"><span>🌶️ Samouraï</span></label>
-        <label class="sauce-card"><input type="radio" name="sauce" value="Barbecue"><span>🟤 Barbecue</span></label>
-        <label class="sauce-card"><input type="radio" name="sauce" value="Algérienne"><span>🧡 Algérienne</span></label>
-      </div>
-    </div>
-
-    <button class="modal-add-btn" onclick="addToCart()">
-      ✅ Ajouter au panier
-    </button>
-  </div>
-</div>
-
-<!-- ORDER FORM MODAL -->
-<div class="modal-overlay" id="order-overlay" onclick="closeOrderForm(event)">
-  <div class="modal" id="order-modal">
-    <button class="modal-close" onclick="closeOrderFormBtn()">✕</button>
-    <h2 class="order-title">📋 Votre commande</h2>
-    <p class="order-subtitle">Renseignez vos informations pour finaliser</p>
-
-    <div class="order-form">
-      <div class="form-group-order">
-        <label>Nom complet <span class="req">*</span></label>
-        <input type="text" id="client-name" placeholder="Votre prénom et nom" autocomplete="name">
-      </div>
-      <div class="form-group-order">
-        <label>Numéro de téléphone <span class="req">*</span></label>
-        <input type="tel" id="client-phone" placeholder="06 00 00 00 00" autocomplete="tel">
-      </div>
-    </div>
-
-    <div class="order-recap" id="order-recap"></div>
-
-    <div class="order-total-line">
-      <span>Total commande</span>
-      <span id="order-total-display">0,00 €</span>
-    </div>
-
-    <button class="whatsapp-btn" onclick="saveOrder()">
-      🛎️ Envoyer la commande
-    </button>
-    <p class="order-hint">Votre commande sera envoyée directement au restaurant</p>
-  </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="script.js"></script>
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 120);
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.step-card').forEach(c => observer.observe(c));
+</script>
 </body>
 </html>
