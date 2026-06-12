@@ -1,25 +1,20 @@
-// ===== CONFIGURATION =====
-const WHATSAPP_NUMBER = '33749429810';
-
-// ===== WHATSAPP BUSINESS API =====
-const WA_API = {
-  phoneNumberId: '1204205212767520',
-  token: 'EAAZA3Aw68cpQBRux9f3BiWoMCG6PpSGqGrWZC7DY6wg9YwSoD3elzyMG0Ar3F9dGTC3sxA8uVVtIvfkDuD00mtkqzZCvCgyZAyyyacqHGos9ztBckgky06LEmIZBPei4QZA1D8PrgcrtH2LgkG6znLvp2aleezhZCs6mRlQ4xtSF8ipINGVRkNLgZBfldDfggPDKrwiQ0PjgUCSqS5utEvN1kvmsNRgi5fRCLghVhnNlNu2CnWQg9JstAwZDZD',
-  recipient: '33749429810',
+// ===== FIREBASE CONFIG =====
+const firebaseConfig = {
+  apiKey: "VOTRE_API_KEY",
+  authDomain: "VOTRE_PROJECT.firebaseapp.com",
+  databaseURL: "https://VOTRE_PROJECT-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "VOTRE_PROJECT",
+  storageBucket: "VOTRE_PROJECT.appspot.com",
+  messagingSenderId: "VOTRE_SENDER_ID",
+  appId: "VOTRE_APP_ID"
 };
 
-async function sendViaBusinessAPI(message) {
-  const res = await fetch('https://thebenediners.amine13127lespins.workers.dev/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      to: WA_API.recipient,
-      type: 'text',
-      text: { body: message },
-    }),
-  });
-  return res.json();
+let _db = null;
+function getDB() {
+  if (_db) return _db;
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  _db = firebase.database();
+  return _db;
 }
 
 // ===== PRODUCTS DATA =====
@@ -412,19 +407,8 @@ function closeOrderFormBtn() {
   document.body.style.overflow = '';
 }
 
-// ===== BUILD ORDER MESSAGE =====
-function buildOrderMessage(name, phone) {
-  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
-  let msg = `🛎️ Nouvelle commande !\n\n👤 Nom : ${name}\n📞 Téléphone : ${phone}\n\n🍽️ Commande :\n\n`;
-  cart.forEach(item => {
-    msg += `• ${item.qty}x ${item.name}\n  🥤 ${item.drink}\n  🥫 ${item.sauce}\n  💰 ${fmt(item.price * item.qty)}\n\n`;
-  });
-  msg += `━━━━━━━━━━━━\n💵 Total : ${fmt(total)}`;
-  return msg;
-}
-
-// ===== SEND WHATSAPP =====
-async function sendWhatsApp() {
+// ===== SEND ORDER TO FIREBASE =====
+async function saveOrder() {
   const name  = document.getElementById('client-name').value.trim();
   const phone = document.getElementById('client-phone').value.trim();
   if (!name)  { alert('Veuillez saisir votre nom.');                 document.getElementById('client-name').focus();  return; }
@@ -434,34 +418,42 @@ async function sendWhatsApp() {
   btn.disabled = true;
   btn.textContent = '⏳ Envoi en cours...';
 
-  const msg = buildOrderMessage(name, phone);
+  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const order = {
+    clientName: name,
+    clientPhone: phone,
+    items: cart.map(item => ({
+      qty: item.qty,
+      name: item.name,
+      drink: item.drink,
+      sauce: item.sauce,
+      subtotal: fmt(item.price * item.qty),
+    })),
+    total: fmt(total),
+    status: 'new',
+    timestamp: Date.now(),
+    orderNumber: Date.now().toString().slice(-6),
+  };
 
   try {
-    const result = await sendViaBusinessAPI(msg);
-
-    if (!result.messages) alert('Réponse Meta: ' + JSON.stringify(result));
-    if (result.messages && result.messages[0]?.id) {
-      // Succès
-      playFanfare();
-      launchConfetti();
-      btn.textContent = '✅ Commande envoyée !';
-      btn.style.background = '#1a9e4f';
-      setTimeout(() => {
-        closeOrderFormBtn();
-        cart = [];
-        renderCart();
-        updateCartHeader();
-        btn.disabled = false;
-        btn.textContent = 'Envoyer la commande sur WhatsApp';
-        btn.style.background = '';
-      }, 2500);
-    } else {
-      throw new Error(JSON.stringify(result));
-    }
+    await getDB().ref('orders').push(order);
+    playFanfare();
+    launchConfetti();
+    btn.textContent = '✅ Commande envoyée !';
+    btn.style.background = '#1a9e4f';
+    setTimeout(() => {
+      closeOrderFormBtn();
+      cart = [];
+      renderCart();
+      updateCartHeader();
+      btn.disabled = false;
+      btn.textContent = '🛎️ Envoyer la commande';
+      btn.style.background = '';
+    }, 2500);
   } catch (err) {
     btn.disabled = false;
-    btn.textContent = 'Envoyer la commande sur WhatsApp';
-    alert('Erreur API: ' + JSON.stringify(err?.message || err));
+    btn.textContent = '🛎️ Envoyer la commande';
+    alert('Erreur : ' + (err?.message || err));
   }
 }
 
