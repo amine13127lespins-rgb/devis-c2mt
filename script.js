@@ -1,12 +1,12 @@
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
-  apiKey: "VOTRE_API_KEY",
-  authDomain: "VOTRE_PROJECT.firebaseapp.com",
-  databaseURL: "https://VOTRE_PROJECT-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "VOTRE_PROJECT",
-  storageBucket: "VOTRE_PROJECT.appspot.com",
-  messagingSenderId: "VOTRE_SENDER_ID",
-  appId: "VOTRE_APP_ID"
+  apiKey: "AIzaSyDh0f3x8Vj2u8S7-NBjVmV7KNE2RY5bLA8",
+  authDomain: "bene-diners.firebaseapp.com",
+  databaseURL: "https://bene-diners-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bene-diners",
+  storageBucket: "bene-diners.firebasestorage.app",
+  messagingSenderId: "655264478961",
+  appId: "1:655264478961:web:848148ab9f1d52951d1b50"
 };
 
 let _db = null;
