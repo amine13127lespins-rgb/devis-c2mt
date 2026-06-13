@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code — The Béné diner's</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Open Sans',sans-serif;
+  background:#07000a;color:#f0e6d3;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:30px 20px;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:url('bg-night.webp') center/cover no-repeat;z-index:0;
+}
+body::after{
+  content:'';position:fixed;inset:0;
+  background:rgba(7,0,10,0.85);z-index:1;
+}
+.page{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:24px;width:100%}
+
+/* CARD IMPRIMABLE */
+.qr-card{
+  background:#fff;
+  border-radius:24px;
+  padding:32px 28px;
+  text-align:center;
+  max-width:340px;width:100%;
+  box-shadow:0 0 60px rgba(255,26,26,0.3);
+}
+.qr-logo{height:70px;margin-bottom:16px}
+.qr-title{
+  font-family:'Bebas Neue',cursive;
+  font-size:1.5rem;color:#1a0000;
+  letter-spacing:1px;margin-bottom:4px;
+}
+.qr-sub{
+  font-size:0.78rem;color:#666;margin-bottom:20px;line-height:1.4;
+}
+#qrcode{
+  display:flex;justify-content:center;margin-bottom:20px;
+}
+#qrcode canvas, #qrcode img{border-radius:8px}
+.qr-url{
+  font-size:0.7rem;color:#999;
+  word-break:break-all;margin-bottom:16px;
+}
+.qr-instructions{
+  background:#fff5f0;border:1px solid #ffcccc;
+  border-radius:10px;padding:12px;
+  font-size:0.75rem;color:#333;
+  text-align:left;line-height:1.6;
+}
+.qr-instructions b{color:#cc0000}
+
+/* BOUTONS */
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  border:none;border-radius:50px;
+  padding:13px 28px;
+  font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:600;
+  cursor:pointer;transition:all 0.2s;text-decoration:none;
+}
+.btn-print{
+  background:#ff1a1a;color:#fff;
+  box-shadow:0 0 16px rgba(255,26,26,0.4);
+}
+.btn-print:hover{background:#ff3333;transform:translateY(-2px)}
+.btn-dl{
+  background:rgba(255,255,255,0.08);color:#f0e6d3;
+  border:1.5px solid rgba(255,255,255,0.2);
+}
+.btn-dl:hover{background:rgba(255,255,255,0.15);transform:translateY(-2px)}
+.btn-menu{
+  background:rgba(255,215,0,0.1);color:#ffd700;
+  border:1.5px solid rgba(255,215,0,0.3);
+  font-size:0.85rem;padding:10px 20px;
+}
+.btn-menu:hover{background:rgba(255,215,0,0.2)}
+
+/* PRINT */
+@media print{
+  body{background:#fff!important;padding:0}
+  body::before,body::after{display:none}
+  .btn-row,.page > *:not(.qr-card){display:none}
+  .qr-card{
+    box-shadow:none;border:2px solid #ccc;
+    margin:0 auto;border-radius:12px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- CARD IMPRIMABLE -->
+  <div class="qr-card" id="qr-card">
+    <img src="logo-bene.webp" alt="The Béné diner's" class="qr-logo">
+    <div class="qr-title">Commandez en ligne</div>
+    <div class="qr-sub">Scannez le QR code avec votre téléphone<br>et passez commande en quelques secondes</div>
+    <div id="qrcode"></div>
+    <div class="qr-url" id="qr-url"></div>
+    <div class="qr-instructions">
+      <b>📱 Comment scanner ?</b><br>
+      Ouvrez l'appareil photo de votre téléphone, pointez-le vers le code et appuyez sur le lien qui apparaît.
+    </div>
+  </div>
+
+  <!-- BOUTONS -->
+  <div class="btn-row">
+    <button class="btn btn-print" onclick="window.print()">🖨️ Imprimer</button>
+    <button class="btn btn-dl" onclick="downloadQR()">⬇️ Télécharger</button>
+    <a href="index.html" class="btn btn-menu">← Retour</a>
+  </div>
+
+</div>
+
+<script>
+const MENU_URL = 'https://amine13127lespins-rgb.github.io/devis-c2mt/';
+
+document.getElementById('qr-url').textContent = MENU_URL;
+
+const qr = new QRCode(document.getElementById('qrcode'), {
+  text: MENU_URL,
+  width: 220,
+  height: 220,
+  colorDark: '#1a0000',
+  colorLight: '#ffffff',
+  correctLevel: QRCode.CorrectLevel.H,
+});
+
+function downloadQR() {
+  setTimeout(() => {
+    const canvas = document.querySelector('#qrcode canvas');
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'qrcode-bene-diners.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }, 100);
+}
+</script>
+</body>
+</html>
