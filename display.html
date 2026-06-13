@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Béné diner's — Commandes</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#ff8c00;--orange-glow:rgba(255,140,0,0.5);
+  --green:#25d366;--green-glow:rgba(37,211,102,0.5);
+  --red:#ff1a1a;--yellow:#ffd700;
+  --bg:#05000a;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Oswald',sans-serif;
+  background:var(--bg);color:#fff;
+  display:flex;flex-direction:column;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:url('bg-night.webp') center/cover no-repeat;
+  opacity:0.15;z-index:0;
+}
+
+/* HEADER */
+.header{
+  position:relative;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,0,0,0.9);
+  border-bottom:3px solid var(--red);
+  padding:0 32px;height:80px;
+  box-shadow:0 0 30px rgba(255,26,26,0.3);
+  flex-shrink:0;
+}
+.header-logo{height:52px;filter:drop-shadow(0 0 10px rgba(255,100,0,0.7))}
+.header-title{
+  font-family:'Bebas Neue',cursive;
+  font-size:2rem;color:var(--yellow);
+  text-shadow:0 0 15px rgba(255,215,0,0.5);
+  letter-spacing:2px;
+}
+.header-right{display:flex;align-items:center;gap:20px}
+.clock{
+  font-family:'Bebas Neue',cursive;font-size:2rem;
+  color:#f0e6d3;letter-spacing:2px;
+  text-shadow:0 0 10px rgba(255,255,255,0.3);
+}
+.btn-fs{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);
+  border-radius:8px;padding:8px 14px;color:#9a8a7a;
+  font-family:'Oswald',sans-serif;font-size:0.85rem;cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-fs:hover{background:rgba(255,255,255,0.15);color:#fff}
+
+/* COLUMNS */
+.columns{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;flex:1;overflow:hidden;
+}
+.col{
+  display:flex;flex-direction:column;
+  padding:24px 28px;overflow:hidden;
+}
+.col-left{border-right:2px solid rgba(255,255,255,0.06)}
+
+.col-title{
+  font-family:'Bebas Neue',cursive;
+  font-size:clamp(1.8rem,3vw,2.8rem);
+  letter-spacing:2px;margin-bottom:20px;
+  display:flex;align-items:center;gap:14px;
+  flex-shrink:0;
+}
+.col-left .col-title{
+  color:var(--orange);
+  text-shadow:0 0 20px var(--orange-glow);
+}
+.col-right .col-title{
+  color:var(--green);
+  text-shadow:0 0 20px var(--green-glow);
+}
+.col-title-dot{
+  width:18px;height:18px;border-radius:50%;
+  animation:blink 1.4s ease-in-out infinite;
+}
+.col-left .col-title-dot{background:var(--orange);box-shadow:0 0 10px var(--orange-glow)}
+.col-right .col-title-dot{background:var(--green);box-shadow:0 0 10px var(--green-glow)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ORDERS */
+.orders-list{
+  display:flex;flex-wrap:wrap;
+  align-content:flex-start;
+  gap:14px;overflow:hidden;flex:1;
+}
+
+.order-chip{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:clamp(110px,12vw,160px);height:clamp(110px,12vw,160px);
+  border-radius:20px;
+  font-family:'Bebas Neue',cursive;
+  animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  flex-shrink:0;
+}
+@keyframes popIn{
+  from{opacity:0;transform:scale(0.5)}
+  to{opacity:1;transform:scale(1)}
+}
+.col-left .order-chip{
+  background:rgba(255,140,0,0.12);
+  border:2px solid rgba(255,140,0,0.5);
+  box-shadow:0 0 20px rgba(255,140,0,0.15);
+}
+.col-right .order-chip{
+  background:rgba(37,211,102,0.12);
+  border:2px solid rgba(37,211,102,0.5);
+  box-shadow:0 0 20px rgba(37,211,102,0.15);
+  animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275), glowPulse 2s ease-in-out infinite;
+}
+@keyframes glowPulse{
+  0%,100%{box-shadow:0 0 20px rgba(37,211,102,0.15)}
+  50%{box-shadow:0 0 40px rgba(37,211,102,0.4)}
+}
+.chip-num{
+  font-size:clamp(2.5rem,5vw,4rem);
+  line-height:1;
+}
+.col-left .chip-num{color:var(--orange);text-shadow:0 0 15px var(--orange-glow)}
+.col-right .chip-num{color:var(--green);text-shadow:0 0 15px var(--green-glow)}
+.chip-type{
+  font-size:clamp(0.6rem,1.2vw,0.85rem);
+  opacity:0.7;letter-spacing:0.5px;margin-top:4px;
+}
+
+/* EMPTY STATE */
+.empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;opacity:0.2;gap:12px;
+}
+.empty-icon{font-size:4rem}
+.empty-text{font-family:'Bebas Neue',cursive;font-size:1.4rem;letter-spacing:1px}
+
+/* FOOTER */
+.footer{
+  position:relative;z-index:2;
+  background:rgba(0,0,0,0.8);
+  border-top:1px solid rgba(255,255,255,0.06);
+  padding:10px 32px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.footer-text{
+  font-family:'Bebas Neue',cursive;font-size:1.1rem;
+  color:var(--yellow);letter-spacing:2px;
+  text-shadow:0 0 8px rgba(255,215,0,0.3);
+  animation:neonFlicker 5s ease-in-out infinite;
+}
+@keyframes neonFlicker{0%,90%,94%,100%{opacity:1}91%,93%{opacity:0.6}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <img src="logo-bene.webp" alt="The Béné diner's" class="header-logo">
+  <span class="header-title">Suivi de commandes</span>
+  <div class="header-right">
+    <div class="clock" id="clock">00:00</div>
+    <button class="btn-fs" onclick="toggleFS()">⛶ Plein écran</button>
+  </div>
+</header>
+
+<div class="columns">
+  <!-- EN COURS -->
+  <div class="col col-left">
+    <div class="col-title">
+      <div class="col-title-dot"></div>
+      En cours de préparation
+    </div>
+    <div class="orders-list" id="list-progress">
+      <div class="empty" id="empty-progress">
+        <div class="empty-icon">⏳</div>
+        <div class="empty-text">En attente de commandes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRÊT -->
+  <div class="col col-right">
+    <div class="col-title">
+      <div class="col-title-dot"></div>
+      Prêt à récupérer !
+    </div>
+    <div class="orders-list" id="list-done">
+      <div class="empty" id="empty-done">
+        <div class="empty-icon">✅</div>
+        <div class="empty-text">Aucune commande prête</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-text">🛎️ Présentez-vous au comptoir quand votre numéro apparaît à droite — Merci de votre confiance !</div>
+</footer>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDh0f3x8Vj2u8S7-NBjVmV7KNE2RY5bLA8",
+  authDomain: "bene-diners.firebaseapp.com",
+  databaseURL: "https://bene-diners-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bene-diners",
+  storageBucket: "bene-diners.firebasestorage.app",
+  messagingSenderId: "655264478961",
+  appId: "1:655264478961:web:848148ab9f1d52951d1b50"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let allOrders = {};
+
+// ===== CLOCK =====
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ===== SOUND =====
+function playReady() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[523,0],[659,0.15],[784,0.3],[1047,0.45]].forEach(([freq,t]) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + t);
+      g.gain.setValueAtTime(0.25, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.5);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime + t + 0.55);
+    });
+  } catch(e) {}
+}
+
+// ===== RENDER =====
+function renderDisplays() {
+  const progress = Object.values(allOrders).filter(o => o.status === 'progress');
+  const done = Object.values(allOrders).filter(o => o.status === 'done');
+
+  renderList('list-progress', 'empty-progress', progress, 'orange');
+  renderList('list-done', 'empty-done', done, 'green');
+}
+
+function renderList(listId, emptyId, orders, color) {
+  const list = document.getElementById(listId);
+  const empty = document.getElementById(emptyId);
+  if (orders.length === 0) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+  const existing = new Set([...list.querySelectorAll('.order-chip')].map(el => el.dataset.id));
+  const incoming = new Set(orders.map(o => o.id));
+  // Remove old
+  list.querySelectorAll('.order-chip').forEach(el => {
+    if (!incoming.has(el.dataset.id)) el.remove();
+  });
+  // Add new
+  orders.forEach(order => {
+    if (!existing.has(order.id)) {
+      const chip = document.createElement('div');
+      chip.className = 'order-chip';
+      chip.dataset.id = order.id;
+      const typeLabel = order.orderType === 'dine' ? `Table ${order.tableNumber}` : 'À emporter';
+      chip.innerHTML = `
+        <div class="chip-num">${order.orderNumber || '—'}</div>
+        <div class="chip-type">${typeLabel}</div>
+      `;
+      list.appendChild(chip);
+    }
+  });
+}
+
+// ===== FIREBASE LISTENER =====
+let prevStatuses = {};
+
+db.ref('orders').on('value', snap => {
+  const data = snap.val() || {};
+  // Detect newly done orders
+  Object.entries(data).forEach(([id, order]) => {
+    if (order.status === 'done' && prevStatuses[id] === 'progress') {
+      playReady();
+    }
+  });
+  prevStatuses = Object.fromEntries(Object.entries(data).map(([id, o]) => [id, o.status]));
+  allOrders = Object.fromEntries(
+    Object.entries(data).filter(([, o]) => o.status === 'progress' || o.status === 'done')
+  );
+  renderDisplays();
+});
+
+// ===== FULLSCREEN =====
+function toggleFS() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+}
+// Unlock audio on first click
+document.addEventListener('click', () => {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  ctx.resume();
+}, { once: true });
+</script>
+</body>
+</html>
