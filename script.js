@@ -428,8 +428,11 @@ function closeOrderFormBtn() {
 
 // ===== SEND ORDER TO FIREBASE =====
 async function getNextOrderNumber() {
-  const snap = await getDB().ref('orderCounter').transaction(n => (n || 99) + 1);
-  return snap.snapshot.val();
+  const ref = getDB().ref('orderCounter');
+  const snap = await ref.once('value');
+  const next = (snap.val() || 99) + 1;
+  await ref.set(next);
+  return next;
 }
 
 async function saveOrder() {
