@@ -447,27 +447,27 @@ async function saveOrder() {
   btn.disabled = true;
   btn.textContent = '⏳ Envoi en cours...';
 
-  const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
-  const orderNum = await getNextOrderNumber();
-  const order = {
-    clientName: name,
-    clientPhone: phone,
-    orderType: orderType,
-    tableNumber: orderType === 'dine' ? selectedTable : null,
-    items: cart.map(item => ({
-      qty: item.qty,
-      name: item.name,
-      drink: item.drink,
-      sauce: item.sauce,
-      subtotal: fmt(item.price * item.qty),
-    })),
-    total: fmt(total),
-    status: 'new',
-    timestamp: Date.now(),
-    orderNumber: String(orderNum),
-  };
-
   try {
+    const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+    const orderNum = await getNextOrderNumber();
+    const order = {
+      clientName: name,
+      clientPhone: phone,
+      orderType: orderType,
+      tableNumber: orderType === 'dine' ? selectedTable : null,
+      items: cart.map(item => ({
+        qty: item.qty,
+        name: item.name,
+        drink: item.drink,
+        sauce: item.sauce,
+        subtotal: fmt(item.price * item.qty),
+      })),
+      total: fmt(total),
+      status: 'new',
+      timestamp: Date.now(),
+      orderNumber: String(orderNum),
+    };
+
     await getDB().ref('orders').push(order);
     closeOrderFormBtn();
     cart = [];
