@@ -367,6 +367,19 @@
   </div>
 </div>
 
+<!-- ORDER CONFIRMATION OVERLAY -->
+<div id="order-confirm-overlay" style="display:none">
+  <div class="confirm-box">
+    <img src="logo-bene.webp" alt="The Béné diner's" class="confirm-logo">
+    <p class="confirm-label">VOTRE NUMÉRO DE COMMANDE</p>
+    <div class="confirm-number-wrap">
+      <div class="confirm-number" id="confirm-number">100</div>
+    </div>
+    <p class="confirm-sub">Surveillez l'écran du restaurant<br>votre numéro apparaîtra quand c'est prêt !</p>
+    <button class="confirm-btn" onclick="closeConfirm()">✓ J'ai noté mon numéro</button>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="script.js"></script>

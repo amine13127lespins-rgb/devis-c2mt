@@ -427,6 +427,11 @@ function closeOrderFormBtn() {
 }
 
 // ===== SEND ORDER TO FIREBASE =====
+async function getNextOrderNumber() {
+  const snap = await getDB().ref('orderCounter').transaction(n => (n || 99) + 1);
+  return snap.snapshot.val();
+}
+
 async function saveOrder() {
   const name  = document.getElementById('client-name').value.trim();
   const phone = document.getElementById('client-phone').value.trim();
@@ -443,6 +448,7 @@ async function saveOrder() {
   btn.textContent = '⏳ Envoi en cours...';
 
   const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+  const orderNum = await getNextOrderNumber();
   const order = {
     clientName: name,
     clientPhone: phone,
@@ -458,30 +464,115 @@ async function saveOrder() {
     total: fmt(total),
     status: 'new',
     timestamp: Date.now(),
-    orderNumber: Date.now().toString().slice(-6),
+    orderNumber: String(orderNum),
   };
 
   try {
     await getDB().ref('orders').push(order);
-    playFanfare();
-    launchConfetti();
-    btn.textContent = '✅ Commande envoyée !';
-    btn.style.background = '#1a9e4f';
-    setTimeout(() => {
-      closeOrderFormBtn();
-      cart = [];
-      renderCart();
-      updateCartHeader();
-      btn.disabled = false;
-      btn.textContent = '🛎️ Envoyer la commande';
-      btn.style.background = '';
-      selectOrderType('takeaway');
-    }, 2500);
+    closeOrderFormBtn();
+    cart = [];
+    renderCart();
+    updateCartHeader();
+    btn.disabled = false;
+    btn.textContent = '🛎️ Envoyer la commande';
+    btn.style.background = '';
+    selectOrderType('takeaway');
+    showOrderConfirmation(orderNum);
   } catch (err) {
     btn.disabled = false;
     btn.textContent = '🛎️ Envoyer la commande';
     alert('Erreur : ' + (err?.message || err));
   }
+}
+
+// ===== ORDER CONFIRMATION + FUNK MUSIC =====
+let _musicCtx = null;
+let _musicTimer = null;
+let _musicBeat = 0;
+let _musicNext = 0;
+
+const _BASS = [82,0,0,110,82,0,98,0,82,0,82,0,110,98,82,0,82,0,0,110,82,0,131,0,147,0,131,0,110,98,82,0];
+const _KICK  = new Set([0,8,16,24]);
+const _SNARE = new Set([4,12,20,28]);
+const _BPM   = 108;
+const _16TH  = 60 / _BPM / 4;
+
+function _mkNoise(ctx, dur) {
+  const sz = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, sz, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < sz; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+
+function _schedFunk(ctx, step, t) {
+  const freq = _BASS[step % 32];
+  if (freq) {
+    const osc = ctx.createOscillator(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
+    osc.type = 'sawtooth'; osc.frequency.value = freq;
+    flt.type = 'lowpass'; flt.frequency.value = 480; flt.Q.value = 6;
+    osc.connect(flt); flt.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.38, t); g.gain.exponentialRampToValueAtTime(0.001, t + _16TH * 0.85);
+    osc.start(t); osc.stop(t + _16TH);
+  }
+  if (_KICK.has(step % 32)) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination); o.type = 'sine';
+    o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.1);
+    g.gain.setValueAtTime(0.85, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    o.start(t); o.stop(t + 0.25);
+  }
+  if (_SNARE.has(step % 32)) {
+    const src = ctx.createBufferSource(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
+    src.buffer = _mkNoise(ctx, 0.12); flt.type = 'bandpass'; flt.frequency.value = 1400; flt.Q.value = 0.6;
+    src.connect(flt); flt.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    src.start(t); src.stop(t + 0.13);
+  }
+  const src2 = ctx.createBufferSource(), flt2 = ctx.createBiquadFilter(), g2 = ctx.createGain();
+  src2.buffer = _mkNoise(ctx, 0.04); flt2.type = 'highpass'; flt2.frequency.value = 8000;
+  src2.connect(flt2); flt2.connect(g2); g2.connect(ctx.destination);
+  const hVol = step % 2 === 0 ? 0.1 : 0.06;
+  g2.gain.setValueAtTime(hVol, t); g2.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+  src2.start(t); src2.stop(t + 0.04);
+}
+
+function _musicTick() {
+  if (!_musicCtx) return;
+  while (_musicNext < _musicCtx.currentTime + 0.12) {
+    _schedFunk(_musicCtx, _musicBeat, _musicNext);
+    _musicNext += _16TH;
+    _musicBeat++;
+  }
+}
+function startFunk() {
+  if (_musicCtx) return;
+  _musicCtx = new (window.AudioContext || window.webkitAudioContext)();
+  _musicNext = _musicCtx.currentTime + 0.1;
+  _musicBeat = 0;
+  _musicTick();
+  _musicTimer = setInterval(_musicTick, 25);
+}
+function stopFunk() {
+  clearInterval(_musicTimer); _musicTimer = null;
+  if (_musicCtx) { _musicCtx.close(); _musicCtx = null; }
+}
+
+function showOrderConfirmation(num) {
+  const el = document.getElementById('confirm-number');
+  if (el) el.textContent = num;
+  const ov = document.getElementById('order-confirm-overlay');
+  if (ov) ov.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  startFunk();
+}
+function closeConfirm() {
+  stopFunk();
+  const ov = document.getElementById('order-confirm-overlay');
+  if (ov) ov.style.display = 'none';
+  document.body.style.overflow = '';
+  launchConfetti();
+  playFanfare();
 }
 
 // ===== INIT =====
