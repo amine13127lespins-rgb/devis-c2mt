@@ -320,6 +320,28 @@
     <h2 class="order-title">📋 Votre commande</h2>
     <p class="order-subtitle">Renseignez vos informations pour finaliser</p>
 
+    <!-- ORDER TYPE -->
+    <div class="order-type-section">
+      <div class="order-type-btns">
+        <button class="order-type-btn active" id="btn-takeaway" onclick="selectOrderType('takeaway')">
+          🚶 À emporter
+        </button>
+        <button class="order-type-btn" id="btn-dine" onclick="selectOrderType('dine')">
+          🍽️ Sur place
+        </button>
+      </div>
+      <div class="table-select" id="table-select" style="display:none">
+        <div class="table-label">Numéro de table</div>
+        <div class="table-btns">
+          <button class="table-btn" onclick="selectTable(1)">1</button>
+          <button class="table-btn" onclick="selectTable(2)">2</button>
+          <button class="table-btn" onclick="selectTable(3)">3</button>
+          <button class="table-btn" onclick="selectTable(4)">4</button>
+          <button class="table-btn" onclick="selectTable(5)">5</button>
+        </div>
+      </div>
+    </div>
+
     <div class="order-form">
       <div class="form-group-order">
         <label>Nom complet <span class="req">*</span></label>

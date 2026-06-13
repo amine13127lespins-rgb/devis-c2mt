@@ -38,6 +38,25 @@ function fmt(n) {
   return n.toFixed(2).replace('.', ',') + ' €';
 }
 
+// ===== ORDER TYPE =====
+let orderType = 'takeaway';
+let selectedTable = null;
+
+function selectOrderType(type) {
+  orderType = type;
+  document.getElementById('btn-takeaway').classList.toggle('active', type === 'takeaway');
+  document.getElementById('btn-dine').classList.toggle('active', type === 'dine');
+  const ts = document.getElementById('table-select');
+  if (ts) ts.style.display = type === 'dine' ? 'block' : 'none';
+  if (type === 'takeaway') { selectedTable = null; document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('active')); }
+}
+
+function selectTable(n) {
+  selectedTable = n;
+  document.querySelectorAll('.table-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === n));
+  playBlip();
+}
+
 // ===== SOUNDS (Web Audio API) =====
 function getAudioCtx() {
   if (!window._ac) window._ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -414,6 +433,11 @@ async function saveOrder() {
   if (!name)  { alert('Veuillez saisir votre nom.');                 document.getElementById('client-name').focus();  return; }
   if (!phone) { alert('Veuillez saisir votre numéro de téléphone.'); document.getElementById('client-phone').focus(); return; }
 
+  if (orderType === 'dine' && !selectedTable) {
+    alert('Veuillez sélectionner votre numéro de table.');
+    return;
+  }
+
   const btn = document.querySelector('.whatsapp-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Envoi en cours...';
@@ -422,6 +446,8 @@ async function saveOrder() {
   const order = {
     clientName: name,
     clientPhone: phone,
+    orderType: orderType,
+    tableNumber: orderType === 'dine' ? selectedTable : null,
     items: cart.map(item => ({
       qty: item.qty,
       name: item.name,
@@ -449,6 +475,7 @@ async function saveOrder() {
       btn.disabled = false;
       btn.textContent = '🛎️ Envoyer la commande';
       btn.style.background = '';
+      selectOrderType('takeaway');
     }, 2500);
   } catch (err) {
     btn.disabled = false;

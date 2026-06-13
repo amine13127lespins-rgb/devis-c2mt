@@ -357,6 +357,11 @@ function renderOrders() {
         <div class="order-client">
           <div class="name">👤 ${order.clientName}</div>
           <div class="phone">📞 ${order.clientPhone}</div>
+          <div class="phone" style="margin-top:4px">
+            ${order.orderType === 'dine'
+              ? `🍽️ <strong style="color:#ffd700">Sur place — Table ${order.tableNumber}</strong>`
+              : `🚶 À emporter`}
+          </div>
         </div>
         <div class="order-items">
           ${items.map(item => `
