@@ -41,14 +41,27 @@ function fmt(n) {
 // ===== ORDER TYPE =====
 let orderType = 'takeaway';
 let selectedTable = null;
+let selectedAddress = '';
+let _banTimer = null;
 
 function selectOrderType(type) {
   orderType = type;
   document.getElementById('btn-takeaway').classList.toggle('active', type === 'takeaway');
   document.getElementById('btn-dine').classList.toggle('active', type === 'dine');
+  const btnDel = document.getElementById('btn-delivery');
+  if (btnDel) btnDel.classList.toggle('active', type === 'delivery');
   const ts = document.getElementById('table-select');
   if (ts) ts.style.display = type === 'dine' ? 'block' : 'none';
-  if (type === 'takeaway') { selectedTable = null; document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('active')); }
+  const ds = document.getElementById('delivery-section');
+  if (ds) ds.style.display = type === 'delivery' ? 'block' : 'none';
+  if (type !== 'dine') { selectedTable = null; document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('active')); }
+  if (type !== 'delivery') {
+    selectedAddress = '';
+    const inp = document.getElementById('delivery-address-input');
+    if (inp) inp.value = '';
+    closeBanSuggestions();
+  }
+  playBlip();
 }
 
 function selectTable(n) {
@@ -56,6 +69,56 @@ function selectTable(n) {
   document.querySelectorAll('.table-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === n));
   playBlip();
 }
+
+// ===== API ADRESSE BAN (data.gouv.fr) =====
+function onAddressInput(val) {
+  selectedAddress = '';
+  clearTimeout(_banTimer);
+  if (val.trim().length < 3) { closeBanSuggestions(); return; }
+  _banTimer = setTimeout(() => fetchBanSuggestions(val.trim()), 280);
+}
+
+async function fetchBanSuggestions(query) {
+  const url = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&autocomplete=1`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+    renderBanSuggestions(data.features || []);
+  } catch (e) {
+    closeBanSuggestions();
+  }
+}
+
+function renderBanSuggestions(features) {
+  const list = document.getElementById('ban-suggestions');
+  if (!list) return;
+  if (!features.length) { closeBanSuggestions(); return; }
+  list.innerHTML = features.map((f, i) => {
+    const label = f.properties.label;
+    return `<li class="ban-suggestion-item" onclick="selectBanAddress('${label.replace(/'/g,"&#39;")}')">
+      <span class="ban-icon">📍</span> ${label}
+    </li>`;
+  }).join('');
+  list.style.display = 'block';
+}
+
+function selectBanAddress(label) {
+  selectedAddress = label;
+  const inp = document.getElementById('delivery-address-input');
+  if (inp) inp.value = label;
+  closeBanSuggestions();
+  playBlip();
+}
+
+function closeBanSuggestions() {
+  const list = document.getElementById('ban-suggestions');
+  if (list) { list.style.display = 'none'; list.innerHTML = ''; }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.ban-autocomplete-wrap')) closeBanSuggestions();
+});
 
 // ===== SOUNDS (Web Audio API) =====
 function getAudioCtx() {
@@ -445,6 +508,11 @@ async function saveOrder() {
     alert('Veuillez sélectionner votre numéro de table.');
     return;
   }
+  if (orderType === 'delivery' && !selectedAddress) {
+    alert('Veuillez sélectionner une adresse de livraison.');
+    document.getElementById('delivery-address-input')?.focus();
+    return;
+  }
 
   const btn = document.querySelector('.whatsapp-btn');
   btn.disabled = true;
@@ -458,6 +526,7 @@ async function saveOrder() {
       clientPhone: phone,
       orderType: orderType,
       tableNumber: orderType === 'dine' ? selectedTable : null,
+      deliveryAddress: orderType === 'delivery' ? selectedAddress : null,
       items: cart.map(item => ({
         qty: item.qty,
         name: item.name,
@@ -479,6 +548,7 @@ async function saveOrder() {
     btn.disabled = false;
     btn.textContent = '🛎️ Envoyer la commande';
     btn.style.background = '';
+    selectedAddress = '';
     selectOrderType('takeaway');
     showOrderConfirmation(orderNum);
   } catch (err) {
