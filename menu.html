@@ -329,9 +329,6 @@
         <button class="order-type-btn" id="btn-dine" onclick="selectOrderType('dine')">
           🍽️ Sur place
         </button>
-        <button class="order-type-btn" id="btn-delivery" onclick="selectOrderType('delivery')">
-          🚚 Livraison
-        </button>
       </div>
       <div class="table-select" id="table-select" style="display:none">
         <div class="table-label">Numéro de table</div>
@@ -341,21 +338,6 @@
           <button class="table-btn" onclick="selectTable(3)">3</button>
           <button class="table-btn" onclick="selectTable(4)">4</button>
           <button class="table-btn" onclick="selectTable(5)">5</button>
-        </div>
-      </div>
-      <div class="delivery-section" id="delivery-section" style="display:none">
-        <div class="delivery-label">Adresse de livraison <span class="req">*</span></div>
-        <div class="ban-autocomplete-wrap">
-          <input type="text" id="delivery-address-input"
-                 placeholder="Ex: 12 rue de la Paix, Paris"
-                 autocomplete="off"
-                 oninput="onAddressInput(this.value)"
-                 onfocus="onAddressInput(this.value)">
-          <div class="ban-badge">
-            <img src="https://www.data.gouv.fr/favicon.ico" alt="" width="12" height="12">
-            data.gouv.fr
-          </div>
-          <ul class="ban-suggestions" id="ban-suggestions" style="display:none"></ul>
         </div>
       </div>
     </div>

@@ -360,8 +360,6 @@ function renderOrders() {
           <div class="phone" style="margin-top:4px">
             ${order.orderType === 'dine'
               ? `🍽️ <strong style="color:#ffd700">Sur place — Table ${order.tableNumber}</strong>`
-              : order.orderType === 'delivery'
-              ? `🚚 <strong style="color:#00c8ff">Livraison — ${order.deliveryAddress || '—'}</strong>`
               : `🚶 À emporter`}
           </div>
         </div>
