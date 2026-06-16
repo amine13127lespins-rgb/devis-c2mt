@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:recherche-entreprises.api.gouv.fr)",
+      "WebFetch(domain:api-adresse.data.gouv.fr)",
+      "WebFetch(domain:data.gouv.fr)",
+      "WebFetch(domain:entreprise.data.gouv.fr)"
+    ]
+  }
+}
