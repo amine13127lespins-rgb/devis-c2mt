@@ -5,8 +5,9 @@ import { stadiums } from '@/data/stadiums'
 
 export const metadata: Metadata = {
   title: 'Stades Coupe du Monde 2026 – USA, Canada, Mexique',
-  description: 'Présentation des 16 stades de la Coupe du Monde 2026 : MetLife Stadium (finale), Rose Bowl, Estadio Azteca, BC Place... Capacités, villes et matchs joués.',
+  description: 'Les 16 stades de la Coupe du Monde 2026 aux États-Unis, Canada et Mexique – capacités, villes et matchs programmés dans chaque enceinte de la FIFA World Cup 2026.',
   keywords: ['stades Coupe du Monde 2026', 'MetLife Stadium', 'Rose Bowl', 'Estadio Azteca', 'stades FIFA 2026'],
+  alternates: { canonical: '/stades' },
 }
 
 export default function StadesPage() {

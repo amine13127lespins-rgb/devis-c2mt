@@ -5,8 +5,9 @@ import { articles, ARTICLE_CATEGORIES } from '@/data/articles'
 
 export const metadata: Metadata = {
   title: 'Blog Coupe du Monde 2026 – Guides, pronostics et actualités',
-  description: 'Articles, guides et pronostics sur la Coupe du Monde 2026 : calendrier France, horaires Maroc, comment regarder le Mondial, analyses et prédictions.',
+  description: 'Actualités, analyses et pronostics Coupe du Monde 2026 – articles SEO sur les équipes, groupes, stades et favoris de la FIFA World Cup 2026.',
   keywords: ['blog football', 'articles Coupe du Monde 2026', 'pronostics Mondial', 'guides FIFA 2026', 'France Mondial 2026'],
+  alternates: { canonical: '/blog' },
 }
 
 export default function BlogPage() {

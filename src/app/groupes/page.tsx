@@ -5,12 +5,32 @@ import { groups } from '@/data/groups'
 
 export const metadata: Metadata = {
   title: 'Groupes et Classements Coupe du Monde 2026 – Groupes A à L',
-  description: 'Classements complets des groupes A à L de la Coupe du Monde 2026 : points, buts marqués, différence de buts et statut de qualification des 48 équipes.',
+  description: 'Classements des 12 groupes de la Coupe du Monde 2026 – points, buts, différence de buts et équipes qualifiées pour les huitièmes de finale FIFA World Cup 2026.',
   keywords: ['groupes Coupe du Monde 2026', 'classement Mondial 2026', 'groupe A', 'groupe B', 'groupe France', 'qualification Mondial'],
+  alternates: { canonical: '/groupes' },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SportsEvent',
+  name: 'FIFA Coupe du Monde 2026',
+  description: '48 équipes, 12 groupes, 104 matchs dans 3 pays',
+  sport: 'Football',
+  startDate: '2026-06-11',
+  endDate: '2026-07-19',
+  location: {
+    '@type': 'Place',
+    name: 'États-Unis, Canada, Mexique',
+  },
 }
 
 export default function GroupesPage() {
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     <div className="max-w-7xl mx-auto px-4 py-10">
       <div className="mb-10">
         <div className="text-brand-gold font-semibold text-sm uppercase tracking-widest mb-2">📊 Phase de groupes</div>
@@ -69,5 +89,6 @@ export default function GroupesPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

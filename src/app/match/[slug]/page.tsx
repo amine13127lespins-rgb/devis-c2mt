@@ -19,6 +19,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${match.homeTeamName} vs ${match.awayTeamName} ${score} – Coupe du Monde 2026`,
     description: `${match.homeTeamName} vs ${match.awayTeamName} – ${match.round}, ${match.date.split('-').reverse().join('/')} à ${match.time} au ${match.stadiumName}. Score, résumé et statistiques.`,
     keywords: [match.homeTeamName, match.awayTeamName, 'Coupe du Monde 2026', match.round, 'résultat', 'score'],
+    alternates: { canonical: `/match/${params.slug}` },
+    openGraph: {
+      type: 'website',
+      locale: 'fr_FR',
+      title: `${match.homeTeamName} vs ${match.awayTeamName} ${score} – Coupe du Monde 2026`,
+      description: `${match.homeTeamName} vs ${match.awayTeamName} – ${match.round}, ${match.date.split('-').reverse().join('/')} à ${match.time} au ${match.stadiumName}. Score, résumé et statistiques.`,
+    },
   }
 }
 

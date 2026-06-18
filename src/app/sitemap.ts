@@ -15,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/live`,   lastModified: now, changeFrequency: 'always',  priority: 0.9 },
     { url: `${BASE_URL}/resultats`, lastModified: now, changeFrequency: 'hourly', priority: 0.9 },
     { url: `${BASE_URL}/calendrier`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${BASE_URL}/groupes`, lastModified: now, changeFrequency: 'hourly', priority: 0.8 },
+    { url: `${BASE_URL}/groupes`, lastModified: now, changeFrequency: 'hourly', priority: 0.9 },
     { url: `${BASE_URL}/equipes`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/stades`,  lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${BASE_URL}/blog`,    lastModified: now, changeFrequency: 'daily',  priority: 0.8 },
@@ -28,7 +28,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${BASE_URL}/equipes/${team.id}`,
     lastModified: now,
     changeFrequency: 'daily',
-    priority: 0.7,
+    priority: 0.8,
   }))
 
   // Pages stades
@@ -52,7 +52,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${BASE_URL}/match/${match.homeTeam}-vs-${match.awayTeam}`,
     lastModified: now,
     changeFrequency: match.status === 'live' ? 'always' : 'daily',
-    priority: match.status === 'live' ? 0.9 : 0.6,
+    priority: match.status === 'live' ? 0.9 : 0.8,
   }))
 
   return [...staticPages, ...teamPages, ...stadiumPages, ...articlePages, ...matchPages]

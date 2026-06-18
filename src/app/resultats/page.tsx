@@ -5,8 +5,9 @@ import { matches } from '@/data/matches'
 
 export const metadata: Metadata = {
   title: 'Résultats Coupe du Monde 2026 – Scores en direct',
-  description: 'Tous les résultats et scores de la Coupe du Monde 2026 en temps réel. Phase de groupes, huitièmes, quarts, demi-finales et finale. Mise à jour automatique.',
+  description: 'Résultats et scores en direct de la Coupe du Monde 2026 – tableau des résultats par groupe, matchs en cours et matchs à venir de la FIFA World Cup 2026.',
   keywords: ['résultats Coupe du Monde 2026', 'scores football', 'résultats Mondial 2026', 'live score FIFA 2026'],
+  alternates: { canonical: '/resultats' },
 }
 
 export default function ResultatsPage() {

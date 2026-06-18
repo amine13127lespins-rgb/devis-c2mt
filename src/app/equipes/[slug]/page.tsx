@@ -20,6 +20,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${team.name} – Coupe du Monde 2026 : effectif, matchs et résultats`,
     description: `Tout sur ${team.name} à la Coupe du Monde 2026 : groupe ${team.group}, joueurs clés, coach ${team.coach}, calendrier et résultats des matchs.`,
     keywords: [team.name, `${team.name} Mondial 2026`, `${team.name} Coupe du Monde`, team.shortName],
+    alternates: { canonical: `/equipes/${params.slug}` },
+    openGraph: {
+      type: 'website',
+      locale: 'fr_FR',
+      title: `${team.name} – Coupe du Monde 2026`,
+      description: `Tout sur ${team.name} à la Coupe du Monde 2026 : groupe ${team.group}, joueurs clés, coach ${team.coach}, calendrier et résultats des matchs.`,
+    },
   }
 }
 

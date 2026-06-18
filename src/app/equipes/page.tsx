@@ -5,8 +5,9 @@ import { teams, GROUPS } from '@/data/teams'
 
 export const metadata: Metadata = {
   title: 'Équipes Coupe du Monde 2026 – Les 48 nations participantes',
-  description: 'Découvrez les 48 équipes de la Coupe du Monde 2026 : joueurs clés, sélectionneurs, groupes et classement FIFA. France, Brésil, Argentine, Maroc et toutes les nations.',
+  description: 'Toutes les équipes qualifiées pour la Coupe du Monde 2026 – compositions, effectifs, classements FIFA et statistiques des 48 nations participantes.',
   keywords: ['équipes Coupe du Monde 2026', '48 nations Mondial 2026', 'France', 'Brésil', 'Argentine', 'Maroc', 'sélections FIFA'],
+  alternates: { canonical: '/equipes' },
 }
 
 export default function EquipesPage() {

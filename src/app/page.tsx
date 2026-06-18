@@ -10,6 +10,7 @@ import { getFeaturedArticles } from '@/data/articles'
 export const metadata: Metadata = {
   title: 'Coupe du Monde 2026 : Calendrier, Résultats, Groupes et Actualités',
   description: 'MondialFoot 2026 – Suivez la Coupe du Monde 2026 en direct : calendrier des matchs, résultats, classements des groupes A à L, équipes et dernières actualités football.',
+  alternates: { canonical: '/' },
 }
 
 // Schema.org JSON-LD pour le SEO

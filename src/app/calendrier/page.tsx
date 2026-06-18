@@ -6,8 +6,9 @@ import { matches } from '@/data/matches'
 
 export const metadata: Metadata = {
   title: 'Calendrier Coupe du Monde 2026 – Tous les matchs par date',
-  description: 'Calendrier complet de la Coupe du Monde 2026 : tous les matchs par date avec horaires en heure française, stades, groupes et filtres par équipe.',
+  description: 'Calendrier complet des matchs de la Coupe du Monde 2026 – dates, horaires en heure française, stades et chaînes TV de tous les matchs de la FIFA World Cup 2026.',
   keywords: ['calendrier Coupe du Monde 2026', 'matchs Mondial 2026', 'programme football 2026', 'dates matchs FIFA 2026'],
+  alternates: { canonical: '/calendrier' },
 }
 
 // Groupe les matchs par date
@@ -35,7 +36,38 @@ export default function CalendrierPage() {
   const finishedCount = matches.filter(m => m.status === 'finished').length
   const upcomingCount = matches.filter(m => m.status === 'upcoming').length
 
+  const upcomingMatches = matches.filter(m => m.status === 'upcoming').slice(0, 5)
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Calendrier Coupe du Monde 2026',
+    description: 'Liste des matchs de la FIFA World Cup 2026',
+    numberOfItems: upcomingMatches.length,
+    itemListElement: upcomingMatches.map((m, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'SportsEvent',
+        name: `${m.homeTeamName} vs ${m.awayTeamName}`,
+        startDate: `${m.date}T${m.time.replace('h', ':').padEnd(5, '0')}:00`,
+        location: {
+          '@type': 'StadiumOrArena',
+          name: m.stadiumName,
+          address: { '@type': 'PostalAddress', addressLocality: m.stadiumCity },
+        },
+        homeTeam: { '@type': 'SportsTeam', name: m.homeTeamName },
+        awayTeam: { '@type': 'SportsTeam', name: m.awayTeamName },
+        sport: 'Football',
+      },
+    })),
+  }
+
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     <div className="max-w-7xl mx-auto px-4 py-10">
       {/* En-tête */}
       <div className="mb-10">
@@ -117,5 +149,6 @@ export default function CalendrierPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

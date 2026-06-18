@@ -5,8 +5,9 @@ import LiveDashboard from '@/components/LiveDashboard'
 
 export const metadata: Metadata = {
   title: 'Matchs en direct – Coupe du Monde 2026 Live',
-  description: 'Suivez les matchs de la Coupe du Monde 2026 en direct : scores live, buts, statistiques et programme de la journée. Mise à jour toutes les 30 secondes.',
+  description: 'Scores en direct de la Coupe du Monde 2026 – suivez tous les matchs en temps réel avec mise à jour automatique toutes les 30 secondes FIFA World Cup 2026.',
   keywords: ['live Coupe du Monde 2026', 'matchs en direct Mondial', 'score live FIFA 2026', 'résultats temps réel'],
+  alternates: { canonical: '/live' },
 }
 
 export default function LivePage() {

@@ -1,21 +1,21 @@
-import { MetadataRoute } from 'next'
-
-const BASE_URL = 'https://mondialfoot2026.fr'
+import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = process.env.SITE_URL || 'https://mondialfoot2026.vercel.app'
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/_next/', '/admin/'],
+        disallow: ['/api/', '/cgu', '/confidentialite'],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
+        disallow: ['/api/'],
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
-    host: BASE_URL,
+    sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   }
 }

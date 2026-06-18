@@ -5,19 +5,23 @@ import Footer from '@/components/Footer'
 import CookieBanner from '@/components/CookieBanner'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://mondialfoot2026.fr'),
+  metadataBase: new URL(process.env.SITE_URL || 'https://mondialfoot2026.vercel.app'),
   title: {
     default: 'MondialFoot 2026 – Calendrier, Résultats, Groupes Coupe du Monde',
     template: '%s | MondialFoot 2026',
   },
   description: 'Site officieux de référence pour la Coupe du Monde 2026 : calendrier complet, résultats en direct, classements des groupes, équipes, stades et actualités.',
   keywords: [
-    'Coupe du Monde 2026', 'FIFA World Cup 2026', 'calendrier Coupe du Monde',
-    'résultats football', 'groupes Coupe du Monde', 'équipes Mondial 2026',
-    'France Coupe du Monde', 'Maroc Mondial', 'matchs en direct',
+    'Coupe du Monde 2026', 'FIFA World Cup 2026', 'mondialfoot',
+    'calendrier coupe du monde 2026', 'résultats coupe du monde 2026',
+    'groupes coupe du monde 2026', 'équipes coupe du monde 2026',
+    'scores en direct', 'matchs 2026',
+    'France Coupe du Monde', 'Maroc Mondial',
   ],
   authors: [{ name: 'MondialFoot 2026' }],
   creator: 'MondialFoot 2026',
+  publisher: 'MondialFoot 2026',
+  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
