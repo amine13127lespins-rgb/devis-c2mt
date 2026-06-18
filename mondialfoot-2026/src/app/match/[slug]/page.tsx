@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import AdBanner from '@/components/AdBanner'
+import MatchDetailClient from '@/components/match/MatchDetailClient'
 import { matches } from '@/data/matches'
 
 interface Props { params: { slug: string } }
@@ -164,8 +165,18 @@ export default function MatchDetailPage({ params }: Props) {
 
         <AdBanner slot={`match-${match.id}`} format="horizontal" className="mb-8" />
 
+        {/* Stats / Timeline / Compositions / Cotes */}
+        <MatchDetailClient
+          matchId={`${match.homeTeam}-vs-${match.awayTeam}`}
+          homeTeamName={match.homeTeamName}
+          awayTeamName={match.awayTeamName}
+          homeTeamFlag={match.homeTeamFlag}
+          awayTeamFlag={match.awayTeamFlag}
+          isLive={isLive}
+        />
+
         {/* Stade */}
-        <div className="card p-5 mb-8">
+        <div className="card p-5 mt-8">
           <h2 className="font-bold text-white mb-3">Stade</h2>
           <div className="flex items-center justify-between">
             <div>
@@ -179,7 +190,7 @@ export default function MatchDetailPage({ params }: Props) {
         </div>
 
         {/* Retour */}
-        <div className="flex gap-4">
+        <div className="flex gap-4 mt-8">
           <Link href="/resultats" className="btn-outline text-sm py-2 px-5">← Retour résultats</Link>
           <Link href="/calendrier" className="btn-outline text-sm py-2 px-5">📅 Calendrier</Link>
         </div>

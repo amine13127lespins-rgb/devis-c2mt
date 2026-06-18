@@ -1,6 +1,6 @@
 // ============================================================
 //  API FOOTBALL – api-football-v1.p.rapidapi.com
-//  Inscrivez-vous sur https://rapidapi.com/api-sports/api/api-football
+//  Inscrivez-vous : https://rapidapi.com/api-sports/api/api-football
 //  Ajoutez dans .env.local :
 //    API_FOOTBALL_KEY=votre_clé_rapidapi
 // ============================================================
@@ -8,11 +8,9 @@
 const API_HOST = 'api-football-v1.p.rapidapi.com'
 const API_BASE = `https://${API_HOST}/v3`
 
-// ID de la Coupe du Monde dans Api-Football
-const WC_LEAGUE_ID = 1
+const WC_LEAGUE_ID = 1     // Coupe du Monde dans Api-Football
 const WC_SEASON    = 2026
 
-// Headers communs
 function getHeaders(): HeadersInit {
   const key = process.env.API_FOOTBALL_KEY
   if (!key) throw new Error('API_FOOTBALL_KEY manquante dans .env.local')
@@ -22,51 +20,113 @@ function getHeaders(): HeadersInit {
   }
 }
 
-// ── TYPES RETOURNÉS PAR L'API ────────────────────────────────
+export function hasApiKey(): boolean {
+  return Boolean(process.env.API_FOOTBALL_KEY)
+}
 
+// ────────────────────────────────────────────────────────────
+//  TYPES – Fixtures
+// ────────────────────────────────────────────────────────────
 export interface ApiFixture {
   fixture: {
     id: number
-    date: string            // ISO 8601
-    status: {
-      short: string         // 'NS' | '1H' | 'HT' | '2H' | 'FT' | 'AET' | 'PEN'
-      elapsed: number | null
-    }
+    date: string
+    status: { short: string; elapsed: number | null }
     venue: { name: string; city: string }
   }
-  league: {
-    round: string           // ex: "Group Stage - 2"
-  }
+  league: { round: string }
   teams: {
     home: { id: number; name: string; logo: string; winner: boolean | null }
     away: { id: number; name: string; logo: string; winner: boolean | null }
   }
-  goals: {
-    home: number | null
-    away: number | null
-  }
+  goals: { home: number | null; away: number | null }
   score: {
-    halftime:   { home: number | null; away: number | null }
-    fulltime:   { home: number | null; away: number | null }
-    extratime:  { home: number | null; away: number | null }
-    penalty:    { home: number | null; away: number | null }
+    halftime:  { home: number | null; away: number | null }
+    fulltime:  { home: number | null; away: number | null }
+    extratime: { home: number | null; away: number | null }
+    penalty:   { home: number | null; away: number | null }
   }
 }
 
-export interface ApiFixturesResponse {
-  response: ApiFixture[]
-  errors: Record<string, string>
-  results: number
+// ────────────────────────────────────────────────────────────
+//  TYPES – Événements (buts, cartons, remplacements)
+// ────────────────────────────────────────────────────────────
+export interface ApiEvent {
+  time:   { elapsed: number; extra: number | null }
+  team:   { id: number; name: string; logo: string }
+  player: { id: number; name: string }
+  assist: { id: number | null; name: string | null }
+  type:   'Goal' | 'Card' | 'subst' | 'Var'
+  detail: string   // ex: "Normal Goal", "Yellow Card", "Red Card", "Penalty"
+  comments: string | null
 }
 
-// ── Traduit le status Api-Football en statut interne ─────────
-export function translateStatus(short: string): 'live' | 'finished' | 'upcoming' {
-  if (['1H', 'HT', '2H', 'ET', 'BT', 'P', 'INT', 'LIVE'].includes(short)) return 'live'
-  if (['FT', 'AET', 'PEN'].includes(short)) return 'finished'
+// ────────────────────────────────────────────────────────────
+//  TYPES – Statistiques
+// ────────────────────────────────────────────────────────────
+export interface ApiStatEntry {
+  type:  string   // "Ball Possession", "Total Shots", "Shots on Goal"…
+  value: string | number | null
+}
+
+export interface ApiTeamStats {
+  team:       { id: number; name: string; logo: string }
+  statistics: ApiStatEntry[]
+}
+
+// ────────────────────────────────────────────────────────────
+//  TYPES – Compositions
+// ────────────────────────────────────────────────────────────
+export interface ApiPlayer {
+  id:     number
+  name:   string
+  number: number
+  pos:    string  // 'G' | 'D' | 'M' | 'F'
+  grid:   string | null  // ex: "1:1" (colonne:ligne pour la grille)
+}
+
+export interface ApiTeamLineup {
+  team:        { id: number; name: string; logo: string }
+  coach:       { id: number; name: string; photo: string }
+  formation:   string     // ex: "4-3-3"
+  startXI:     Array<{ player: ApiPlayer }>
+  substitutes: Array<{ player: ApiPlayer }>
+}
+
+// ────────────────────────────────────────────────────────────
+//  TYPES – Cotes (Odds)
+// ────────────────────────────────────────────────────────────
+export interface ApiOddValue {
+  value: string  // "Home" | "Draw" | "Away" | "Over 2.5" etc.
+  odd:   string  // ex: "2.10"
+}
+
+export interface ApiOddBet {
+  id:     number
+  name:   string           // "Match Winner", "Goals Over/Under", "Both Teams Score"
+  values: ApiOddValue[]
+}
+
+export interface ApiBookmaker {
+  id:   number
+  name: string             // "Betclic", "Winamax", "PMU"…
+  bets: ApiOddBet[]
+}
+
+export interface ApiOddsFixture {
+  fixture:    { id: number }
+  bookmakers: ApiBookmaker[]
+}
+
+// ────────────────────────────────────────────────────────────
+//  HELPERS
+// ────────────────────────────────────────────────────────────
+export function translateStatus(s: string): 'live' | 'finished' | 'upcoming' {
+  if (['1H','HT','2H','ET','BT','P','INT','LIVE'].includes(s)) return 'live'
+  if (['FT','AET','PEN'].includes(s))                          return 'finished'
   return 'upcoming'
 }
 
-// ── Traduit le libellé de la phase ──────────────────────────
 export function translateRound(round: string): string {
   return round
     .replace('Group Stage', 'Phase de groupes')
@@ -79,119 +139,128 @@ export function translateRound(round: string): string {
 }
 
 // ────────────────────────────────────────────────────────────
-//  MATCHS EN DIRECT
+//  FETCH – Matchs en direct
 // ────────────────────────────────────────────────────────────
 export async function fetchLiveMatches(): Promise<ApiFixture[]> {
   const res = await fetch(
     `${API_BASE}/fixtures?live=all&league=${WC_LEAGUE_ID}&season=${WC_SEASON}`,
-    {
-      headers: getHeaders(),
-      // Pas de cache – données en temps réel
-      cache: 'no-store',
-    }
+    { headers: getHeaders(), cache: 'no-store' }
   )
-  if (!res.ok) throw new Error(`Api-Football erreur ${res.status}`)
-  const data: ApiFixturesResponse = await res.json()
-  if (data.errors && Object.keys(data.errors).length > 0) {
-    throw new Error(JSON.stringify(data.errors))
-  }
-  return data.response
+  if (!res.ok) throw new Error(`Api-Football ${res.status}`)
+  const data = await res.json()
+  return data.response ?? []
 }
 
 // ────────────────────────────────────────────────────────────
-//  MATCHS DU JOUR
+//  FETCH – Matchs du jour
 // ────────────────────────────────────────────────────────────
 export async function fetchTodayMatches(): Promise<ApiFixture[]> {
-  const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+  const today = new Date().toISOString().slice(0, 10)
   const res = await fetch(
     `${API_BASE}/fixtures?date=${today}&league=${WC_LEAGUE_ID}&season=${WC_SEASON}`,
-    {
-      headers: getHeaders(),
-      next: { revalidate: 60 }, // Revalide toutes les 60s via ISR
-    }
+    { headers: getHeaders(), next: { revalidate: 60 } }
   )
-  if (!res.ok) throw new Error(`Api-Football erreur ${res.status}`)
-  const data: ApiFixturesResponse = await res.json()
-  return data.response
+  if (!res.ok) throw new Error(`Api-Football ${res.status}`)
+  const data = await res.json()
+  return data.response ?? []
 }
 
 // ────────────────────────────────────────────────────────────
-//  MATCHS PAR DATE
+//  FETCH – Matchs par date
 // ────────────────────────────────────────────────────────────
 export async function fetchMatchesByDate(date: string): Promise<ApiFixture[]> {
   const res = await fetch(
     `${API_BASE}/fixtures?date=${date}&league=${WC_LEAGUE_ID}&season=${WC_SEASON}`,
-    {
-      headers: getHeaders(),
-      next: { revalidate: 300 },
-    }
+    { headers: getHeaders(), next: { revalidate: 300 } }
   )
-  if (!res.ok) throw new Error(`Api-Football erreur ${res.status}`)
-  const data: ApiFixturesResponse = await res.json()
-  return data.response
+  if (!res.ok) throw new Error(`Api-Football ${res.status}`)
+  const data = await res.json()
+  return data.response ?? []
 }
 
 // ────────────────────────────────────────────────────────────
-//  TOUS LES MATCHS D'UNE COMPÉTITION (phase de groupes)
+//  FETCH – Événements d'un match (buts, cartons, remplacements)
 // ────────────────────────────────────────────────────────────
-export async function fetchAllMatches(): Promise<ApiFixture[]> {
+export async function fetchMatchEvents(fixtureId: number): Promise<ApiEvent[]> {
   const res = await fetch(
-    `${API_BASE}/fixtures?league=${WC_LEAGUE_ID}&season=${WC_SEASON}`,
-    {
-      headers: getHeaders(),
-      next: { revalidate: 3600 }, // Revalide toutes les heures
-    }
+    `${API_BASE}/fixtures/events?fixture=${fixtureId}`,
+    { headers: getHeaders(), next: { revalidate: 30 } }
   )
-  if (!res.ok) throw new Error(`Api-Football erreur ${res.status}`)
-  const data: ApiFixturesResponse = await res.json()
-  return data.response
+  if (!res.ok) throw new Error(`Api-Football ${res.status}`)
+  const data = await res.json()
+  return data.response ?? []
 }
 
 // ────────────────────────────────────────────────────────────
-//  DÉTAIL D'UN MATCH
+//  FETCH – Statistiques d'un match
 // ────────────────────────────────────────────────────────────
-export async function fetchFixtureById(id: number): Promise<ApiFixture | null> {
+export async function fetchMatchStatistics(fixtureId: number): Promise<ApiTeamStats[]> {
   const res = await fetch(
-    `${API_BASE}/fixtures?id=${id}`,
-    {
-      headers: getHeaders(),
-      next: { revalidate: 30 },
-    }
+    `${API_BASE}/fixtures/statistics?fixture=${fixtureId}`,
+    { headers: getHeaders(), next: { revalidate: 30 } }
+  )
+  if (!res.ok) throw new Error(`Api-Football ${res.status}`)
+  const data = await res.json()
+  return data.response ?? []
+}
+
+// ────────────────────────────────────────────────────────────
+//  FETCH – Compositions d'un match
+// ────────────────────────────────────────────────────────────
+export async function fetchMatchLineups(fixtureId: number): Promise<ApiTeamLineup[]> {
+  const res = await fetch(
+    `${API_BASE}/fixtures/lineups?fixture=${fixtureId}`,
+    { headers: getHeaders(), next: { revalidate: 300 } }
+  )
+  if (!res.ok) throw new Error(`Api-Football ${res.status}`)
+  const data = await res.json()
+  return data.response ?? []
+}
+
+// ────────────────────────────────────────────────────────────
+//  FETCH – Cotes pré-match
+// ────────────────────────────────────────────────────────────
+export async function fetchMatchOdds(fixtureId: number): Promise<ApiOddsFixture | null> {
+  const res = await fetch(
+    `${API_BASE}/odds?fixture=${fixtureId}&bookmaker=8`,  // 8 = Bet365 (universel)
+    { headers: getHeaders(), next: { revalidate: 300 } }
   )
   if (!res.ok) return null
-  const data: ApiFixturesResponse = await res.json()
-  return data.response[0] ?? null
+  const data = await res.json()
+  return data.response?.[0] ?? null
 }
 
 // ────────────────────────────────────────────────────────────
-//  CLASSEMENTS
+//  FETCH – Cotes live
+// ────────────────────────────────────────────────────────────
+export async function fetchLiveOdds(fixtureId: number): Promise<ApiOddsFixture | null> {
+  const res = await fetch(
+    `${API_BASE}/odds/live?fixture=${fixtureId}`,
+    { headers: getHeaders(), cache: 'no-store' }
+  )
+  if (!res.ok) return null
+  const data = await res.json()
+  return data.response?.[0] ?? null
+}
+
+// ────────────────────────────────────────────────────────────
+//  FETCH – Classements
 // ────────────────────────────────────────────────────────────
 export interface ApiStanding {
-  rank: number
-  team: { id: number; name: string; logo: string }
+  rank:  number
+  team:  { id: number; name: string; logo: string }
   group: string
-  all: { played: number; win: number; draw: number; lose: number; goals: { for: number; against: number } }
+  all:   { played: number; win: number; draw: number; lose: number; goals: { for: number; against: number } }
   points: number
-  form: string
+  form:   string
 }
 
 export async function fetchStandings(): Promise<ApiStanding[]> {
   const res = await fetch(
     `${API_BASE}/standings?league=${WC_LEAGUE_ID}&season=${WC_SEASON}`,
-    {
-      headers: getHeaders(),
-      next: { revalidate: 300 },
-    }
+    { headers: getHeaders(), next: { revalidate: 300 } }
   )
-  if (!res.ok) throw new Error(`Api-Football erreur ${res.status}`)
+  if (!res.ok) throw new Error(`Api-Football ${res.status}`)
   const data = await res.json()
-  // La réponse est imbriquée : response[0].league.standings[][]
   return data.response?.[0]?.league?.standings?.flat() ?? []
-}
-
-// ────────────────────────────────────────────────────────────
-//  VÉRIFICATION DE LA CLÉ API
-// ────────────────────────────────────────────────────────────
-export function hasApiKey(): boolean {
-  return Boolean(process.env.API_FOOTBALL_KEY)
 }
