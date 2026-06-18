@@ -22,6 +22,11 @@ interface Context { params: { id: string } }
 export async function GET(_req: NextRequest, { params }: Context) {
   const { id } = params
 
+  // ── Validation du paramètre id ───────────────────────────
+  if (!id || id.length > 100 || !/^[a-zA-Z0-9\-_]+$/.test(id)) {
+    return NextResponse.json({ error: 'Paramètre id invalide' }, { status: 400 })
+  }
+
   // ── Mode API réelle ──────────────────────────────────────
   if (hasApiKey()) {
     const fixtureId = parseInt(id)

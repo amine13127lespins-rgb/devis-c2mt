@@ -8,7 +8,13 @@ import { getTodayMatches } from '@/data/matches'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  const date = req.nextUrl.searchParams.get('date') ?? new Date().toISOString().slice(0, 10)
+  const dateParam = req.nextUrl.searchParams.get('date')
+  const date = dateParam ?? new Date().toISOString().slice(0, 10)
+
+  // ── Validation du paramètre date ────────────────────────
+  if (dateParam !== null && !/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+    return NextResponse.json({ error: 'Paramètre date invalide. Format attendu : YYYY-MM-DD' }, { status: 400 })
+  }
 
   if (hasApiKey()) {
     try {

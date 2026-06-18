@@ -19,6 +19,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/equipes`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/stades`,  lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${BASE_URL}/blog`,    lastModified: now, changeFrequency: 'daily',  priority: 0.8 },
+    { url: `${BASE_URL}/cgu`,          lastModified: now, changeFrequency: 'yearly', priority: 0.1 },
+    { url: `${BASE_URL}/confidentialite`, lastModified: now, changeFrequency: 'yearly', priority: 0.1 },
   ]
 
   // Pages équipes
