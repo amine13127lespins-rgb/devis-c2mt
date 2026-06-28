@@ -591,19 +591,11 @@ input[type=range]::-webkit-slider-thumb:hover{background:var(--accent2)}
 
 <div id="toast"></div>
 
-<!-- THREE.JS via CDN -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
-  }
-}
-</script>
+<!-- THREE.JS via CDN — chargement classique, compatible tous navigateurs -->
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-<script type="module">
-import * as THREE from 'three'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+<script>
 
 // ═══════════════════════════════════════════════════════
 // STATE
@@ -657,7 +649,7 @@ scene.background = new THREE.Color(0xD6D8DF)
 const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 100)
 camera.position.set(0, 0.6, 3.2)
 
-const controls = new OrbitControls(camera, renderer.domElement)
+const controls = new THREE.OrbitControls(camera, renderer.domElement)
 controls.target.set(0, 0.3, 0)
 controls.enableDamping = true
 controls.dampingFactor = 0.08
@@ -687,7 +679,7 @@ gridHelper.position.y = -1.02
 scene.add(gridHelper)
 
 const groundGeo = new THREE.PlaneGeometry(4, 4)
-const groundMat = new THREE.ShadowMaterial({ opacity: 0.15 })
+const groundMat = new THREE.MeshBasicMaterial({ color: 0xD6D8DF, transparent: true, opacity: 0 })
 const ground = new THREE.Mesh(groundGeo, groundMat)
 ground.rotation.x = -Math.PI / 2
 ground.position.y = -1.02
@@ -761,33 +753,33 @@ function buildMannequin() {
 
   // ── LEFT ARM ─────────────────────────────
   const epG = addJoint('epaule_g', root, new THREE.Vector3(-0.22, 0.58, 0))
-  addLimb(epG, new THREE.CapsuleGeometry(0.055, 0.24, 4, 8), new THREE.Vector3(0, -0.16, 0))
+  addLimb(epG, new THREE.CylinderGeometry(0.055, 0.055, 0.28, 8), new THREE.Vector3(0, -0.16, 0))
   const cdG = addJoint('coude_g', epG, new THREE.Vector3(0, -0.32, 0), 0.04)
-  addLimb(cdG, new THREE.CapsuleGeometry(0.047, 0.20, 4, 8), new THREE.Vector3(0, -0.13, 0))
+  addLimb(cdG, new THREE.CylinderGeometry(0.047, 0.047, 0.24, 8), new THREE.Vector3(0, -0.13, 0))
   const pgG = addJoint('poignet_g', cdG, new THREE.Vector3(0, -0.26, 0), 0.035)
   addLimb(pgG, new THREE.BoxGeometry(0.09, 0.07, 0.04), new THREE.Vector3(0, -0.05, 0))
 
   // ── RIGHT ARM ────────────────────────────
   const epD = addJoint('epaule_d', root, new THREE.Vector3(0.22, 0.58, 0))
-  addLimb(epD, new THREE.CapsuleGeometry(0.055, 0.24, 4, 8), new THREE.Vector3(0, -0.16, 0))
+  addLimb(epD, new THREE.CylinderGeometry(0.055, 0.055, 0.28, 8), new THREE.Vector3(0, -0.16, 0))
   const cdD = addJoint('coude_d', epD, new THREE.Vector3(0, -0.32, 0), 0.04)
-  addLimb(cdD, new THREE.CapsuleGeometry(0.047, 0.20, 4, 8), new THREE.Vector3(0, -0.13, 0))
+  addLimb(cdD, new THREE.CylinderGeometry(0.047, 0.047, 0.24, 8), new THREE.Vector3(0, -0.13, 0))
   const pgD = addJoint('poignet_d', cdD, new THREE.Vector3(0, -0.26, 0), 0.035)
   addLimb(pgD, new THREE.BoxGeometry(0.09, 0.07, 0.04), new THREE.Vector3(0, -0.05, 0))
 
   // ── LEFT LEG ─────────────────────────────
   const hgG = addJoint('hanche_g', root, new THREE.Vector3(-0.09, -0.10, 0), 0.05)
-  addLimb(hgG, new THREE.CapsuleGeometry(0.082, 0.34, 4, 8), new THREE.Vector3(0, -0.22, 0))
+  addLimb(hgG, new THREE.CylinderGeometry(0.082, 0.082, 0.40, 8), new THREE.Vector3(0, -0.22, 0))
   const gnG = addJoint('genou_g', hgG, new THREE.Vector3(0, -0.44, 0), 0.044)
-  addLimb(gnG, new THREE.CapsuleGeometry(0.065, 0.30, 4, 8), new THREE.Vector3(0, -0.20, 0))
+  addLimb(gnG, new THREE.CylinderGeometry(0.065, 0.065, 0.36, 8), new THREE.Vector3(0, -0.20, 0))
   const chG = addJoint('cheville_g', gnG, new THREE.Vector3(0, -0.40, 0), 0.036)
   addLimb(chG, new THREE.BoxGeometry(0.10, 0.06, 0.22), new THREE.Vector3(0, -0.03, 0.06))
 
   // ── RIGHT LEG ────────────────────────────
   const hgD = addJoint('hanche_d', root, new THREE.Vector3(0.09, -0.10, 0), 0.05)
-  addLimb(hgD, new THREE.CapsuleGeometry(0.082, 0.34, 4, 8), new THREE.Vector3(0, -0.22, 0))
+  addLimb(hgD, new THREE.CylinderGeometry(0.082, 0.082, 0.40, 8), new THREE.Vector3(0, -0.22, 0))
   const gnD = addJoint('genou_d', hgD, new THREE.Vector3(0, -0.44, 0), 0.044)
-  addLimb(gnD, new THREE.CapsuleGeometry(0.065, 0.30, 4, 8), new THREE.Vector3(0, -0.20, 0))
+  addLimb(gnD, new THREE.CylinderGeometry(0.065, 0.065, 0.36, 8), new THREE.Vector3(0, -0.20, 0))
   const chD = addJoint('cheville_d', gnD, new THREE.Vector3(0, -0.40, 0), 0.036)
   addLimb(chD, new THREE.BoxGeometry(0.10, 0.06, 0.22), new THREE.Vector3(0, -0.03, 0.06))
 
@@ -1280,7 +1272,7 @@ toolButtons.forEach(btn => {
     controls.enabled = true
     state.arrowMode = tool === 'arrow'
     wrap.classList.toggle('arrow-mode', state.arrowMode)
-    if (tool === 'select') controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN }
+    if (tool === 'select') controls.mouseButtons = { LEFT: 0, MIDDLE: 1, RIGHT: 2 }
   })
 })
 
