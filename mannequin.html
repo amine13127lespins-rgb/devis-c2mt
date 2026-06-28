@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Visual Directives — Éditeur de Mannequin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#14161F;
+  --panel:#1E2133;
+  --panel2:#252840;
+  --border:#2A2E48;
+  --txt:#E2E5F0;
+  --txt2:#8890B0;
+  --accent:#4B6FFF;
+  --accent2:#6B8FFF;
+  --wood:#C8956C;
+  --wood2:#8B6340;
+  --danger:#FF4B6F;
+  --success:#4BFFAA;
+  --canvas-bg:#D6D8DF;
+  --radius:10px;
+  --slider-h:4px;
+}
+html,body{height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:13px}
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+#app{
+  display:grid;
+  grid-template-columns:230px 1fr 270px;
+  grid-template-rows:48px 1fr 270px;
+  height:100vh;
+  gap:0;
+}
+
+/* ── HEADER ─────────────────────────────────────────── */
+#toolbar{
+  grid-column:1/-1;grid-row:1;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 16px;gap:12px;
+}
+.app-title{
+  font-weight:700;font-size:14px;letter-spacing:.5px;
+  color:var(--txt);margin-right:8px;white-space:nowrap;
+}
+.app-title span{color:var(--accent)}
+.tool-sep{width:1px;height:24px;background:var(--border);margin:0 4px}
+.tool-btn{
+  display:flex;align-items:center;gap:6px;
+  background:transparent;border:none;color:var(--txt2);
+  padding:6px 10px;border-radius:6px;cursor:pointer;
+  font-size:12px;transition:all .15s;white-space:nowrap;
+}
+.tool-btn:hover{background:var(--panel2);color:var(--txt)}
+.tool-btn.active{background:var(--accent);color:#fff}
+.tool-btn svg{width:15px;height:15px;flex-shrink:0}
+#import-btn{margin-left:auto;background:var(--accent);color:#fff;font-weight:600;padding:6px 14px}
+#import-btn:hover{background:var(--accent2)}
+#file-input{display:none}
+
+/* ── LEFT PANEL ─────────────────────────────────────── */
+#left-panel{
+  grid-column:1;grid-row:2;
+  background:var(--panel);
+  border-right:1px solid var(--border);
+  overflow-y:auto;display:flex;flex-direction:column;
+}
+.panel-section{padding:14px;border-bottom:1px solid var(--border)}
+.section-title{
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  color:var(--txt2);text-transform:uppercase;margin-bottom:10px;
+}
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.model-card{
+  background:var(--panel2);border:2px solid transparent;
+  border-radius:var(--radius);padding:10px 6px;
+  text-align:center;cursor:pointer;transition:all .2s;
+}
+.model-card:hover{border-color:var(--accent);background:#1E2540}
+.model-card.active{border-color:var(--accent);background:#1E2540}
+.model-icon{font-size:28px;margin-bottom:4px}
+.model-name{font-size:10px;color:var(--txt2)}
+
+.parts-list{display:flex;flex-direction:column;gap:4px}
+.part-item{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 8px;border-radius:6px;cursor:pointer;
+  transition:all .15s;position:relative;
+}
+.part-item:hover{background:var(--panel2)}
+.part-item.active{background:var(--accent);color:#fff}
+.part-item.active .part-name{color:#fff}
+.part-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0}
+.part-item.active .part-dot{background:#fff}
+.part-name{font-size:12px;color:var(--txt)}
+.part-badge{
+  margin-left:auto;font-size:10px;background:var(--panel2);
+  color:var(--txt2);padding:1px 5px;border-radius:4px;
+}
+.part-item.active .part-badge{background:rgba(255,255,255,.2);color:#fff}
+
+/* ── CANVAS ─────────────────────────────────────────── */
+#canvas-wrap{
+  grid-column:2;grid-row:2;
+  background:var(--canvas-bg);
+  position:relative;overflow:hidden;
+}
+#three-canvas{display:block;width:100%!important;height:100%!important}
+#canvas-overlay{
+  position:absolute;inset:0;pointer-events:none;
+}
+#canvas-label{
+  position:absolute;top:10px;left:10px;
+  font-size:10px;color:#555;font-weight:600;letter-spacing:.5px;
+  text-transform:uppercase;
+}
+#view-tools{
+  position:absolute;top:10px;right:10px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.view-tool-btn{
+  width:32px;height:32px;border-radius:8px;
+  background:rgba(30,33,51,.85);border:1px solid rgba(255,255,255,.1);
+  color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;font-size:14px;
+}
+.view-tool-btn:hover{background:var(--accent)}
+#arrow-layer{
+  position:absolute;inset:0;pointer-events:none;
+}
+#arrow-canvas{position:absolute;inset:0}
+#label-cards{position:absolute;inset:0;pointer-events:none}
+
+/* ── RIGHT PANEL ─────────────────────────────────────── */
+#right-panel{
+  grid-column:3;grid-row:2;
+  background:var(--panel);
+  border-left:1px solid var(--border);
+  overflow-y:auto;display:flex;flex-direction:column;
+}
+.articulation-header{
+  padding:14px;border-bottom:1px solid var(--border);
+}
+.joint-name{
+  font-size:14px;font-weight:700;color:var(--accent);margin-bottom:2px;
+}
+.joint-hint{font-size:11px;color:var(--txt2)}
+.sliders-wrap{padding:14px;display:flex;flex-direction:column;gap:14px}
+.slider-row{display:flex;flex-direction:column;gap:6px}
+.slider-label{display:flex;justify-content:space-between;align-items:center}
+.slider-label span:first-child{font-size:11px;color:var(--txt2);font-weight:600}
+.slider-val{
+  font-size:11px;color:var(--accent);font-weight:700;
+  min-width:36px;text-align:right;
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:var(--slider-h);
+  background:var(--border);border-radius:4px;outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--accent);cursor:pointer;
+  box-shadow:0 0 0 3px rgba(75,111,255,.25);
+}
+input[type=range]::-webkit-slider-thumb:hover{background:var(--accent2)}
+.reset-joint-btn{
+  margin:0 14px 14px;
+  background:var(--panel2);border:1px solid var(--border);
+  color:var(--txt2);border-radius:6px;padding:7px;
+  cursor:pointer;font-size:11px;width:calc(100% - 28px);
+  transition:all .15s;
+}
+.reset-joint-btn:hover{border-color:var(--danger);color:var(--danger)}
+.objects-section{padding:14px;border-top:1px solid var(--border);flex:1}
+.obj-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.obj-item{
+  display:flex;align-items:center;gap:8px;
+  background:var(--panel2);border:1px solid var(--border);
+  border-radius:6px;padding:7px 10px;
+  transition:all .15s;
+}
+.obj-item.selected-obj{border-color:var(--accent)}
+.obj-icon{font-size:16px}
+.obj-info{flex:1;min-width:0}
+.obj-title{font-size:11px;font-weight:600;color:var(--txt)}
+.obj-label-input{
+  width:100%;background:transparent;border:none;outline:none;
+  font-size:10px;color:var(--txt2);font-family:inherit;
+  margin-top:2px;
+}
+.obj-label-input::placeholder{color:var(--border)}
+.obj-del{
+  background:transparent;border:none;color:var(--txt2);
+  cursor:pointer;padding:2px;font-size:14px;
+  transition:color .15s;flex-shrink:0;
+}
+.obj-del:hover{color:var(--danger)}
+.no-obj{font-size:11px;color:var(--txt2);text-align:center;padding:12px 0}
+
+/* ── BOTTOM PANEL ─────────────────────────────────────── */
+#bottom-panel{
+  grid-column:1/-1;grid-row:3;
+  background:var(--panel);
+  border-top:1px solid var(--border);
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  overflow:hidden;
+}
+.bottom-section{
+  border-right:1px solid var(--border);
+  padding:12px 14px;overflow-y:auto;
+  display:flex;flex-direction:column;
+}
+.bottom-section:last-child{border-right:none}
+.poses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.pose-card{
+  background:var(--panel2);border:2px solid transparent;
+  border-radius:8px;padding:8px 4px;text-align:center;
+  cursor:pointer;transition:all .2s;
+}
+.pose-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.pose-card.active{border-color:var(--accent);background:#1E2540}
+.pose-emoji{font-size:22px}
+.pose-name{font-size:9px;color:var(--txt2);margin-top:3px}
+.pose-card.active .pose-name{color:var(--accent)}
+
+.objects-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.obj-card{
+  background:var(--panel2);border:2px solid transparent;
+  border-radius:8px;padding:6px 4px;text-align:center;
+  cursor:pointer;transition:all .2s;
+}
+.obj-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.obj-card-icon{font-size:20px}
+.obj-card-name{font-size:9px;color:var(--txt2);margin-top:2px}
+
+.prompt-area{display:flex;flex-direction:column;gap:8px;flex:1}
+#prompt-text{
+  flex:1;background:var(--panel2);border:1px solid var(--border);
+  border-radius:8px;padding:10px;color:var(--txt);font-size:11px;
+  line-height:1.6;resize:none;outline:none;font-family:inherit;
+  min-height:80px;
+}
+#prompt-text::placeholder{color:var(--border)}
+.prompt-actions{display:flex;gap:8px}
+.prompt-btn{
+  flex:1;padding:8px;border-radius:6px;border:none;
+  cursor:pointer;font-size:11px;font-weight:600;transition:all .15s;
+}
+#gen-btn{background:var(--accent);color:#fff}
+#gen-btn:hover{background:var(--accent2)}
+#copy-btn{background:var(--panel2);color:var(--txt);border:1px solid var(--border)}
+#copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── SCROLLBAR ───────────────────────────────────────── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--txt2)}
+
+/* ── TOAST ───────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--panel2);border:1px solid var(--accent);
+  color:var(--txt);padding:8px 20px;border-radius:20px;
+  font-size:12px;font-weight:600;z-index:999;
+  transition:transform .25s ease;pointer-events:none;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── ARROW MODE ──────────────────────────────────────── */
+#canvas-wrap.arrow-mode{cursor:crosshair}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <div class="app-title">AI Visual <span>Directives</span></div>
+  <div class="tool-sep"></div>
+  <button class="tool-btn active" id="tool-select" title="Sélectionner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-7 1-3 7z"/></svg>
+    Sélect
+  </button>
+  <button class="tool-btn" id="tool-orbit" title="Orbite caméra">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 010 20M2 12a15.3 15.3 0 0120 0"/></svg>
+    Orbite
+  </button>
+  <button class="tool-btn" id="tool-arrow" title="Flèches de mouvement">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    Flèches
+  </button>
+  <button class="tool-btn" id="tool-clear-arrows" title="Effacer flèches">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+    Effacer
+  </button>
+  <div class="tool-sep"></div>
+  <button class="tool-btn" id="reset-all-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9M3 3v4h4"/></svg>
+    Reset tout
+  </button>
+  <input type="file" id="file-input" accept="image/*">
+  <button class="tool-btn" id="import-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    Importer image
+  </button>
+</div>
+
+<!-- LEFT PANEL -->
+<div id="left-panel">
+  <div class="panel-section">
+    <div class="section-title">1. Sélection du mannequin</div>
+    <div class="model-grid">
+      <div class="model-card active" data-model="standard">
+        <div class="model-icon">🧍</div>
+        <div class="model-name">Standard</div>
+      </div>
+      <div class="model-card" data-model="slim">
+        <div class="model-icon">🧍‍♀️</div>
+        <div class="model-name">Slim</div>
+      </div>
+      <div class="model-card" data-model="muscular">
+        <div class="model-icon">💪</div>
+        <div class="model-name">Musclé</div>
+      </div>
+      <div class="model-card" data-model="child">
+        <div class="model-icon">🧒</div>
+        <div class="model-name">Enfant</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel-section" style="flex:1">
+    <div class="section-title">4. Contrôle rapide par partie</div>
+    <div class="parts-list" id="parts-list">
+      <div class="part-item" data-joint="tete">
+        <div class="part-dot"></div>
+        <div class="part-name">Tête</div>
+      </div>
+      <div class="part-item" data-joint="epaule_g">
+        <div class="part-dot"></div>
+        <div class="part-name">Épaule G</div>
+      </div>
+      <div class="part-item" data-joint="epaule_d">
+        <div class="part-dot"></div>
+        <div class="part-name">Épaule D</div>
+      </div>
+      <div class="part-item" data-joint="coude_g">
+        <div class="part-dot"></div>
+        <div class="part-name">Coude G</div>
+        <div class="part-badge">G</div>
+      </div>
+      <div class="part-item" data-joint="coude_d">
+        <div class="part-dot"></div>
+        <div class="part-name">Coude D</div>
+        <div class="part-badge">D</div>
+      </div>
+      <div class="part-item" data-joint="poignet_g">
+        <div class="part-dot"></div>
+        <div class="part-name">Poignet G</div>
+      </div>
+      <div class="part-item" data-joint="poignet_d">
+        <div class="part-dot"></div>
+        <div class="part-name">Poignet D</div>
+      </div>
+      <div class="part-item" data-joint="hanche_g">
+        <div class="part-dot"></div>
+        <div class="part-name">Hanche G</div>
+      </div>
+      <div class="part-item" data-joint="hanche_d">
+        <div class="part-dot"></div>
+        <div class="part-name">Hanche D</div>
+      </div>
+      <div class="part-item" data-joint="genou_g">
+        <div class="part-dot"></div>
+        <div class="part-name">Genou G</div>
+      </div>
+      <div class="part-item" data-joint="genou_d">
+        <div class="part-dot"></div>
+        <div class="part-name">Genou D</div>
+      </div>
+      <div class="part-item" data-joint="cheville_g">
+        <div class="part-dot"></div>
+        <div class="part-name">Cheville G</div>
+      </div>
+      <div class="part-item" data-joint="cheville_d">
+        <div class="part-dot"></div>
+        <div class="part-name">Cheville D</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3D CANVAS -->
+<div id="canvas-wrap">
+  <canvas id="three-canvas"></canvas>
+  <div id="canvas-label">2. Vue 3D Interactive — cliquez un joint pour le sélectionner</div>
+  <div id="view-tools">
+    <button class="view-tool-btn" id="zoom-in" title="Zoom +">+</button>
+    <button class="view-tool-btn" id="zoom-out" title="Zoom −">−</button>
+    <button class="view-tool-btn" id="reset-cam" title="Reset caméra">⌂</button>
+  </div>
+  <canvas id="arrow-canvas" style="position:absolute;inset:0;pointer-events:none"></canvas>
+</div>
+
+<!-- RIGHT PANEL -->
+<div id="right-panel">
+  <div class="articulation-header">
+    <div class="section-title">3. Contrôle des articulations</div>
+    <div class="joint-name" id="joint-name-display">Aucun joint sélectionné</div>
+    <div class="joint-hint" id="joint-hint">Cliquez un joint (sphère) sur le mannequin ou utilisez la liste à gauche</div>
+  </div>
+  <div class="sliders-wrap" id="sliders-wrap">
+    <div class="slider-row">
+      <div class="slider-label">
+        <span>Rotation X</span>
+        <span class="slider-val" id="val-rx">0°</span>
+      </div>
+      <input type="range" id="sl-rx" min="-180" max="180" value="0">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">
+        <span>Rotation Y</span>
+        <span class="slider-val" id="val-ry">0°</span>
+      </div>
+      <input type="range" id="sl-ry" min="-180" max="180" value="0">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">
+        <span>Rotation Z</span>
+        <span class="slider-val" id="val-rz">0°</span>
+      </div>
+      <input type="range" id="sl-rz" min="-180" max="180" value="0">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">
+        <span>Extension</span>
+        <span class="slider-val" id="val-ext">0°</span>
+      </div>
+      <input type="range" id="sl-ext" min="0" max="180" value="0">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">
+        <span>Flexion</span>
+        <span class="slider-val" id="val-flex">0°</span>
+      </div>
+      <input type="range" id="sl-flex" min="0" max="90" value="0">
+    </div>
+  </div>
+  <button class="reset-joint-btn" id="reset-joint-btn">↺ Réinitialiser articulation</button>
+
+  <div class="objects-section">
+    <div class="section-title">Objets dans la scène</div>
+    <div class="obj-list" id="scene-obj-list">
+      <div class="no-obj">Aucun objet ajouté.<br>Utilisez la bibliothèque ci-dessous.</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM PANEL -->
+<div id="bottom-panel">
+
+  <!-- POSES -->
+  <div class="bottom-section">
+    <div class="section-title">5. Préréglages de poses</div>
+    <div class="poses-grid" id="poses-grid">
+      <div class="pose-card active" data-pose="neutre">
+        <div class="pose-emoji">🧍</div>
+        <div class="pose-name">Neutre</div>
+      </div>
+      <div class="pose-card" data-pose="bras_leves">
+        <div class="pose-emoji">🙌</div>
+        <div class="pose-name">Bras levés</div>
+      </div>
+      <div class="pose-card" data-pose="defensive">
+        <div class="pose-emoji">🛡️</div>
+        <div class="pose-name">Défensive</div>
+      </div>
+      <div class="pose-card" data-pose="course">
+        <div class="pose-emoji">🏃</div>
+        <div class="pose-name">Course</div>
+      </div>
+      <div class="pose-card" data-pose="danse">
+        <div class="pose-emoji">💃</div>
+        <div class="pose-name">Danse</div>
+      </div>
+      <div class="pose-card" data-pose="pensif">
+        <div class="pose-emoji">🤔</div>
+        <div class="pose-name">Pensif</div>
+      </div>
+      <div class="pose-card" data-pose="pointage">
+        <div class="pose-emoji">👉</div>
+        <div class="pose-name">Pointage</div>
+      </div>
+      <div class="pose-card" data-pose="combat">
+        <div class="pose-emoji">🥊</div>
+        <div class="pose-name">Combat</div>
+      </div>
+      <div class="pose-card" data-pose="yoga">
+        <div class="pose-emoji">🧘</div>
+        <div class="pose-name">Yoga</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBJECTS LIBRARY -->
+  <div class="bottom-section">
+    <div class="section-title">Bibliothèque d'objets — cliquer pour ajouter</div>
+    <div class="objects-grid" id="objects-grid">
+      <div class="obj-card" data-obj="epee" data-icon="⚔️" data-name="Épée">
+        <div class="obj-card-icon">⚔️</div>
+        <div class="obj-card-name">Épée</div>
+      </div>
+      <div class="obj-card" data-obj="pistolet" data-icon="🔫" data-name="Pistolet">
+        <div class="obj-card-icon">🔫</div>
+        <div class="obj-card-name">Pistolet</div>
+      </div>
+      <div class="obj-card" data-obj="bouclier" data-icon="🛡️" data-name="Bouclier">
+        <div class="obj-card-icon">🛡️</div>
+        <div class="obj-card-name">Bouclier</div>
+      </div>
+      <div class="obj-card" data-obj="arc" data-icon="🏹" data-name="Arc">
+        <div class="obj-card-icon">🏹</div>
+        <div class="obj-card-name">Arc</div>
+      </div>
+      <div class="obj-card" data-obj="hache" data-icon="🪓" data-name="Hache">
+        <div class="obj-card-icon">🪓</div>
+        <div class="obj-card-name">Hache</div>
+      </div>
+      <div class="obj-card" data-obj="telephone" data-icon="📱" data-name="Téléphone">
+        <div class="obj-card-icon">📱</div>
+        <div class="obj-card-name">Téléphone</div>
+      </div>
+      <div class="obj-card" data-obj="sac" data-icon="👜" data-name="Sac">
+        <div class="obj-card-icon">👜</div>
+        <div class="obj-card-name">Sac</div>
+      </div>
+      <div class="obj-card" data-obj="marteau" data-icon="🔨" data-name="Marteau">
+        <div class="obj-card-icon">🔨</div>
+        <div class="obj-card-name">Marteau</div>
+      </div>
+      <div class="obj-card" data-obj="livre" data-icon="📖" data-name="Livre">
+        <div class="obj-card-icon">📖</div>
+        <div class="obj-card-name">Livre</div>
+      </div>
+      <div class="obj-card" data-obj="bouteille" data-icon="🍶" data-name="Bouteille">
+        <div class="obj-card-icon">🍶</div>
+        <div class="obj-card-name">Bouteille</div>
+      </div>
+      <div class="obj-card" data-obj="ballon" data-icon="⚽" data-name="Ballon">
+        <div class="obj-card-icon">⚽</div>
+        <div class="obj-card-name">Ballon</div>
+      </div>
+      <div class="obj-card" data-obj="lampe" data-icon="🔦" data-name="Lampe">
+        <div class="obj-card-icon">🔦</div>
+        <div class="obj-card-name">Lampe</div>
+      </div>
+      <div class="obj-card" data-obj="cle" data-icon="🗝️" data-name="Clé">
+        <div class="obj-card-icon">🗝️</div>
+        <div class="obj-card-name">Clé</div>
+      </div>
+      <div class="obj-card" data-obj="caméra" data-icon="📷" data-name="Caméra">
+        <div class="obj-card-icon">📷</div>
+        <div class="obj-card-name">Caméra</div>
+      </div>
+      <div class="obj-card" data-obj="fleur" data-icon="🌹" data-name="Fleur">
+        <div class="obj-card-icon">🌹</div>
+        <div class="obj-card-name">Fleur</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMPT -->
+  <div class="bottom-section">
+    <div class="section-title">7. Génération du prompt IA</div>
+    <div class="prompt-area">
+      <textarea id="prompt-text" placeholder="Cliquez sur « Générer prompt » pour créer automatiquement la directive visuelle à partir de la scène…"></textarea>
+      <div class="prompt-actions">
+        <button class="prompt-btn" id="gen-btn">⚡ Générer prompt</button>
+        <button class="prompt-btn" id="copy-btn">📋 Copier</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div id="toast"></div>
+
+<!-- THREE.JS via CDN -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const state = {
+  selectedJoint: null,
+  jointRotations: {},
+  sceneObjects: [],
+  activePose: 'neutre',
+  arrowMode: false,
+  arrows: [],
+  arrowStart: null,
+  bgTexture: null,
+}
+
+const JOINT_NAMES = {
+  tete: 'Tête',
+  epaule_g: 'Épaule Gauche',
+  epaule_d: 'Épaule Droite',
+  coude_g: 'Coude Gauche',
+  coude_d: 'Coude Droit',
+  poignet_g: 'Poignet Gauche',
+  poignet_d: 'Poignet Droit',
+  hanche_g: 'Hanche Gauche',
+  hanche_d: 'Hanche Droite',
+  genou_g: 'Genou Gauche',
+  genou_d: 'Genou Droit',
+  cheville_g: 'Cheville Gauche',
+  cheville_d: 'Cheville Droite',
+}
+
+// init rotations
+Object.keys(JOINT_NAMES).forEach(k => {
+  state.jointRotations[k] = { x: 0, y: 0, z: 0 }
+})
+
+// ═══════════════════════════════════════════════════════
+// THREE.JS SETUP
+// ═══════════════════════════════════════════════════════
+const wrap = document.getElementById('canvas-wrap')
+const canvas = document.getElementById('three-canvas')
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
+const scene = new THREE.Scene()
+scene.background = new THREE.Color(0xD6D8DF)
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 100)
+camera.position.set(0, 0.6, 3.2)
+
+const controls = new OrbitControls(camera, renderer.domElement)
+controls.target.set(0, 0.3, 0)
+controls.enableDamping = true
+controls.dampingFactor = 0.08
+controls.minDistance = 1
+controls.maxDistance = 8
+controls.enabled = true
+
+// LIGHTING
+const ambient = new THREE.AmbientLight(0xffffff, 0.55)
+scene.add(ambient)
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.9)
+dirLight.position.set(2, 4, 3)
+dirLight.castShadow = true
+dirLight.shadow.mapSize.set(1024, 1024)
+dirLight.shadow.camera.near = 0.1
+dirLight.shadow.camera.far = 20
+scene.add(dirLight)
+
+const fillLight = new THREE.DirectionalLight(0xC8D8FF, 0.3)
+fillLight.position.set(-3, 2, -2)
+scene.add(fillLight)
+
+// GROUND GRID
+const gridHelper = new THREE.GridHelper(4, 20, 0xAAAAAA, 0xBBBBBB)
+gridHelper.position.y = -1.02
+scene.add(gridHelper)
+
+const groundGeo = new THREE.PlaneGeometry(4, 4)
+const groundMat = new THREE.ShadowMaterial({ opacity: 0.15 })
+const ground = new THREE.Mesh(groundGeo, groundMat)
+ground.rotation.x = -Math.PI / 2
+ground.position.y = -1.02
+ground.receiveShadow = true
+scene.add(ground)
+
+// BACKGROUND IMAGE PLANE
+let bgPlane = null
+function setBackgroundImage(url) {
+  if (bgPlane) { scene.remove(bgPlane); bgPlane = null }
+  const tex = new THREE.TextureLoader().load(url)
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.6, side: THREE.DoubleSide })
+  const geo = new THREE.PlaneGeometry(3, 3)
+  bgPlane = new THREE.Mesh(geo, mat)
+  bgPlane.position.set(0, 0.3, -0.5)
+  scene.add(bgPlane)
+}
+
+// ═══════════════════════════════════════════════════════
+// MANNEQUIN CONSTRUCTION
+// ═══════════════════════════════════════════════════════
+const woodMat = new THREE.MeshStandardMaterial({ color: 0xC8956C, roughness: 0.78, metalness: 0 })
+const jointMat = new THREE.MeshStandardMaterial({ color: 0x7B5530, roughness: 0.6 })
+const jointSelMat = new THREE.MeshStandardMaterial({ color: 0x4B6FFF, roughness: 0.3, emissive: 0x4B6FFF, emissiveIntensity: 0.4 })
+
+const jointObjects = []  // { mesh, name, pivot }
+const joints = {}        // { name: { pivot, sphere } }
+
+function addLimb(parent, geo, pos, mat = woodMat) {
+  const m = new THREE.Mesh(geo, mat)
+  m.position.copy(pos)
+  m.castShadow = true
+  parent.add(m)
+  return m
+}
+
+function addJoint(name, parent, pos, r = 0.044) {
+  const pivot = new THREE.Object3D()
+  pivot.position.copy(pos)
+  parent.add(pivot)
+
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(r, 10, 10),
+    jointMat.clone()
+  )
+  sphere.castShadow = false
+  pivot.add(sphere)
+
+  jointObjects.push({ mesh: sphere, name, pivot })
+  joints[name] = { pivot, sphere }
+  return pivot
+}
+
+function buildMannequin() {
+  const root = new THREE.Object3D()
+  scene.add(root)
+
+  // ── STATIC BODY ──────────────────────────
+  // Pelvis
+  addLimb(root, new THREE.BoxGeometry(0.30, 0.20, 0.14), new THREE.Vector3(0, 0, 0))
+  // Torso
+  addLimb(root, new THREE.BoxGeometry(0.27, 0.44, 0.13), new THREE.Vector3(0, 0.37, 0))
+  // Chest trapezoid effect with a slightly wider top box
+  addLimb(root, new THREE.BoxGeometry(0.31, 0.10, 0.13), new THREE.Vector3(0, 0.54, 0))
+  // Neck
+  addLimb(root, new THREE.CylinderGeometry(0.05, 0.06, 0.13, 8), new THREE.Vector3(0, 0.67, 0))
+
+  // ── HEAD (via neck joint) ─────────────────
+  const tete = addJoint('tete', root, new THREE.Vector3(0, 0.74, 0), 0.035)
+  addLimb(tete, new THREE.SphereGeometry(0.135, 14, 14), new THREE.Vector3(0, 0.135, 0))
+
+  // ── LEFT ARM ─────────────────────────────
+  const epG = addJoint('epaule_g', root, new THREE.Vector3(-0.22, 0.58, 0))
+  addLimb(epG, new THREE.CapsuleGeometry(0.055, 0.24, 4, 8), new THREE.Vector3(0, -0.16, 0))
+  const cdG = addJoint('coude_g', epG, new THREE.Vector3(0, -0.32, 0), 0.04)
+  addLimb(cdG, new THREE.CapsuleGeometry(0.047, 0.20, 4, 8), new THREE.Vector3(0, -0.13, 0))
+  const pgG = addJoint('poignet_g', cdG, new THREE.Vector3(0, -0.26, 0), 0.035)
+  addLimb(pgG, new THREE.BoxGeometry(0.09, 0.07, 0.04), new THREE.Vector3(0, -0.05, 0))
+
+  // ── RIGHT ARM ────────────────────────────
+  const epD = addJoint('epaule_d', root, new THREE.Vector3(0.22, 0.58, 0))
+  addLimb(epD, new THREE.CapsuleGeometry(0.055, 0.24, 4, 8), new THREE.Vector3(0, -0.16, 0))
+  const cdD = addJoint('coude_d', epD, new THREE.Vector3(0, -0.32, 0), 0.04)
+  addLimb(cdD, new THREE.CapsuleGeometry(0.047, 0.20, 4, 8), new THREE.Vector3(0, -0.13, 0))
+  const pgD = addJoint('poignet_d', cdD, new THREE.Vector3(0, -0.26, 0), 0.035)
+  addLimb(pgD, new THREE.BoxGeometry(0.09, 0.07, 0.04), new THREE.Vector3(0, -0.05, 0))
+
+  // ── LEFT LEG ─────────────────────────────
+  const hgG = addJoint('hanche_g', root, new THREE.Vector3(-0.09, -0.10, 0), 0.05)
+  addLimb(hgG, new THREE.CapsuleGeometry(0.082, 0.34, 4, 8), new THREE.Vector3(0, -0.22, 0))
+  const gnG = addJoint('genou_g', hgG, new THREE.Vector3(0, -0.44, 0), 0.044)
+  addLimb(gnG, new THREE.CapsuleGeometry(0.065, 0.30, 4, 8), new THREE.Vector3(0, -0.20, 0))
+  const chG = addJoint('cheville_g', gnG, new THREE.Vector3(0, -0.40, 0), 0.036)
+  addLimb(chG, new THREE.BoxGeometry(0.10, 0.06, 0.22), new THREE.Vector3(0, -0.03, 0.06))
+
+  // ── RIGHT LEG ────────────────────────────
+  const hgD = addJoint('hanche_d', root, new THREE.Vector3(0.09, -0.10, 0), 0.05)
+  addLimb(hgD, new THREE.CapsuleGeometry(0.082, 0.34, 4, 8), new THREE.Vector3(0, -0.22, 0))
+  const gnD = addJoint('genou_d', hgD, new THREE.Vector3(0, -0.44, 0), 0.044)
+  addLimb(gnD, new THREE.CapsuleGeometry(0.065, 0.30, 4, 8), new THREE.Vector3(0, -0.20, 0))
+  const chD = addJoint('cheville_d', gnD, new THREE.Vector3(0, -0.40, 0), 0.036)
+  addLimb(chD, new THREE.BoxGeometry(0.10, 0.06, 0.22), new THREE.Vector3(0, -0.03, 0.06))
+
+  // set initial default arms-down position
+  joints['epaule_g'].pivot.rotation.z = THREE.MathUtils.degToRad(20)
+  joints['epaule_d'].pivot.rotation.z = THREE.MathUtils.degToRad(-20)
+  state.jointRotations['epaule_g'].z = 20
+  state.jointRotations['epaule_d'].z = -20
+
+  return root
+}
+
+buildMannequin()
+
+// ═══════════════════════════════════════════════════════
+// SCENE OBJECTS (3D representations)
+// ═══════════════════════════════════════════════════════
+const OBJECT_GEOMETRIES = {
+  epee:      () => new THREE.BoxGeometry(0.04, 0.60, 0.02),
+  pistolet:  () => new THREE.BoxGeometry(0.08, 0.14, 0.04),
+  bouclier:  () => new THREE.BoxGeometry(0.22, 0.28, 0.04),
+  arc:       () => new THREE.TorusGeometry(0.14, 0.02, 6, 12, Math.PI),
+  hache:     () => new THREE.BoxGeometry(0.16, 0.20, 0.03),
+  telephone: () => new THREE.BoxGeometry(0.07, 0.14, 0.015),
+  sac:       () => new THREE.BoxGeometry(0.18, 0.20, 0.10),
+  marteau:   () => new THREE.BoxGeometry(0.06, 0.30, 0.06),
+  livre:     () => new THREE.BoxGeometry(0.14, 0.19, 0.04),
+  bouteille: () => new THREE.CylinderGeometry(0.04, 0.05, 0.24, 8),
+  ballon:    () => new THREE.SphereGeometry(0.12, 10, 10),
+  lampe:     () => new THREE.CylinderGeometry(0.02, 0.04, 0.24, 8),
+  cle:       () => new THREE.TorusGeometry(0.06, 0.015, 6, 10),
+  caméra:    () => new THREE.BoxGeometry(0.12, 0.09, 0.07),
+  fleur:     () => new THREE.SphereGeometry(0.06, 8, 8),
+}
+
+const OBJECT_COLORS = {
+  epee: 0xBBBBCC, pistolet: 0x444444, bouclier: 0x8B6914,
+  arc: 0x8B6340, hache: 0x666666, telephone: 0x222222,
+  sac: 0x8B4513, marteau: 0x555555, livre: 0xCC4444,
+  bouteille: 0x88BBCC, ballon: 0xFFCC22, lampe: 0x888888,
+  cle: 0xCCAA22, caméra: 0x333333, fleur: 0xCC2266,
+}
+
+const sceneObjMeshes = []
+
+function add3DObject(type, name, icon) {
+  const geo = (OBJECT_GEOMETRIES[type] || (() => new THREE.BoxGeometry(0.1,0.1,0.1)))()
+  const mat = new THREE.MeshStandardMaterial({ color: OBJECT_COLORS[type] || 0x888888, roughness: 0.6 })
+  const mesh = new THREE.Mesh(geo, mat)
+  // Place near the mannequin's right hand approximate world position
+  mesh.position.set(0.5 + (sceneObjMeshes.length % 4) * 0.2, 0.3 - Math.floor(sceneObjMeshes.length / 4) * 0.3, 0.3)
+  mesh.castShadow = true
+  scene.add(mesh)
+  const id = Date.now() + Math.random()
+  sceneObjMeshes.push({ mesh, id })
+  state.sceneObjects.push({ id, type, name, icon, label: '', mesh })
+  updateObjPanel()
+  return id
+}
+
+function removeSceneObject(id) {
+  const idx = state.sceneObjects.findIndex(o => o.id === id)
+  if (idx === -1) return
+  const obj = state.sceneObjects[idx]
+  scene.remove(obj.mesh)
+  state.sceneObjects.splice(idx, 1)
+  const midx = sceneObjMeshes.findIndex(o => o.id === id)
+  if (midx !== -1) sceneObjMeshes.splice(midx, 1)
+  updateObjPanel()
+}
+
+function updateObjPanel() {
+  const list = document.getElementById('scene-obj-list')
+  if (state.sceneObjects.length === 0) {
+    list.innerHTML = '<div class="no-obj">Aucun objet ajouté.<br>Utilisez la bibliothèque ci-dessous.</div>'
+    return
+  }
+  list.innerHTML = state.sceneObjects.map(obj => `
+    <div class="obj-item" data-id="${obj.id}">
+      <span class="obj-icon">${obj.icon}</span>
+      <div class="obj-info">
+        <div class="obj-title">${obj.name}</div>
+        <input class="obj-label-input" data-id="${obj.id}" type="text"
+          placeholder="Décrire le rôle de l'objet…"
+          value="${obj.label}">
+      </div>
+      <button class="obj-del" data-del="${obj.id}">✕</button>
+    </div>
+  `).join('')
+
+  list.querySelectorAll('.obj-label-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const obj = state.sceneObjects.find(o => o.id == e.target.dataset.id)
+      if (obj) obj.label = e.target.value
+    })
+  })
+  list.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', e => removeSceneObject(parseFloat(e.currentTarget.dataset.del)))
+  })
+}
+
+// ═══════════════════════════════════════════════════════
+// JOINT SELECTION
+// ═══════════════════════════════════════════════════════
+function selectJoint(name) {
+  // deselect previous
+  if (state.selectedJoint) {
+    const prev = joints[state.selectedJoint]
+    if (prev) prev.sphere.material.color.set(0x7B5530)
+    if (prev) { prev.sphere.material.emissive.set(0x000000); prev.sphere.material.emissiveIntensity = 0 }
+  }
+  state.selectedJoint = name
+  if (!name) {
+    document.getElementById('joint-name-display').textContent = 'Aucun joint sélectionné'
+    document.getElementById('joint-hint').textContent = 'Cliquez un joint sur le mannequin ou utilisez la liste à gauche'
+    resetSliders(null)
+    updatePartsList(null)
+    return
+  }
+  const j = joints[name]
+  if (j) {
+    j.sphere.material.color.set(0x4B6FFF)
+    j.sphere.material.emissive.set(0x4B6FFF)
+    j.sphere.material.emissiveIntensity = 0.5
+  }
+  document.getElementById('joint-name-display').textContent = JOINT_NAMES[name] || name
+  document.getElementById('joint-hint').textContent = 'Ajustez les rotations avec les curseurs'
+  const rot = state.jointRotations[name]
+  document.getElementById('sl-rx').value = rot.x
+  document.getElementById('val-rx').textContent = rot.x + '°'
+  document.getElementById('sl-ry').value = rot.y
+  document.getElementById('val-ry').textContent = rot.y + '°'
+  document.getElementById('sl-rz').value = rot.z
+  document.getElementById('val-rz').textContent = rot.z + '°'
+  document.getElementById('sl-ext').value = Math.max(0, rot.x)
+  document.getElementById('val-ext').textContent = Math.max(0, rot.x) + '°'
+  document.getElementById('sl-flex').value = Math.max(0, -rot.x)
+  document.getElementById('val-flex').textContent = Math.max(0, -rot.x) + '°'
+  updatePartsList(name)
+}
+
+function resetSliders(rot) {
+  const vals = rot || { x: 0, y: 0, z: 0 }
+  document.getElementById('sl-rx').value = vals.x
+  document.getElementById('val-rx').textContent = vals.x + '°'
+  document.getElementById('sl-ry').value = vals.y
+  document.getElementById('val-ry').textContent = vals.y + '°'
+  document.getElementById('sl-rz').value = vals.z
+  document.getElementById('val-rz').textContent = vals.z + '°'
+  document.getElementById('sl-ext').value = 0
+  document.getElementById('val-ext').textContent = '0°'
+  document.getElementById('sl-flex').value = 0
+  document.getElementById('val-flex').textContent = '0°'
+}
+
+function updatePartsList(activeJoint) {
+  document.querySelectorAll('.part-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.joint === activeJoint)
+  })
+}
+
+function applyJointRotation(name, x, y, z) {
+  state.jointRotations[name] = { x, y, z }
+  const j = joints[name]
+  if (j) {
+    j.pivot.rotation.x = THREE.MathUtils.degToRad(x)
+    j.pivot.rotation.y = THREE.MathUtils.degToRad(y)
+    j.pivot.rotation.z = THREE.MathUtils.degToRad(z)
+  }
+}
+
+// Sliders
+const sliders = [
+  { id: 'sl-rx', val: 'val-rx', axis: 'x' },
+  { id: 'sl-ry', val: 'val-ry', axis: 'y' },
+  { id: 'sl-rz', val: 'val-rz', axis: 'z' },
+]
+sliders.forEach(({ id, val, axis }) => {
+  document.getElementById(id).addEventListener('input', e => {
+    const v = parseInt(e.target.value)
+    document.getElementById(val).textContent = v + '°'
+    if (!state.selectedJoint) return
+    const rot = state.jointRotations[state.selectedJoint]
+    rot[axis] = v
+    applyJointRotation(state.selectedJoint, rot.x, rot.y, rot.z)
+  })
+})
+
+// Extension / Flexion (convenience: maps to X rotation)
+document.getElementById('sl-ext').addEventListener('input', e => {
+  const v = parseInt(e.target.value)
+  document.getElementById('val-ext').textContent = v + '°'
+  document.getElementById('sl-flex').value = 0
+  document.getElementById('val-flex').textContent = '0°'
+  if (!state.selectedJoint) return
+  const rot = state.jointRotations[state.selectedJoint]
+  rot.x = v
+  applyJointRotation(state.selectedJoint, rot.x, rot.y, rot.z)
+  document.getElementById('sl-rx').value = v
+  document.getElementById('val-rx').textContent = v + '°'
+})
+document.getElementById('sl-flex').addEventListener('input', e => {
+  const v = parseInt(e.target.value)
+  document.getElementById('val-flex').textContent = v + '°'
+  document.getElementById('sl-ext').value = 0
+  document.getElementById('val-ext').textContent = '0°'
+  if (!state.selectedJoint) return
+  const rot = state.jointRotations[state.selectedJoint]
+  rot.x = -v
+  applyJointRotation(state.selectedJoint, rot.x, rot.y, rot.z)
+  document.getElementById('sl-rx').value = -v
+  document.getElementById('val-rx').textContent = (-v) + '°'
+})
+
+// Reset joint
+document.getElementById('reset-joint-btn').addEventListener('click', () => {
+  if (!state.selectedJoint) return
+  applyJointRotation(state.selectedJoint, 0, 0, 0)
+  resetSliders({ x: 0, y: 0, z: 0 })
+})
+
+// ═══════════════════════════════════════════════════════
+// RAYCASTING — joint click
+// ═══════════════════════════════════════════════════════
+const raycaster = new THREE.Raycaster()
+const mouse = new THREE.Vector2()
+
+renderer.domElement.addEventListener('click', (e) => {
+  if (state.arrowMode) return
+  const rect = renderer.domElement.getBoundingClientRect()
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+  raycaster.setFromCamera(mouse, camera)
+  const meshes = jointObjects.map(j => j.mesh)
+  const hits = raycaster.intersectObjects(meshes)
+  if (hits.length > 0) {
+    const hitMesh = hits[0].object
+    const joint = jointObjects.find(j => j.mesh === hitMesh)
+    if (joint) { selectJoint(joint.name); return }
+  }
+  // click on nothing → deselect
+  // selectJoint(null)
+})
+
+// Part list click
+document.getElementById('parts-list').addEventListener('click', e => {
+  const item = e.target.closest('.part-item')
+  if (item) selectJoint(item.dataset.joint)
+})
+
+// ═══════════════════════════════════════════════════════
+// POSE PRESETS
+// ═══════════════════════════════════════════════════════
+const POSES = {
+  neutre: {
+    epaule_g: { x: 0, y: 0, z: 20 },
+    epaule_d: { x: 0, y: 0, z: -20 },
+    coude_g: { x: 0, y: 0, z: 0 },
+    coude_d: { x: 0, y: 0, z: 0 },
+    poignet_g: { x: 0, y: 0, z: 0 },
+    poignet_d: { x: 0, y: 0, z: 0 },
+    tete: { x: 0, y: 0, z: 0 },
+    hanche_g: { x: 0, y: 0, z: 0 },
+    hanche_d: { x: 0, y: 0, z: 0 },
+    genou_g: { x: 0, y: 0, z: 0 },
+    genou_d: { x: 0, y: 0, z: 0 },
+    cheville_g: { x: 0, y: 0, z: 0 },
+    cheville_d: { x: 0, y: 0, z: 0 },
+  },
+  bras_leves: {
+    epaule_g: { x: 0, y: 0, z: 155 },
+    epaule_d: { x: 0, y: 0, z: -155 },
+    coude_g: { x: 0, y: 0, z: 20 },
+    coude_d: { x: 0, y: 0, z: -20 },
+    poignet_g: { x: 0, y: 0, z: 0 },
+    poignet_d: { x: 0, y: 0, z: 0 },
+    tete: { x: 10, y: 0, z: 0 },
+    hanche_g: { x: 0, y: 0, z: 0 },
+    hanche_d: { x: 0, y: 0, z: 0 },
+    genou_g: { x: 0, y: 0, z: 0 },
+    genou_d: { x: 0, y: 0, z: 0 },
+    cheville_g: { x: 0, y: 0, z: 0 },
+    cheville_d: { x: 0, y: 0, z: 0 },
+  },
+  defensive: {
+    epaule_g: { x: 0, y: 0, z: 75 },
+    epaule_d: { x: 0, y: 0, z: -75 },
+    coude_g: { x: -95, y: 0, z: 0 },
+    coude_d: { x: -95, y: 0, z: 0 },
+    poignet_g: { x: 0, y: 0, z: 0 },
+    poignet_d: { x: 0, y: 0, z: 0 },
+    tete: { x: -5, y: 0, z: 0 },
+    hanche_g: { x: 20, y: 10, z: 5 },
+    hanche_d: { x: 20, y: -10, z: -5 },
+    genou_g: { x: -30, y: 0, z: 0 },
+    genou_d: { x: -30, y: 0, z: 0 },
+    cheville_g: { x: 10, y: 0, z: 0 },
+    cheville_d: { x: 10, y: 0, z: 0 },
+  },
+  course: {
+    epaule_g: { x: -40, y: 0, z: 30 },
+    epaule_d: { x: 40, y: 0, z: -20 },
+    coude_g: { x: -80, y: 0, z: 0 },
+    coude_d: { x: -80, y: 0, z: 0 },
+    poignet_g: { x: 0, y: 0, z: 0 },
+    poignet_d: { x: 0, y: 0, z: 0 },
+    tete: { x: -5, y: 0, z: 0 },
+    hanche_g: { x: -40, y: 0, z: 5 },
+    hanche_d: { x: 30, y: 0, z: -5 },
+    genou_g: { x: 0, y: 0, z: 0 },
+    genou_d: { x: -60, y: 0, z: 0 },
+    cheville_g: { x: -15, y: 0, z: 0 },
+    cheville_d: { x: 20, y: 0, z: 0 },
+  },
+  danse: {
+    epaule_g: { x: 0, y: 0, z: 110 },
+    epaule_d: { x: 0, y: 20, z: -60 },
+    coude_g: { x: -20, y: 0, z: 30 },
+    coude_d: { x: -45, y: 0, z: 0 },
+    poignet_g: { x: 0, y: 30, z: 0 },
+    poignet_d: { x: 0, y: -20, z: 0 },
+    tete: { x: 0, y: 25, z: 5 },
+    hanche_g: { x: 10, y: 0, z: 8 },
+    hanche_d: { x: -30, y: 15, z: -5 },
+    genou_g: { x: -15, y: 0, z: 0 },
+    genou_d: { x: -70, y: 10, z: 0 },
+    cheville_g: { x: 5, y: 0, z: 0 },
+    cheville_d: { x: 30, y: 0, z: 0 },
+  },
+  pensif: {
+    epaule_g: { x: 0, y: 0, z: 15 },
+    epaule_d: { x: 0, y: 0, z: -55 },
+    coude_g: { x: 0, y: 0, z: 0 },
+    coude_d: { x: -100, y: 0, z: 0 },
+    poignet_g: { x: 0, y: 0, z: 0 },
+    poignet_d: { x: 0, y: 0, z: 0 },
+    tete: { x: -10, y: -20, z: 5 },
+    hanche_g: { x: 0, y: 0, z: 0 },
+    hanche_d: { x: 0, y: 0, z: 0 },
+    genou_g: { x: 0, y: 0, z: 0 },
+    genou_d: { x: 0, y: 0, z: 0 },
+    cheville_g: { x: 0, y: 0, z: 0 },
+    cheville_d: { x: 0, y: 0, z: 0 },
+  },
+  pointage: {
+    epaule_g: { x: 0, y: 0, z: 25 },
+    epaule_d: { x: 0, y: 0, z: -85 },
+    coude_g: { x: 0, y: 0, z: 0 },
+    coude_d: { x: 0, y: 0, z: 0 },
+    poignet_g: { x: 0, y: 0, z: 0 },
+    poignet_d: { x: 0, y: 0, z: 0 },
+    tete: { x: 0, y: -30, z: 0 },
+    hanche_g: { x: 0, y: 0, z: 0 },
+    hanche_d: { x: 0, y: 0, z: 0 },
+    genou_g: { x: 0, y: 0, z: 0 },
+    genou_d: { x: 0, y: 0, z: 0 },
+    cheville_g: { x: 0, y: 0, z: 0 },
+    cheville_d: { x: 0, y: 0, z: 0 },
+  },
+  combat: {
+    epaule_g: { x: -10, y: 0, z: 80 },
+    epaule_d: { x: 10, y: 0, z: -65 },
+    coude_g: { x: -90, y: 20, z: 0 },
+    coude_d: { x: -80, y: -20, z: 0 },
+    poignet_g: { x: 0, y: 0, z: 15 },
+    poignet_d: { x: 0, y: 0, z: -10 },
+    tete: { x: -5, y: 15, z: 0 },
+    hanche_g: { x: 15, y: 10, z: 8 },
+    hanche_d: { x: -20, y: -10, z: -5 },
+    genou_g: { x: -30, y: 0, z: 0 },
+    genou_d: { x: -20, y: 0, z: 0 },
+    cheville_g: { x: 15, y: 0, z: 0 },
+    cheville_d: { x: 5, y: 0, z: 0 },
+  },
+  yoga: {
+    epaule_g: { x: 0, y: 0, z: 160 },
+    epaule_d: { x: 0, y: 0, z: -160 },
+    coude_g: { x: 0, y: 0, z: 0 },
+    coude_d: { x: 0, y: 0, z: 0 },
+    poignet_g: { x: 0, y: 0, z: 0 },
+    poignet_d: { x: 0, y: 0, z: 0 },
+    tete: { x: 15, y: 0, z: 0 },
+    hanche_g: { x: 0, y: 0, z: 25 },
+    hanche_d: { x: 0, y: 0, z: -25 },
+    genou_g: { x: -60, y: 40, z: 0 },
+    genou_d: { x: -60, y: -40, z: 0 },
+    cheville_g: { x: 20, y: 0, z: 0 },
+    cheville_d: { x: 20, y: 0, z: 0 },
+  },
+}
+
+function applyPose(poseKey) {
+  const pose = POSES[poseKey]
+  if (!pose) return
+  Object.entries(pose).forEach(([joint, rot]) => {
+    applyJointRotation(joint, rot.x, rot.y, rot.z)
+  })
+  state.activePose = poseKey
+  document.querySelectorAll('.pose-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.pose === poseKey)
+  })
+  if (state.selectedJoint) selectJoint(state.selectedJoint)
+}
+
+document.getElementById('poses-grid').addEventListener('click', e => {
+  const card = e.target.closest('.pose-card')
+  if (card) applyPose(card.dataset.pose)
+})
+
+// ═══════════════════════════════════════════════════════
+// OBJECT LIBRARY
+// ═══════════════════════════════════════════════════════
+document.getElementById('objects-grid').addEventListener('click', e => {
+  const card = e.target.closest('.obj-card')
+  if (!card) return
+  const type = card.dataset.obj
+  const name = card.dataset.name
+  const icon = card.dataset.icon
+  add3DObject(type, name, icon)
+  showToast(`${icon} ${name} ajouté à la scène`)
+})
+
+// ═══════════════════════════════════════════════════════
+// PROMPT GENERATION
+// ═══════════════════════════════════════════════════════
+function generatePrompt() {
+  const parts = []
+
+  // Pose description
+  const poseLabels = {
+    neutre: 'en position neutre debout',
+    bras_leves: 'les deux bras levés au-dessus de la tête',
+    defensive: 'en posture défensive, bras repliés devant le corps',
+    course: 'en mouvement de course dynamique',
+    danse: 'en posture de danse expressive',
+    pensif: 'en posture pensive, une main près du visage',
+    pointage: 'en train de pointer du doigt',
+    combat: 'en posture de combat/garde rapprochée',
+    yoga: 'en position de yoga, bras levés et jambes écartées',
+  }
+  parts.push(`Un mannequin articulé ${poseLabels[state.activePose] || ''}`)
+
+  // Joint rotation descriptions
+  const r = state.jointRotations
+  if (Math.abs(r.tete?.y || 0) > 20) {
+    parts.push(`tête tournée vers ${r.tete.y > 0 ? 'la droite' : 'la gauche'}`)
+  }
+  if (Math.abs(r.tete?.x || 0) > 15) {
+    parts.push(`tête ${r.tete.x > 0 ? 'relevée' : 'baissée'}`)
+  }
+
+  // Objects in scene
+  if (state.sceneObjects.length > 0) {
+    const objDescs = state.sceneObjects.map(obj => {
+      if (obj.label) return `${obj.name} (${obj.label})`
+      return obj.name
+    })
+    parts.push(`avec les objets suivants dans la scène : ${objDescs.join(', ')}`)
+  }
+
+  // Arrows hint
+  if (state.arrows.length > 0) {
+    parts.push(`avec ${state.arrows.length} indication(s) de mouvement (flèches directionnelles)`)
+  }
+
+  parts.push('style illustration technique, fond neutre, éclairage studio')
+
+  const prompt = parts.join(' — ') + '.'
+  document.getElementById('prompt-text').value = prompt
+  showToast('Prompt généré !')
+}
+
+document.getElementById('gen-btn').addEventListener('click', generatePrompt)
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const text = document.getElementById('prompt-text').value
+  if (!text) return showToast('Rien à copier')
+  navigator.clipboard.writeText(text).then(() => showToast('Prompt copié !'))
+})
+
+// ═══════════════════════════════════════════════════════
+// TOOLS
+// ═══════════════════════════════════════════════════════
+const toolButtons = document.querySelectorAll('#toolbar .tool-btn[id^="tool-"]')
+toolButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    toolButtons.forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    const tool = btn.id.replace('tool-', '')
+    controls.enabled = tool !== 'select'  // disable orbit when in select mode? Actually keep it
+    controls.enabled = true
+    state.arrowMode = tool === 'arrow'
+    wrap.classList.toggle('arrow-mode', state.arrowMode)
+    if (tool === 'select') controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN }
+  })
+})
+
+document.getElementById('tool-clear-arrows').addEventListener('click', () => {
+  state.arrows = []
+  state.arrowStart = null
+  const actx = arrowCanvas.getContext('2d')
+  actx.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height)
+  showToast('Flèches effacées')
+})
+
+document.getElementById('reset-all-btn').addEventListener('click', () => {
+  applyPose('neutre')
+  selectJoint(null)
+  state.arrows = []
+  const actx = arrowCanvas.getContext('2d')
+  actx.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height)
+  showToast('Tout réinitialisé')
+})
+
+// Model cards
+document.querySelectorAll('.model-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.model-card').forEach(c => c.classList.remove('active'))
+    card.classList.add('active')
+    showToast(`Modèle « ${card.querySelector('.model-name').textContent} » sélectionné`)
+  })
+})
+
+// Camera controls
+document.getElementById('zoom-in').addEventListener('click', () => {
+  camera.position.multiplyScalar(0.85)
+  controls.update()
+})
+document.getElementById('zoom-out').addEventListener('click', () => {
+  camera.position.multiplyScalar(1.18)
+  controls.update()
+})
+document.getElementById('reset-cam').addEventListener('click', () => {
+  camera.position.set(0, 0.6, 3.2)
+  controls.target.set(0, 0.3, 0)
+  controls.update()
+})
+
+// Image import
+document.getElementById('import-btn').addEventListener('click', () => {
+  document.getElementById('file-input').click()
+})
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = ev => {
+    setBackgroundImage(ev.target.result)
+    showToast('Image importée comme fond de scène')
+  }
+  reader.readAsDataURL(file)
+  e.target.value = ''
+})
+
+// ═══════════════════════════════════════════════════════
+// ARROW DRAWING (2D overlay)
+// ═══════════════════════════════════════════════════════
+const arrowCanvas = document.getElementById('arrow-canvas')
+const actx = arrowCanvas.getContext('2d')
+
+function syncArrowCanvas() {
+  const rect = wrap.getBoundingClientRect()
+  arrowCanvas.width = rect.width
+  arrowCanvas.height = rect.height
+  arrowCanvas.style.width = rect.width + 'px'
+  arrowCanvas.style.height = rect.height + 'px'
+}
+
+function drawArrows() {
+  actx.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height)
+  state.arrows.forEach(arrow => drawArrow(actx, arrow.x1, arrow.y1, arrow.x2, arrow.y2))
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color = '#FF4B6F', width = 2.5) {
+  const dx = x2 - x1, dy = y2 - y1
+  const len = Math.sqrt(dx*dx + dy*dy)
+  if (len < 5) return
+  const angle = Math.atan2(dy, dx)
+  const hs = Math.min(20, len * 0.4)
+  ctx.save()
+  ctx.strokeStyle = color
+  ctx.fillStyle = color
+  ctx.lineWidth = width
+  ctx.lineCap = 'round'
+  ctx.shadowColor = color
+  ctx.shadowBlur = 6
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2 - Math.cos(angle) * hs * 0.5, y2 - Math.sin(angle) * hs * 0.5)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(x2, y2)
+  ctx.lineTo(x2 - hs * Math.cos(angle - 0.45), y2 - hs * Math.sin(angle - 0.45))
+  ctx.lineTo(x2 - hs * 0.6 * Math.cos(angle), y2 - hs * 0.6 * Math.sin(angle))
+  ctx.lineTo(x2 - hs * Math.cos(angle + 0.45), y2 - hs * Math.sin(angle + 0.45))
+  ctx.closePath()
+  ctx.fill()
+  ctx.restore()
+}
+
+let arrowDrawing = false
+let arrowTmpStart = null
+
+wrap.addEventListener('mousedown', e => {
+  if (!state.arrowMode) return
+  const rect = wrap.getBoundingClientRect()
+  arrowDrawing = true
+  arrowTmpStart = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+})
+
+wrap.addEventListener('mousemove', e => {
+  if (!state.arrowMode || !arrowDrawing) return
+  const rect = wrap.getBoundingClientRect()
+  const cx = e.clientX - rect.left
+  const cy = e.clientY - rect.top
+  drawArrows()
+  drawArrow(actx, arrowTmpStart.x, arrowTmpStart.y, cx, cy, '#FF4B6F', 2)
+})
+
+wrap.addEventListener('mouseup', e => {
+  if (!state.arrowMode || !arrowDrawing) return
+  arrowDrawing = false
+  const rect = wrap.getBoundingClientRect()
+  const ex = e.clientX - rect.left
+  const ey = e.clientY - rect.top
+  const dx = ex - arrowTmpStart.x, dy = ey - arrowTmpStart.y
+  if (Math.sqrt(dx*dx + dy*dy) > 15) {
+    state.arrows.push({ x1: arrowTmpStart.x, y1: arrowTmpStart.y, x2: ex, y2: ey })
+  }
+  drawArrows()
+})
+
+// ═══════════════════════════════════════════════════════
+// RESIZE
+// ═══════════════════════════════════════════════════════
+function resize() {
+  const rect = wrap.getBoundingClientRect()
+  const w = rect.width, h = rect.height
+  camera.aspect = w / h
+  camera.updateProjectionMatrix()
+  renderer.setSize(w, h, false)
+  syncArrowCanvas()
+}
+
+const ro = new ResizeObserver(resize)
+ro.observe(wrap)
+resize()
+
+// ═══════════════════════════════════════════════════════
+// ANIMATION LOOP
+// ═══════════════════════════════════════════════════════
+function animate() {
+  requestAnimationFrame(animate)
+  controls.update()
+  renderer.render(scene, camera)
+}
+animate()
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimer = null
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200)
+}
+
+// Initial pose
+applyPose('neutre')
+</script>
+</body>
+</html>
