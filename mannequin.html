@@ -25,13 +25,79 @@
 }
 html,body{height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:13px}
 
-/* ── LAYOUT ─────────────────────────────────────────── */
+/* ── LAYOUT DESKTOP ──────────────────────────────────── */
 #app{
   display:grid;
   grid-template-columns:230px 1fr 270px;
   grid-template-rows:48px 1fr 270px;
   height:100vh;
   gap:0;
+}
+
+/* ── LAYOUT MOBILE ───────────────────────────────────── */
+@media(max-width:768px){
+  html,body{overflow:auto;height:auto}
+  #app{
+    display:flex;flex-direction:column;
+    height:auto;min-height:100vh;
+  }
+  #toolbar{
+    position:sticky;top:0;z-index:100;
+    flex-wrap:wrap;gap:6px;padding:8px;
+    grid-column:unset;grid-row:unset;
+  }
+  .tool-sep{display:none}
+  .app-title{font-size:13px;width:100%}
+  #tool-orbit,#tool-clear-arrows,#reset-all-btn{display:none}
+  #import-btn{margin-left:0;font-size:11px;padding:5px 10px}
+  #left-panel,#right-panel{
+    display:none;
+    grid-column:unset;grid-row:unset;
+  }
+  #canvas-wrap{
+    grid-column:unset;grid-row:unset;
+    width:100%;height:320px;flex-shrink:0;
+  }
+  #bottom-panel{
+    grid-column:unset;grid-row:unset;
+    display:flex;flex-direction:column;
+    border-top:none;overflow:visible;
+    flex:1;
+  }
+  .bottom-section{
+    border-right:none;
+    border-bottom:1px solid var(--border);
+    overflow:visible;
+  }
+  /* Mobile tabs for controls */
+  #mobile-tabs{
+    display:flex;
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    overflow-x:auto;
+    flex-shrink:0;
+  }
+  .mob-tab{
+    flex:1;min-width:80px;padding:10px 8px;
+    background:transparent;border:none;
+    color:var(--txt2);font-size:11px;font-weight:600;
+    cursor:pointer;text-align:center;white-space:nowrap;
+    border-bottom:2px solid transparent;transition:all .15s;
+  }
+  .mob-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  #mobile-panel{
+    background:var(--panel);
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    overflow-y:auto;
+    max-height:280px;
+  }
+  #mobile-panel .model-grid{grid-template-columns:repeat(4,1fr)}
+  #mobile-panel .poses-grid{grid-template-columns:repeat(5,1fr)}
+  #mobile-panel .objects-grid{grid-template-columns:repeat(5,1fr)}
+}
+@media(min-width:769px){
+  #mobile-tabs,#mobile-panel{display:none}
 }
 
 /* ── HEADER ─────────────────────────────────────────── */
@@ -394,6 +460,16 @@ input[type=range]::-webkit-slider-thumb:hover{background:var(--accent2)}
     </div>
   </div>
 </div>
+
+<!-- MOBILE TABS -->
+<div id="mobile-tabs">
+  <button class="mob-tab active" data-tab="mannequin">🧍 Mannequin</button>
+  <button class="mob-tab" data-tab="controles">🎛️ Contrôles</button>
+  <button class="mob-tab" data-tab="poses">💃 Poses</button>
+  <button class="mob-tab" data-tab="objets">📦 Objets</button>
+  <button class="mob-tab" data-tab="prompt">✨ Prompt</button>
+</div>
+<div id="mobile-panel" style="display:none"></div>
 
 <!-- 3D CANVAS -->
 <div id="canvas-wrap">
@@ -1451,6 +1527,194 @@ function showToast(msg) {
 
 // Initial pose
 applyPose('neutre')
+
+// ═══════════════════════════════════════════════════════
+// MOBILE TABS
+// ═══════════════════════════════════════════════════════
+const mobilePanel = document.getElementById('mobile-panel')
+const mobileTabs = document.getElementById('mobile-tabs')
+
+const MOBILE_CONTENT = {
+  mannequin: () => `
+    <div class="section-title" style="margin-bottom:10px">Sélection du mannequin</div>
+    <div class="model-grid">
+      <div class="model-card active" data-model="standard"><div class="model-icon">🧍</div><div class="model-name">Standard</div></div>
+      <div class="model-card" data-model="slim"><div class="model-icon">🧍‍♀️</div><div class="model-name">Slim</div></div>
+      <div class="model-card" data-model="muscular"><div class="model-icon">💪</div><div class="model-name">Musclé</div></div>
+      <div class="model-card" data-model="child"><div class="model-icon">🧒</div><div class="model-name">Enfant</div></div>
+    </div>
+    <div class="section-title" style="margin:12px 0 8px">Contrôle rapide par partie</div>
+    <div class="parts-list" id="mob-parts-list">
+      ${Object.entries(JOINT_NAMES).map(([k,v])=>`
+        <div class="part-item" data-joint="${k}"><div class="part-dot"></div><div class="part-name">${v}</div></div>
+      `).join('')}
+    </div>`,
+  controles: () => `
+    <div class="section-title" style="margin-bottom:8px">Joint sélectionné : <span style="color:var(--accent)">${state.selectedJoint ? JOINT_NAMES[state.selectedJoint] : 'Aucun — tap un joint ci-dessus'}</span></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${['rx','ry','rz'].map((ax,i)=>`
+        <div class="slider-row">
+          <div class="slider-label"><span>Rotation ${['X','Y','Z'][i]}</span><span class="slider-val" id="mob-val-${ax}">0°</span></div>
+          <input type="range" id="mob-sl-${ax}" min="-180" max="180" value="0">
+        </div>`).join('')}
+      <div class="slider-row">
+        <div class="slider-label"><span>Extension</span><span class="slider-val" id="mob-val-ext">0°</span></div>
+        <input type="range" id="mob-sl-ext" min="0" max="180" value="0">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>Flexion</span><span class="slider-val" id="mob-val-flex">0°</span></div>
+        <input type="range" id="mob-sl-flex" min="0" max="90" value="0">
+      </div>
+    </div>
+    <button class="reset-joint-btn" id="mob-reset-joint" style="margin:12px 0 0;width:100%">↺ Réinitialiser articulation</button>`,
+  poses: () => `
+    <div class="section-title" style="margin-bottom:8px">Préréglages de poses</div>
+    <div class="poses-grid">
+      ${[['neutre','🧍','Neutre'],['bras_leves','🙌','Bras levés'],['defensive','🛡️','Défensive'],['course','🏃','Course'],['danse','💃','Danse'],['pensif','🤔','Pensif'],['pointage','👉','Pointage'],['combat','🥊','Combat'],['yoga','🧘','Yoga']].map(([k,e,n])=>`
+        <div class="pose-card ${state.activePose===k?'active':''}" data-pose="${k}"><div class="pose-emoji">${e}</div><div class="pose-name">${n}</div></div>
+      `).join('')}
+    </div>`,
+  objets: () => `
+    <div class="section-title" style="margin-bottom:8px">Bibliothèque d'objets</div>
+    <div class="objects-grid" id="mob-obj-grid">
+      ${[['epee','⚔️','Épée'],['pistolet','🔫','Pistolet'],['bouclier','🛡️','Bouclier'],['arc','🏹','Arc'],['hache','🪓','Hache'],['telephone','📱','Téléphone'],['sac','👜','Sac'],['marteau','🔨','Marteau'],['livre','📖','Livre'],['bouteille','🍶','Bouteille'],['ballon','⚽','Ballon'],['lampe','🔦','Lampe'],['cle','🗝️','Clé'],['caméra','📷','Caméra'],['fleur','🌹','Fleur']].map(([t,i,n])=>`
+        <div class="obj-card" data-obj="${t}" data-icon="${i}" data-name="${n}"><div class="obj-card-icon">${i}</div><div class="obj-card-name">${n}</div></div>
+      `).join('')}
+    </div>
+    <div class="section-title" style="margin:12px 0 8px">Objets dans la scène</div>
+    <div id="mob-scene-obj-list">${state.sceneObjects.length===0?'<div class="no-obj">Aucun objet ajouté.</div>':state.sceneObjects.map(o=>`<div class="obj-item"><span class="obj-icon">${o.icon}</span><div class="obj-info"><div class="obj-title">${o.name}</div><input class="obj-label-input" data-id="${o.id}" type="text" placeholder="Décrire le rôle…" value="${o.label}"></div><button class="obj-del" data-del="${o.id}">✕</button></div>`).join('')}</div>`,
+  prompt: () => `
+    <div class="section-title" style="margin-bottom:8px">Génération du prompt IA</div>
+    <textarea id="mob-prompt-text" style="width:100%;min-height:100px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--txt);font-size:11px;line-height:1.6;resize:none;outline:none;font-family:inherit" placeholder="Cliquez Générer pour créer le prompt…">${document.getElementById('prompt-text').value}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="prompt-btn" id="mob-gen-btn" style="flex:1;padding:10px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer">⚡ Générer</button>
+      <button class="prompt-btn" id="mob-copy-btn" style="flex:1;padding:10px;border-radius:6px;border:1px solid var(--border);background:var(--panel2);color:var(--txt);cursor:pointer">📋 Copier</button>
+    </div>`,
+}
+
+function renderMobileTab(tab) {
+  if (!mobilePanel) return
+  const isMobile = window.innerWidth <= 768
+  if (!isMobile) return
+  if (tab === 'mannequin') {
+    mobilePanel.style.display = 'none'
+    document.getElementById('canvas-wrap').style.display = 'block'
+  } else {
+    mobilePanel.style.display = 'block'
+    document.getElementById('canvas-wrap').style.display = tab === 'mannequin' ? 'block' : 'none'
+    mobilePanel.innerHTML = MOBILE_CONTENT[tab]()
+    bindMobilePanel(tab)
+  }
+  // always show canvas
+  document.getElementById('canvas-wrap').style.display = 'block'
+  resize()
+}
+
+function bindMobilePanel(tab) {
+  if (tab === 'mannequin') {
+    mobilePanel.querySelectorAll('.part-item').forEach(el => {
+      el.addEventListener('click', () => selectJoint(el.dataset.joint))
+    })
+  }
+  if (tab === 'controles') {
+    const syncMobSliders = () => {
+      if (!state.selectedJoint) return
+      const rot = state.jointRotations[state.selectedJoint]
+      ;['rx','ry','rz'].forEach((ax,i) => {
+        const sl = document.getElementById('mob-sl-'+ax)
+        const vl = document.getElementById('mob-val-'+ax)
+        if(sl){ sl.value = rot[['x','y','z'][i]]; vl.textContent = rot[['x','y','z'][i]]+'°' }
+      })
+    }
+    syncMobSliders()
+    ;['rx','ry','rz'].forEach((ax,i) => {
+      const sl = document.getElementById('mob-sl-'+ax)
+      const vl = document.getElementById('mob-val-'+ax)
+      if(!sl) return
+      sl.addEventListener('input', e => {
+        const v = parseInt(e.target.value)
+        vl.textContent = v+'°'
+        if(!state.selectedJoint) return
+        const rot = state.jointRotations[state.selectedJoint]
+        rot[['x','y','z'][i]] = v
+        applyJointRotation(state.selectedJoint, rot.x, rot.y, rot.z)
+      })
+    })
+    const extSl = document.getElementById('mob-sl-ext')
+    const flexSl = document.getElementById('mob-sl-flex')
+    if(extSl) extSl.addEventListener('input', e => {
+      const v = parseInt(e.target.value)
+      document.getElementById('mob-val-ext').textContent = v+'°'
+      if(!state.selectedJoint) return
+      const rot = state.jointRotations[state.selectedJoint]
+      rot.x = v; applyJointRotation(state.selectedJoint, rot.x, rot.y, rot.z)
+    })
+    if(flexSl) flexSl.addEventListener('input', e => {
+      const v = parseInt(e.target.value)
+      document.getElementById('mob-val-flex').textContent = v+'°'
+      if(!state.selectedJoint) return
+      const rot = state.jointRotations[state.selectedJoint]
+      rot.x = -v; applyJointRotation(state.selectedJoint, rot.x, rot.y, rot.z)
+    })
+    const resetBtn = document.getElementById('mob-reset-joint')
+    if(resetBtn) resetBtn.addEventListener('click', () => {
+      if(!state.selectedJoint) return
+      applyJointRotation(state.selectedJoint, 0, 0, 0)
+      syncMobSliders()
+    })
+  }
+  if (tab === 'poses') {
+    mobilePanel.querySelectorAll('.pose-card').forEach(c => {
+      c.addEventListener('click', () => { applyPose(c.dataset.pose); renderMobileTab('poses') })
+    })
+  }
+  if (tab === 'objets') {
+    mobilePanel.querySelectorAll('.obj-card').forEach(c => {
+      c.addEventListener('click', () => {
+        add3DObject(c.dataset.obj, c.dataset.name, c.dataset.icon)
+        showToast(c.dataset.icon+' '+c.dataset.name+' ajouté')
+        renderMobileTab('objets')
+      })
+    })
+    mobilePanel.querySelectorAll('.obj-label-input').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const obj = state.sceneObjects.find(o => o.id == e.target.dataset.id)
+        if(obj) obj.label = e.target.value
+      })
+    })
+    mobilePanel.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        removeSceneObject(parseFloat(e.currentTarget.dataset.del))
+        renderMobileTab('objets')
+      })
+    })
+  }
+  if (tab === 'prompt') {
+    const genBtn = document.getElementById('mob-gen-btn')
+    const copyBtn = document.getElementById('mob-copy-btn')
+    const txt = document.getElementById('mob-prompt-text')
+    if(genBtn) genBtn.addEventListener('click', () => {
+      generatePrompt()
+      if(txt) txt.value = document.getElementById('prompt-text').value
+    })
+    if(copyBtn) copyBtn.addEventListener('click', () => {
+      const val = txt ? txt.value : document.getElementById('prompt-text').value
+      if(!val) return showToast('Rien à copier')
+      navigator.clipboard.writeText(val).then(() => showToast('Prompt copié !'))
+    })
+  }
+}
+
+if (mobileTabs) {
+  mobileTabs.addEventListener('click', e => {
+    const btn = e.target.closest('.mob-tab')
+    if (!btn) return
+    mobileTabs.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    renderMobileTab(btn.dataset.tab)
+  })
+  if (window.innerWidth <= 768) renderMobileTab('mannequin')
+}
 </script>
 </body>
 </html>
