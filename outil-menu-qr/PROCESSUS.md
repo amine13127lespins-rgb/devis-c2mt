@@ -93,4 +93,6 @@ Screenshots avec le Chromium préinstallé (`/opt/pw-browsers/` + playwright-cor
 
 | Client | Repo | URL | Domaine | Statut |
 |---|---|---|---|---|
-| Le 444 (Marseille 13003) | `Menu-444` | amine13127lespins-rgb.github.io/Menu-444/ | — | Démo prête, à vendre |
+| Le 444 (Marseille 13003) | `Menu-444` | amine13127lespins-rgb.github.io/Menu-444/ | — | ✅ VENDU 30€ (juil. 2026) — proposer l'abonnement mensuel + domaine |
+
+> Leçon pricing : 30€ était trop bas pour la 1ère vente. Prochains clients : 80-150€ minimum la création + 10-20€/mois d'abonnement (domaine, hébergement, modifs). Utiliser Le 444 comme référence démo.
