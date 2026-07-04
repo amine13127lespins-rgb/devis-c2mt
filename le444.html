@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le 444 — La Carte | Snack Marseille</title>
+<meta name="description" content="La carte du Snack Le 444 — Pizzas, sandwichs, tacos, burgers, tex mex. 444 Boulevard National, 13003 Marseille.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0f14; --card:#151922; --card2:#1a1f2b;
+  --gold:#f5b942; --red:#e63946; --text:#f2ede3; --sub:#9aa3b2;
+  --line:rgba(245,185,66,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:130px}
+body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(230,57,70,.12),transparent),
+  radial-gradient(ellipse 60% 40% at 90% 10%,rgba(245,185,66,.06),transparent)}
+/* ---------- HERO ---------- */
+.hero{text-align:center;padding:44px 16px 26px;position:relative}
+.hero .num{font-family:'Bebas Neue',cursive;font-size:clamp(4.6rem,16vw,7.5rem);line-height:.9;
+  background:linear-gradient(180deg,#ffd97a 0%,var(--gold) 45%,#c77b1e 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 24px rgba(245,185,66,.35));letter-spacing:4px}
+.hero .le{font-family:'Bebas Neue',cursive;font-size:clamp(1.2rem,4vw,1.7rem);letter-spacing:10px;color:var(--red);text-transform:uppercase}
+.hero .tagline{color:var(--sub);font-size:.95rem;margin-top:10px;letter-spacing:.5px}
+.badges{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.badge{font-size:.75rem;font-weight:600;padding:6px 14px;border-radius:999px;letter-spacing:.5px}
+.badge.halal{background:rgba(46,160,90,.15);color:#5fd08a;border:1px solid rgba(95,208,138,.35)}
+.badge.loc{background:rgba(245,185,66,.1);color:var(--gold);border:1px solid var(--line)}
+.divider{width:70px;height:3px;margin:26px auto 0;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+/* ---------- NAV ---------- */
+nav{position:sticky;top:0;z-index:50;background:rgba(13,15,20,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);padding:10px 0}
+.pills{display:flex;gap:8px;overflow-x:auto;padding:2px 14px;scrollbar-width:none}
+.pills::-webkit-scrollbar{display:none}
+.pill{flex:0 0 auto;text-decoration:none;color:var(--sub);font-size:.82rem;font-weight:600;
+  padding:8px 14px;border-radius:999px;background:var(--card);border:1px solid transparent;
+  transition:all .2s;white-space:nowrap}
+.pill:hover,.pill.active{color:var(--gold);border-color:var(--line);background:var(--card2)}
+/* ---------- SECTIONS ---------- */
+main{max-width:760px;margin:0 auto;padding:10px 16px 40px}
+.cat{margin-top:36px}
+.cat-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.cat-icon{font-size:1.6rem}
+.cat h2{font-family:'Bebas Neue',cursive;font-size:1.9rem;letter-spacing:2px;color:var(--gold);font-weight:400}
+.cat-count{margin-left:auto;font-size:.72rem;color:var(--sub);background:var(--card);
+  padding:4px 10px;border-radius:999px;border:1px solid var(--line)}
+.items{background:var(--card);border:1px solid rgba(255,255,255,.05);border-radius:18px;
+  padding:6px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.item{padding:15px 0;border-bottom:1px dashed rgba(255,255,255,.07)}
+.item:last-child{border-bottom:none}
+.item-head{display:flex;align-items:baseline;gap:10px}
+.item-name{font-weight:600;font-size:.98rem}
+.dots{flex:1;border-bottom:2px dotted rgba(245,185,66,.25);transform:translateY(-4px)}
+.item-price{font-family:'Bebas Neue',cursive;font-size:1.25rem;color:var(--gold);letter-spacing:1px;white-space:nowrap}
+.item-desc{font-size:.82rem;color:var(--sub);margin-top:5px;line-height:1.5;max-width:85%}
+/* ---------- FOOTER ---------- */
+footer{border-top:1px solid var(--line);margin-top:50px;padding:36px 16px 46px;text-align:center}
+footer .f-num{font-family:'Bebas Neue',cursive;font-size:2rem;color:var(--gold);letter-spacing:3px}
+footer p{color:var(--sub);font-size:.88rem;margin-top:8px;line-height:1.7}
+footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing:1px}
+.pay{margin-top:14px;font-size:.75rem;color:var(--sub);opacity:.8}
+/* back to top */
+#top-btn{position:fixed;right:16px;bottom:16px;width:46px;height:46px;border-radius:50%;
+  background:var(--card2);color:var(--gold);border:1px solid var(--line);font-size:1.2rem;
+  cursor:pointer;display:none;align-items:center;justify-content:center;z-index:60;
+  box-shadow:0 6px 20px rgba(0,0,0,.5)}
+@media(max-width:520px){.item-desc{max-width:100%}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="le">Snack&nbsp;Le</div>
+  <div class="num">444</div>
+  <p class="tagline">Pizzas &bull; Sandwichs &bull; Tacos &bull; Burgers &bull; Tex Mex</p>
+  <div class="badges">
+    <span class="badge halal">✓ 100% HALAL</span>
+    <span class="badge loc">📍 444 Bd National, 13003 Marseille</span>
+  </div>
+  <div class="divider"></div>
+</header>
+
+<nav><div class="pills"><a class="pill" href="#nos-pizzas-taille-m">🍕 Pizzas M</a><a class="pill" href="#nos-pizzas-taille-l">🍕 Pizzas L</a><a class="pill" href="#nos-sandwichs">🥙 Sandwichs</a><a class="pill" href="#nos-tacos">🌯 Tacos</a><a class="pill" href="#nos-paninis">🥪 Paninis</a><a class="pill" href="#nos-burgers">🍔 Burgers</a><a class="pill" href="#nos-menus-enfant">🧒 Enfant</a><a class="pill" href="#nos-salades">🥗 Salades</a><a class="pill" href="#nos-assiettes">🍽️ Assiettes</a><a class="pill" href="#nos-tex-mex">🍗 Tex Mex</a><a class="pill" href="#nos-desserts">🍰 Desserts</a><a class="pill" href="#nos-boissons">🥤 Boissons</a></div></nav>
+
+<main>
+<section class="cat" id="nos-pizzas-taille-m">
+  <div class="cat-header"><span class="cat-icon">🍕</span><h2>Nos Pizzas Taille M</h2><span class="cat-count">35</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Fromage</span><span class="dots"></span><span class="item-price">4,00&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Anchois</span><span class="dots"></span><span class="item-price">5,00&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, anchois</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Moitié moitié</span><span class="dots"></span><span class="item-price">5,90&nbsp;€</span></div>
+  <p class="item-desc">Moitié anchois, moitié emmental</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Champignons</span><span class="dots"></span><span class="item-price">5,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, champignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Mozzarella</span><span class="dots"></span><span class="item-price">6,00&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, mozzarella</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Roquefort</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, roquefort</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Chèvre</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, chèvre</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Reblochon</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, reblochon</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Crémière thon</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, thon</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Jambon de dinde</span><span class="dots"></span><span class="item-price">6,00&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, jambon de dinde</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Merguez</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, merguez</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Chorizo</span><span class="dots"></span><span class="item-price">7,00&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, chorizo</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">4 fromages</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, chèvre, roquefort, mozzarella</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Arménienne</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, viande hachée, oignons, poivrons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Royale</span><span class="dots"></span><span class="item-price">7,00&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, jambon de dinde, champignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Poulet curry</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, poulet curry</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Pissaladière tomate</span><span class="dots"></span><span class="item-price">8,00&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, tomates fraîches, câpres, anchois</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Oranaise</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, merguez, oeuf</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tunisienne</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, salade mechouia, thon, câpres, oeuf</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Orientale</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, champignons, poulet</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Kébab tomate</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, kebab</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Fruits de mer</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, cocktail de fruits de mer</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière jambon</span><span class="dots"></span><span class="item-price">6,00&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, jambon de dinde</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière mozzarella</span><span class="dots"></span><span class="item-price">7,00&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, champignons, jambon de dinde, mozzarella</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière chèvre</span><span class="dots"></span><span class="item-price">7,00&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, champignons, jambon de dinde, fromage de chèvre</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière roquefort</span><span class="dots"></span><span class="item-price">7,00&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, champignons, jambon de dinde, Roquefort</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière reblochon</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, champignons, jambon de dinde, Reblochon</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Crémière thon</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, thon</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Crèmière poulet curry</span><span class="dots"></span><span class="item-price">8,00&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, poulet curry</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Norvégienne</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, saumon fumé</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Grecque</span><span class="dots"></span><span class="item-price">9,00&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, viande hachée, poivrons, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Charcutière</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, blanc de poulet, chorizo, jambon de dinde</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Kebab crème</span><span class="dots"></span><span class="item-price">8,00&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, kebab</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Chèvre miel</span><span class="dots"></span><span class="item-price">8,00&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, chèvre, miel</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tartiflette</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, lardons de volaille, pommes de terre, reblochon</p>
+</div></div>
+</section>
+<section class="cat" id="nos-pizzas-taille-l">
+  <div class="cat-header"><span class="cat-icon">🍕</span><h2>Nos Pizzas Taille L</h2><span class="cat-count">35</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Fromage</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Anchois</span><span class="dots"></span><span class="item-price">7,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, anchois</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Moitié moitié</span><span class="dots"></span><span class="item-price">7,90&nbsp;€</span></div>
+  <p class="item-desc">Moitié anchois, moitié emmental</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Champignons</span><span class="dots"></span><span class="item-price">9,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, champignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Mozzarella</span><span class="dots"></span><span class="item-price">9,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, mozzarella</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Roquefort</span><span class="dots"></span><span class="item-price">10,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, roquefort</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Chèvre</span><span class="dots"></span><span class="item-price">10,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, chèvre</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Reblochon</span><span class="dots"></span><span class="item-price">11,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, reblochon</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Crémière thon</span><span class="dots"></span><span class="item-price">11,50&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, thon</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Jambon de dinde</span><span class="dots"></span><span class="item-price">9,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, jambon de dinde</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Merguez</span><span class="dots"></span><span class="item-price">11,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, merguez</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Chorizo</span><span class="dots"></span><span class="item-price">10,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, chorizo</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">4 fromages</span><span class="dots"></span><span class="item-price">11,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, chèvre, roquefort, mozzarella</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Arménienne</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, viande hachée, oignons, poivrons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Royale</span><span class="dots"></span><span class="item-price">10,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, jambon de dinde, champignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Poulet curry</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, poulet curry</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Pissaladière tomate</span><span class="dots"></span><span class="item-price">12,00&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, tomates fraîches, câpres, anchois</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Oranaise</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, merguez, oeuf</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tunisienne</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, salade mechouia, thon, câpres, oeuf</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Orientale</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, champignons, poulet</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Kébab tomate</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, kebab</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Fruits de mer</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base sauce tomate, emmental, cocktail de fruits de mer</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière jambon</span><span class="dots"></span><span class="item-price">9,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, jambon de dinde</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière mozzarella</span><span class="dots"></span><span class="item-price">10,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, champignons, jambon de dinde, mozzarella</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière chèvre</span><span class="dots"></span><span class="item-price">10,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, champignons, jambon de dinde, fromage de chèvre</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière roquefort</span><span class="dots"></span><span class="item-price">10,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, champignons, jambon de dinde, Roquefort</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière reblochon</span><span class="dots"></span><span class="item-price">11,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, champignons, jambon de dinde, Reblochon</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Crémière thon</span><span class="dots"></span><span class="item-price">11,50&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, thon</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Crèmière poulet curry</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, poulet curry</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Norvégienne</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, saumon fumé</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Grecque</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, viande hachée, poivrons, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Charcutière</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, blanc de poulet, chorizo, jambon de dinde</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Kebab crème</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, emmental, kebab</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Cremière chèvre miel</span><span class="dots"></span><span class="item-price">12,50&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, chèvre, miel</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tartiflette</span><span class="dots"></span><span class="item-price">12,90&nbsp;€</span></div>
+  <p class="item-desc">Base crème fraîche, lardons de volaille, pommes de terre, reblochon</p>
+</div></div>
+</section>
+<section class="cat" id="nos-sandwichs">
+  <div class="cat-header"><span class="cat-icon">🥙</span><h2>Nos Sandwichs</h2><span class="cat-count">26</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich kebab</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, viande kebab</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich 444</span><span class="dots"></span><span class="item-price">9,90&nbsp;€</span></div>
+  <p class="item-desc">1 viande au choix, galette maison, jambon de dinde, mozzarella, cheddar</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich tenders</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, tenders</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich makloub</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, viande au choix, fromage râpé, frites maison</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich steak haché</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, steak haché</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich merguez</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, merguez</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich chiche kefta</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, kefta</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich escalope</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, escalope de poulet</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich cordon bleu</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, cordon bleu</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich poulet curry</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, poulet curry</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich poisson pané</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, poisson pané</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich escalope panée</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, escalope panée</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich kebab</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, viande kebab + 1 portion de frites + 1 boisson 33 cl</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich 444</span><span class="dots"></span><span class="item-price">10,90&nbsp;€</span></div>
+  <p class="item-desc">1 viande au choix, galette maison, jambon de dinde, mozzarella, cheddar + 1 portion de frites + 1 boisson 33 cl</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich makloub</span><span class="dots"></span><span class="item-price">9,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, viande au choix, fromage râpé, frites maison et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Sandwich poulet paprika</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, poulet paprika</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich steak haché</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, steak haché, sauce et boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich merguez</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich chiche kefta</span><span class="dots"></span><span class="item-price">7,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich escalope</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich cordon bleu</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich poulet curry</span><span class="dots"></span><span class="item-price">7,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich poulet paprika</span><span class="dots"></span><span class="item-price">7,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich poisson pané</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich tenders</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu sandwich escalope panée</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, sauce et boisson au choix</p>
+</div></div>
+</section>
+<section class="cat" id="nos-tacos">
+  <div class="cat-header"><span class="cat-icon">🌯</span><h2>Nos Tacos</h2><span class="cat-count">6</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Tacos 1 viande seul</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 viande au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tacos 2 viandes seul</span><span class="dots"></span><span class="item-price">9,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, 2 viandes au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tacos 3 viandes seul</span><span class="dots"></span><span class="item-price">10,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, 3 viandes au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu tacos 1 viande</span><span class="dots"></span><span class="item-price">9,00&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 viande au choix, 1 portion de frites et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu tacos 2 viandes</span><span class="dots"></span><span class="item-price">11,00&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, 2 viandes au choix,1 portion de frites et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu tacos 3 viandes</span><span class="dots"></span><span class="item-price">12,00&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons, 3 viandes au choix, 1 portion de frites et 1 boisson 33 cl au choix</p>
+</div></div>
+</section>
+<section class="cat" id="nos-paninis">
+  <div class="cat-header"><span class="cat-icon">🥪</span><h2>Nos Paninis</h2><span class="cat-count">14</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Panini mozzarella</span><span class="dots"></span><span class="item-price">4,90&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Panini 4 fromages</span><span class="dots"></span><span class="item-price">5,90&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Panini jambon de dinde</span><span class="dots"></span><span class="item-price">5,50&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Panini oriental</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Panini thon</span><span class="dots"></span><span class="item-price">5,50&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Panini poulet</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Panini saumon fumé</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu panini mozzarella</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Servi avec frites et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu panini 4 fromages</span><span class="dots"></span><span class="item-price">7,90&nbsp;€</span></div>
+  <p class="item-desc">Servi avec frites et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu panini jambon de dinde</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Servi avec frites et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu panini oriental</span><span class="dots"></span><span class="item-price">7,90&nbsp;€</span></div>
+  <p class="item-desc">Servi avec frites et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu panini thon</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
+  <p class="item-desc">Servi avec frites et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu panini poulet</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Servi avec frites et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu panini saumon fumé</span><span class="dots"></span><span class="item-price">8,90&nbsp;€</span></div>
+  <p class="item-desc">Servi avec frites et 1 boisson 33 cl au choix</p>
+</div></div>
+</section>
+<section class="cat" id="nos-burgers">
+  <div class="cat-header"><span class="cat-icon">🍔</span><h2>Nos Burgers</h2><span class="cat-count">16</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Cheese burger</span><span class="dots"></span><span class="item-price">4,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Fish burger</span><span class="dots"></span><span class="item-price">4,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Big burger</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Hamburger</span><span class="dots"></span><span class="item-price">4,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Double fish burger</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Double chicken burger</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Mix burger</span><span class="dots"></span><span class="item-price">6,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Chicken burger</span><span class="dots"></span><span class="item-price">4,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu cheese burger</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 sauce au choix et 1 boisson 33 cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu fish burger</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 sauce au choix et 1 boisson 33cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu big burger</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 sauce au choix et 1 boisson 33cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu hamburger</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 sauce au choix et 1 boisson 33cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu double fish burger</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 sauce au choix et 1 boisson 33cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu double chicken burger</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 sauce au choix et 1 boisson 33cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu mix burger</span><span class="dots"></span><span class="item-price">8,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 sauce au choix et 1 boisson 33cl au choix</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Menu chicken burger</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, oignons,1 sauce au choix et 1 boisson 33cl au choix</p>
+</div></div>
+</section>
+<section class="cat" id="nos-menus-enfant">
+  <div class="cat-header"><span class="cat-icon">🧒</span><h2>Nos Menus Enfant</h2><span class="cat-count">1</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Menu enfant avec surprise</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
+  <p class="item-desc">Cheeseburger ou fish burger ou chicken burger ou 6 nuggets ou 3 tenders au choix</p>
+</div></div>
+</section>
+<section class="cat" id="nos-salades">
+  <div class="cat-header"><span class="cat-icon">🥗</span><h2>Nos Salades</h2><span class="cat-count">4</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Salade niçoise</span><span class="dots"></span><span class="item-price">6,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Salade fromage</span><span class="dots"></span><span class="item-price">6,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Salade poulet</span><span class="dots"></span><span class="item-price">6,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Salade jambon de dinde</span><span class="dots"></span><span class="item-price">6,99&nbsp;€</span></div>
+  
+</div></div>
+</section>
+<section class="cat" id="nos-assiettes">
+  <div class="cat-header"><span class="cat-icon">🍽️</span><h2>Nos Assiettes</h2><span class="cat-count">2</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Assiette 1 viande</span><span class="dots"></span><span class="item-price">11,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, frites</p>
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Assiette 2 viandes</span><span class="dots"></span><span class="item-price">12,50&nbsp;€</span></div>
+  <p class="item-desc">Salade, tomates, frites</p>
+</div></div>
+</section>
+<section class="cat" id="nos-tex-mex">
+  <div class="cat-header"><span class="cat-icon">🍗</span><h2>Nos Tex Mex</h2><span class="cat-count">18</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Wings 6 pcs</span><span class="dots"></span><span class="item-price">6,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Wings 12 pcs</span><span class="dots"></span><span class="item-price">11,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Wings 20 pcs</span><span class="dots"></span><span class="item-price">25,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Wings 30 pcs</span><span class="dots"></span><span class="item-price">32,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tenders 6 pcs</span><span class="dots"></span><span class="item-price">7,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tenders 12 pcs</span><span class="dots"></span><span class="item-price">13,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tenders 20 pcs</span><span class="dots"></span><span class="item-price">28,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tenders 30 pcs</span><span class="dots"></span><span class="item-price">36,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Mozzarella stick 3 pcs</span><span class="dots"></span><span class="item-price">3,50&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Mozzarella stick 6 pcs</span><span class="dots"></span><span class="item-price">5,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Bouchées camembert 3 pcs</span><span class="dots"></span><span class="item-price">3,50&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Bouchées de camembert 6 pcs</span><span class="dots"></span><span class="item-price">5,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Jalapenos 3 pcs</span><span class="dots"></span><span class="item-price">3,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Jalapenos 6 pcs</span><span class="dots"></span><span class="item-price">6,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Nuggets 6 pcs</span><span class="dots"></span><span class="item-price">4,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Nuggets 12 pcs</span><span class="dots"></span><span class="item-price">7,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Frites</span><span class="dots"></span><span class="item-price">2,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Croque monsieur</span><span class="dots"></span><span class="item-price">2,99&nbsp;€</span></div>
+  
+</div></div>
+</section>
+<section class="cat" id="nos-desserts">
+  <div class="cat-header"><span class="cat-icon">🍰</span><h2>Nos Desserts</h2><span class="cat-count">3</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">Tarte au daim</span><span class="dots"></span><span class="item-price">3,50&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Tiramisu</span><span class="dots"></span><span class="item-price">3,50&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Glace häagen-dazs</span><span class="dots"></span><span class="item-price">3,50&nbsp;€</span></div>
+  
+</div></div>
+</section>
+<section class="cat" id="nos-boissons">
+  <div class="cat-header"><span class="cat-icon">🥤</span><h2>Nos Boissons</h2><span class="cat-count">29</span></div>
+  <div class="items"><div class="item">
+  <div class="item-head"><span class="item-name">7 up 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Fanta citron 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Fanta orange 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">7 up mojito 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Orangina 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Schweppes pomme 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Oasis tropical 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Schweppes lemon 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Pepsi 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Pepsi max 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">7 up cherry 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Ice ta 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Liptonic 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Ice tea pastèque menthe 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Ice tea framboise 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Ice tea tropical 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Oasis tropical 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Oasis fraise framboise 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Oasis pomme cassis framboise 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Oasis pomme poire 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Orangina 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Fanta fruits du dragon 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Monster 50 cl</span><span class="dots"></span><span class="item-price">2,99&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">San pellegrino 50 cl</span><span class="dots"></span><span class="item-price">2,00&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Eau plate 50 cl</span><span class="dots"></span><span class="item-price">1,00&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Coca cola 1,25l</span><span class="dots"></span><span class="item-price">3,90&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Orangina 1,5l</span><span class="dots"></span><span class="item-price">3,90&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Schweppes agrum 1,25l</span><span class="dots"></span><span class="item-price">3,90&nbsp;€</span></div>
+  
+</div><div class="item">
+  <div class="item-head"><span class="item-name">Oasis tropical 2l</span><span class="dots"></span><span class="item-price">4,25&nbsp;€</span></div>
+  
+</div></div>
+</section>
+</main>
+
+<footer>
+  <div class="f-num">LE 444</div>
+  <p>444 Boulevard National — 13003 Marseille<br>
+  <span class="phone">📞 04 91 84 38 80</span><br>
+  Ouvert du mardi au dimanche<br>11h30 – 14h00 &nbsp;/&nbsp; 18h00 – 23h00</p>
+  <p class="pay">💳 CB &bull; Amex &bull; Apple Pay &bull; Ticket restaurant &bull; Espèces</p>
+</footer>
+
+<button id="top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+const btn=document.getElementById('top-btn');
+window.addEventListener('scroll',()=>{btn.style.display=window.scrollY>600?'flex':'none';
+  let cur=null;document.querySelectorAll('.cat').forEach(s=>{if(s.getBoundingClientRect().top<140)cur=s.id});
+  document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+cur));
+});
+</script>
+</body>
+</html>

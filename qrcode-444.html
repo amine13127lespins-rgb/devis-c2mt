@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR Code — Le 444</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0f14;font-family:'Montserrat',sans-serif;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(230,57,70,.12),transparent)}
+.card{background:#fff;border-radius:24px;padding:40px 36px;text-align:center;max-width:420px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.le{font-family:'Bebas Neue',cursive;font-size:1.1rem;letter-spacing:8px;color:#e63946}
+.num{font-family:'Bebas Neue',cursive;font-size:4.5rem;line-height:.95;color:#1a1a1a;letter-spacing:4px}
+.tag{color:#666;font-size:.82rem;margin:8px 0 22px;letter-spacing:.5px}
+#qr{display:flex;justify-content:center;padding:14px;background:#fff}
+#qr img{width:240px!important;height:240px!important}
+.scan{font-weight:700;font-size:1.05rem;color:#1a1a1a;margin-top:18px;letter-spacing:1px}
+.sub{color:#888;font-size:.8rem;margin-top:6px}
+.halal{display:inline-block;margin-top:14px;font-size:.72rem;font-weight:700;color:#2ea05a;
+  border:1.5px solid #2ea05a;padding:4px 14px;border-radius:999px;letter-spacing:1px}
+.actions{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap;justify-content:center}
+.btn{padding:12px 22px;border-radius:12px;border:none;font-family:'Montserrat',sans-serif;
+  font-weight:600;font-size:.9rem;cursor:pointer;text-decoration:none}
+.btn.print{background:#f5b942;color:#1a1a1a}
+.btn.dl{background:#1a1f2b;color:#f2ede3;border:1px solid rgba(245,185,66,.3)}
+.btn.back{background:transparent;color:#9aa3b2;border:1px solid rgba(255,255,255,.15)}
+@media print{
+  body{background:#fff;padding:0}
+  .actions{display:none}
+  .card{box-shadow:none;border:2px solid #eee}
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="le">SNACK LE</div>
+  <div class="num">444</div>
+  <p class="tag">Pizzas • Sandwichs • Tacos • Burgers • Tex Mex</p>
+  <div id="qr"></div>
+  <p class="scan">📱 SCANNEZ-MOI</p>
+  <p class="sub">pour découvrir notre carte et nos prix</p>
+  <span class="halal">✓ 100% HALAL</span>
+</div>
+<div class="actions">
+  <button class="btn print" onclick="window.print()">🖨️ Imprimer</button>
+  <button class="btn dl" onclick="downloadQR()">⬇️ Télécharger PNG</button>
+  <a class="btn back" href="le444.html">📖 Voir la carte</a>
+</div>
+<script>
+const MENU_URL = 'https://amine13127lespins-rgb.github.io/devis-c2mt/le444.html';
+new QRCode(document.getElementById('qr'), {
+  text: MENU_URL, width: 240, height: 240,
+  colorDark: '#1a1a1a', colorLight: '#ffffff',
+  correctLevel: QRCode.CorrectLevel.H
+});
+function downloadQR(){
+  const img = document.querySelector('#qr img') || document.querySelector('#qr canvas');
+  const a = document.createElement('a');
+  a.href = img.tagName === 'IMG' ? img.src : img.toDataURL('image/png');
+  a.download = 'qrcode-le444.png';
+  a.click();
+}
+</script>
+</body>
+</html>
