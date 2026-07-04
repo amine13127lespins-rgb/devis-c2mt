@@ -15,9 +15,17 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:130px}
-body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;
-  background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(230,57,70,.12),transparent),
-  radial-gradient(ellipse 60% 40% at 90% 10%,rgba(245,185,66,.06),transparent)}
+body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif}
+/* ---------- FOND D'ECRAN ---------- */
+#bg{position:fixed;inset:0;z-index:-1;
+  background:url('le444-bg.jpg') center/cover no-repeat;}
+#bg::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 65% at 50% 45%,rgba(13,15,20,.55) 0%,rgba(13,15,20,.35) 55%,rgba(13,15,20,.15) 100%)}
+/* colonne centrale posée sur le fond */
+.frame{max-width:820px;margin:0 auto;padding:0 10px}
+.panel{background:rgba(13,15,20,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border:1px solid rgba(245,185,66,.18);border-radius:24px;margin:18px 0 30px;
+  box-shadow:0 24px 80px rgba(0,0,0,.65)}
 /* ---------- HERO ---------- */
 .hero{text-align:center;padding:44px 16px 26px;position:relative}
 .hero .num{font-family:'Bebas Neue',cursive;font-size:clamp(4.6rem,16vw,7.5rem);line-height:.9;
@@ -33,7 +41,7 @@ body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;
 .divider{width:70px;height:3px;margin:26px auto 0;border-radius:2px;
   background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 /* ---------- NAV ---------- */
-nav{position:sticky;top:0;z-index:50;background:rgba(13,15,20,.92);backdrop-filter:blur(12px);
+nav{position:sticky;top:0;z-index:50;background:rgba(13,15,20,.94);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--line);padding:10px 0}
 .pills{display:flex;gap:8px;overflow-x:auto;padding:2px 14px;scrollbar-width:none}
 .pills::-webkit-scrollbar{display:none}
@@ -59,9 +67,16 @@ main{max-width:760px;margin:0 auto;padding:10px 16px 40px}
 .item-price{font-family:'Bebas Neue',cursive;font-size:1.25rem;color:var(--gold);letter-spacing:1px;white-space:nowrap}
 .item-desc{font-size:.82rem;color:var(--sub);margin-top:5px;line-height:1.5;max-width:85%}
 /* ---------- FOOTER ---------- */
-footer{border-top:1px solid var(--line);margin-top:50px;padding:36px 16px 46px;text-align:center}
-footer .f-num{font-family:'Bebas Neue',cursive;font-size:2rem;color:var(--gold);letter-spacing:3px}
-footer p{color:var(--sub);font-size:.88rem;margin-top:8px;line-height:1.7}
+footer{border-top:1px solid var(--line);margin-top:50px;padding:0 0 46px;text-align:center}
+.facade-wrap{position:relative;line-height:0;overflow:hidden;border-radius:0 0 23px 23px}
+.facade-wrap img{width:100%;height:auto;display:block}
+.facade-wrap::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(13,15,20,.55) 0%,transparent 30%,transparent 60%,rgba(13,15,20,.96) 100%)}
+.facade-caption{position:absolute;bottom:12px;left:0;right:0;z-index:2;
+  font-family:'Bebas Neue',cursive;font-size:1.15rem;letter-spacing:3px;color:var(--gold);
+  text-shadow:0 2px 10px rgba(0,0,0,.9);line-height:1.2}
+footer .f-num{font-family:'Bebas Neue',cursive;font-size:2rem;color:var(--gold);letter-spacing:3px;margin-top:22px}
+footer p{color:var(--sub);font-size:.88rem;margin-top:8px;line-height:1.7;padding:0 16px}
 footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing:1px}
 .pay{margin-top:14px;font-size:.75rem;color:var(--sub);opacity:.8}
 /* back to top */
@@ -73,6 +88,10 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </style>
 </head>
 <body>
+
+<div id="bg"></div>
+
+<div class="frame"><div class="panel">
 
 <header class="hero">
   <div class="le">Snack&nbsp;Le</div>
@@ -706,12 +725,18 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </main>
 
 <footer>
+  <div class="facade-wrap">
+    <img src="le444-facade.jpg" alt="Le 444 — 444 Boulevard National, Marseille" loading="lazy">
+    <div class="facade-caption">RETROUVEZ-NOUS AU 444 BOULEVARD NATIONAL</div>
+  </div>
   <div class="f-num">LE 444</div>
   <p>444 Boulevard National — 13003 Marseille<br>
   <span class="phone">📞 04 91 84 38 80</span><br>
   Ouvert du mardi au dimanche<br>11h30 – 14h00 &nbsp;/&nbsp; 18h00 – 23h00</p>
   <p class="pay">💳 CB &bull; Amex &bull; Apple Pay &bull; Ticket restaurant &bull; Espèces</p>
 </footer>
+
+</div></div>
 
 <button id="top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <script>
