@@ -69,12 +69,12 @@ Screenshots avec le Chromium préinstallé (`/opt/pw-browsers/` + playwright-cor
 ## 🚀 ÉTAPE 5 — Mise en ligne (1 repo GitHub par client)
 
 ⚠️ Claude ne peut PAS créer de repo ni pousser hors des repos de la session.
-1. **Amine crée le repo** : github.com/new → nom `menu-<snack>` → **Public** → Create
+1. **Amine crée le repo** : github.com/new → Owner = **organisation `qrcode-menu`** (jamais le compte perso, l'URL montrerait son email) → nom `<snack>` → **Public** → Create
 2. Deux options pour pousser :
    - Amine ajoute le repo à la session Claude (au démarrage d'une session) → Claude pousse tout
    - OU Claude prépare un **ZIP** (SendUserFile) → Amine glisse-dépose les fichiers sur GitHub (bouton "Add file → Upload files") — ⚠️ les FICHIERS extraits, PAS le zip !
 3. **Activer Pages** : Settings → Pages → Source "Deploy from a branch" → Branch **main** + **/ (root)** → Save
-4. Vérifier avec curl que `https://amine13127lespins-rgb.github.io/<repo>/` et chaque image répondent 200
+4. Vérifier avec curl que `https://qrcode-menu.github.io/<repo>/` et chaque image répondent 200
 5. Champ "Custom domain" : **laisser vide** tant que le domaine n'est pas acheté
 
 ## 💰 ÉTAPE 6 — Vente & domaine (dans CET ordre)
@@ -83,7 +83,7 @@ Screenshots avec le Chromium préinstallé (`/opt/pw-browsers/` + playwright-cor
 2. Client dit oui → **encaisser la mise en place** : 150-300€
 3. **Puis seulement** acheter le domaine chez OVH (~7€/an), ex `menu-le444.fr`, au nom d'AMINE (jamais au client — levier maintenance)
 4. DNS chez OVH :
-   - CNAME `www` → `amine13127lespins-rgb.github.io.`
+   - CNAME `www` → `qrcode-menu.github.io.`
    - 4 enregistrements A racine : `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
 5. GitHub Settings → Pages → Custom domain → le domaine → Save → cocher "Enforce HTTPS" (~1h après)
 6. **Régénérer le QR code** avec la nouvelle URL + réimprimer
@@ -93,6 +93,6 @@ Screenshots avec le Chromium préinstallé (`/opt/pw-browsers/` + playwright-cor
 
 | Client | Repo | URL | Domaine | Statut |
 |---|---|---|---|---|
-| Le 444 (Marseille 13003) | `Menu-444` | amine13127lespins-rgb.github.io/Menu-444/ | — | ✅ VENDU 30€ (juil. 2026) — proposer l'abonnement mensuel + domaine |
+| Le 444 (Marseille 13003) | `qrcode-menu/le-444` | **qrcode-menu.github.io/le-444/** | — | ✅ VENDU 30€ (juil. 2026) — proposer l'abonnement mensuel + domaine |
 
 > Leçon pricing : 30€ était trop bas pour la 1ère vente. Prochains clients : 80-150€ minimum la création + 10-20€/mois d'abonnement (domaine, hébergement, modifs). Utiliser Le 444 comme référence démo.
