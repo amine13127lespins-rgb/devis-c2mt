@@ -52,13 +52,22 @@ nav{position:sticky;top:0;z-index:50;background:rgba(13,15,20,.94);backdrop-filt
 /* ---------- SECTIONS ---------- */
 main{max-width:760px;margin:0 auto;padding:10px 16px 40px}
 .cat{margin-top:36px}
-.cat-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.cat-icon{font-size:1.6rem}
-.cat h2{font-family:'Bebas Neue',cursive;font-size:1.9rem;letter-spacing:2px;color:var(--gold);font-weight:400}
-.cat-count{margin-left:auto;font-size:.72rem;color:var(--sub);background:var(--card);
+.cat-banner{position:relative;height:170px;border-radius:18px 18px 0 0;overflow:hidden;
+  background-size:cover;background-position:center 35%;
+  border:1px solid rgba(245,185,66,.2);border-bottom:none;
+  box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.cat-banner::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(13,15,20,.15) 0%,rgba(13,15,20,.05) 40%,rgba(21,25,34,.97) 100%)}
+.cat-banner-txt{position:absolute;left:0;right:0;bottom:0;padding:12px 18px;
+  display:flex;align-items:center;gap:12px}
+.cat-icon{font-size:1.5rem;filter:drop-shadow(0 2px 6px rgba(0,0,0,.8))}
+.cat h2{font-family:'Bebas Neue',cursive;font-size:1.9rem;letter-spacing:2px;color:var(--gold);
+  font-weight:400;text-shadow:0 2px 12px rgba(0,0,0,.95)}
+.cat-count{margin-left:auto;font-size:.72rem;color:var(--text);background:rgba(13,15,20,.75);
   padding:4px 10px;border-radius:999px;border:1px solid var(--line)}
-.items{background:var(--card);border:1px solid rgba(255,255,255,.05);border-radius:18px;
-  padding:6px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.items{background:var(--card);border:1px solid rgba(255,255,255,.05);border-top:none;
+  border-radius:0 0 18px 18px;padding:6px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+@media(min-width:700px){.cat-banner{height:210px}}
 .item{padding:15px 0;border-bottom:1px dashed rgba(255,255,255,.07)}
 .item:last-child{border-bottom:none}
 .item-head{display:flex;align-items:baseline;gap:10px}
@@ -108,7 +117,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 
 <main>
 <section class="cat" id="nos-pizzas-taille-m">
-  <div class="cat-header"><span class="cat-icon">🍕</span><h2>Nos Pizzas Taille M</h2><span class="cat-count">35</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-pizzas.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🍕</span><h2>Nos Pizzas Taille M</h2><span class="cat-count">35</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Fromage</span><span class="dots"></span><span class="item-price">4,00&nbsp;€</span></div>
   <p class="item-desc">Base sauce tomate, emmental</p>
@@ -217,7 +228,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-pizzas-taille-l">
-  <div class="cat-header"><span class="cat-icon">🍕</span><h2>Nos Pizzas Taille L</h2><span class="cat-count">35</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-pizzas.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🍕</span><h2>Nos Pizzas Taille L</h2><span class="cat-count">35</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Fromage</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
   <p class="item-desc">Base sauce tomate, emmental</p>
@@ -326,7 +339,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-sandwichs">
-  <div class="cat-header"><span class="cat-icon">🥙</span><h2>Nos Sandwichs</h2><span class="cat-count">26</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-sandwichs.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🥙</span><h2>Nos Sandwichs</h2><span class="cat-count">26</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Sandwich kebab</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
   <p class="item-desc">Salade, tomates, oignons, viande kebab</p>
@@ -408,7 +423,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-tacos">
-  <div class="cat-header"><span class="cat-icon">🌯</span><h2>Nos Tacos</h2><span class="cat-count">6</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-tacos.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🌯</span><h2>Nos Tacos</h2><span class="cat-count">6</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Tacos 1 viande seul</span><span class="dots"></span><span class="item-price">7,50&nbsp;€</span></div>
   <p class="item-desc">Salade, tomates, oignons,1 viande au choix</p>
@@ -430,7 +447,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-paninis">
-  <div class="cat-header"><span class="cat-icon">🥪</span><h2>Nos Paninis</h2><span class="cat-count">14</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-paninis.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🥪</span><h2>Nos Paninis</h2><span class="cat-count">14</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Panini mozzarella</span><span class="dots"></span><span class="item-price">4,90&nbsp;€</span></div>
   
@@ -476,7 +495,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-burgers">
-  <div class="cat-header"><span class="cat-icon">🍔</span><h2>Nos Burgers</h2><span class="cat-count">16</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-burgers.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🍔</span><h2>Nos Burgers</h2><span class="cat-count">16</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Cheese burger</span><span class="dots"></span><span class="item-price">4,90&nbsp;€</span></div>
   <p class="item-desc">Salade, tomates, oignons</p>
@@ -528,14 +549,18 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-menus-enfant">
-  <div class="cat-header"><span class="cat-icon">🧒</span><h2>Nos Menus Enfant</h2><span class="cat-count">1</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-enfant.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🧒</span><h2>Nos Menus Enfant</h2><span class="cat-count">1</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Menu enfant avec surprise</span><span class="dots"></span><span class="item-price">6,90&nbsp;€</span></div>
   <p class="item-desc">Cheeseburger ou fish burger ou chicken burger ou 6 nuggets ou 3 tenders au choix</p>
 </div></div>
 </section>
 <section class="cat" id="nos-salades">
-  <div class="cat-header"><span class="cat-icon">🥗</span><h2>Nos Salades</h2><span class="cat-count">4</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-salades.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🥗</span><h2>Nos Salades</h2><span class="cat-count">4</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Salade niçoise</span><span class="dots"></span><span class="item-price">6,99&nbsp;€</span></div>
   
@@ -551,7 +576,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-assiettes">
-  <div class="cat-header"><span class="cat-icon">🍽️</span><h2>Nos Assiettes</h2><span class="cat-count">2</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-assiettes.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🍽️</span><h2>Nos Assiettes</h2><span class="cat-count">2</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Assiette 1 viande</span><span class="dots"></span><span class="item-price">11,50&nbsp;€</span></div>
   <p class="item-desc">Salade, tomates, frites</p>
@@ -561,7 +588,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-tex-mex">
-  <div class="cat-header"><span class="cat-icon">🍗</span><h2>Nos Tex Mex</h2><span class="cat-count">18</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-texmex.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🍗</span><h2>Nos Tex Mex</h2><span class="cat-count">18</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Wings 6 pcs</span><span class="dots"></span><span class="item-price">6,99&nbsp;€</span></div>
   
@@ -619,7 +648,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-desserts">
-  <div class="cat-header"><span class="cat-icon">🍰</span><h2>Nos Desserts</h2><span class="cat-count">3</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-desserts.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🍰</span><h2>Nos Desserts</h2><span class="cat-count">3</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">Tarte au daim</span><span class="dots"></span><span class="item-price">3,50&nbsp;€</span></div>
   
@@ -632,7 +663,9 @@ footer .phone{color:var(--text);font-weight:700;font-size:1.05rem;letter-spacing
 </div></div>
 </section>
 <section class="cat" id="nos-boissons">
-  <div class="cat-header"><span class="cat-icon">🥤</span><h2>Nos Boissons</h2><span class="cat-count">29</span></div>
+  <div class="cat-banner" style="background-image:url('le444-cat-boissons.jpg')">
+    <div class="cat-banner-txt"><span class="cat-icon">🥤</span><h2>Nos Boissons</h2><span class="cat-count">29</span></div>
+  </div>
   <div class="items"><div class="item">
   <div class="item-head"><span class="item-name">7 up 33 cl</span><span class="dots"></span><span class="item-price">1,80&nbsp;€</span></div>
   
