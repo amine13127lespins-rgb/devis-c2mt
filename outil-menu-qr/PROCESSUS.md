@@ -72,7 +72,7 @@ Screenshots avec le Chromium préinstallé (`/opt/pw-browsers/` + playwright-cor
 1. **Amine crée le repo** : github.com/new → Owner = **organisation `qrcode-menu`** (jamais le compte perso, l'URL montrerait son email) → nom `<snack>` → **Public** → Create
 2. Deux options pour pousser :
    - Amine ajoute le repo à la session Claude (au démarrage d'une session) → Claude pousse tout
-   - OU Claude prépare un **ZIP** (SendUserFile) → Amine glisse-dépose les fichiers sur GitHub (bouton "Add file → Upload files") — ⚠️ les FICHIERS extraits, PAS le zip !
+   - OU Claude prépare un **ZIP** (SendUserFile) → Amine glisse-dépose les fichiers sur GitHub (bouton "Add file → Upload files") — ⚠️ les FICHIERS extraits, PAS le zip ! Astuce : pour corriger 1 seule ligne, éditer directement sur GitHub (icône crayon ✏️ sur le fichier → Commit changes)
 3. **Activer Pages** : Settings → Pages → Source "Deploy from a branch" → Branch **main** + **/ (root)** → Save
 4. Vérifier avec curl que `https://qrcode-menu.github.io/<repo>/` et chaque image répondent 200
 5. Champ "Custom domain" : **laisser vide** tant que le domaine n'est pas acheté
