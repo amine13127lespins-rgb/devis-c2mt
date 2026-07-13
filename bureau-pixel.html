@@ -42,7 +42,6 @@
   button:hover{border-color:var(--dim)}
   button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
   button.active{border-color:var(--accent); color:var(--accent)}
-  button#autoBtn.on{border-color:var(--green); color:var(--green)}
   #mailBtn b{color:var(--amber); font-weight:700}
   #invBtn{border-color:#4d7cc0; color:#8fb8f0}
   .controls .spacer{flex:1}
@@ -128,8 +127,6 @@
     <button id="b-idle">☕ Pause</button>
     <button id="mailBtn">📬 Courrier <b id="mailCount">0</b></button>
     <button id="invBtn">➕ Inviter</button>
-    <span class="spacer"></span>
-    <button id="autoBtn" class="on">AUTO : ON</button>
   </div>
 
   <div class="chat">
@@ -171,9 +168,9 @@
       <div class="schedRow"><input type="time" id="t1"><select id="a1"><option value="">— aucune —</option><option value="code">💻 Coder</option><option value="research">📄 Rechercher</option><option value="archive">🗄️ Archives</option><option value="idle">☕ Pause</option></select></div>
       <div class="schedRow"><input type="time" id="t2"><select id="a2"><option value="">— aucune —</option><option value="code">💻 Coder</option><option value="research">📄 Rechercher</option><option value="archive">🗄️ Archives</option><option value="idle">☕ Pause</option></select></div>
       <div class="schedRow"><input type="time" id="t3"><select id="a3"><option value="">— aucune —</option><option value="code">💻 Coder</option><option value="research">📄 Rechercher</option><option value="archive">🗄️ Archives</option><option value="idle">☕ Pause</option></select></div>
-      <label class="chk"><input type="checkbox" id="agAuto"> Mode auto entre les directives</label>
-      <p class="note">Une nouvelle pièce s'ajoute pour chaque agent. Les agents sont connectés entre eux :
-      chaque rapport déposé est partagé dans la boîte aux lettres commune. Pour ChatGPT et Meta Ads,
+      <p class="note">Une nouvelle pièce s'ajoute pour chaque agent. Les agents ne font rien d'eux-mêmes :
+      ils obéissent uniquement à tes ordres dans le chat et aux directives programmées ci-dessus.
+      Chaque rapport déposé est partagé dans la boîte aux lettres commune. Pour ChatGPT et Meta Ads,
       la vraie connexion API pourra être branchée plus tard — en attendant l'agent travaille en simulation.</p>
       <button id="agAdd">Ajouter l'agent + sa pièce</button>
     </div>
@@ -241,9 +238,9 @@ function makeAgent(cfg, room){
   return {
     id: cfg.id || ('ag' + Date.now()),
     name: cfg.name, type: cfg.type || 'claude',
-    schedule: cfg.schedule || [], auto: !!cfg.auto,
+    schedule: cfg.schedule || [],
     room, mode:'idle', phase:'working', path:[],
-    workUntil: performance.now() + 2500 + room*1500,
+    workUntil: Infinity,
     pendingReport: null, codeLines: [], fired: {},
     hero: { x: STATIONS.idle.x, y: STATIONS.idle.y + room*ROOM_H, face:'down', dist:0 }
   };
@@ -251,7 +248,7 @@ function makeAgent(cfg, room){
 function saveAgents(){
   try {
     localStorage.setItem('pixel-bureau-agents', JSON.stringify(
-      agents.slice(1).map(a => ({id:a.id, name:a.name, type:a.type, schedule:a.schedule, auto:a.auto}))
+      agents.slice(1).map(a => ({id:a.id, name:a.name, type:a.type, schedule:a.schedule}))
     ));
   } catch(e){}
 }
@@ -356,9 +353,6 @@ function handleCommand(txt){
   } else if (/(invit|ajout.*agent|nouvel agent|nouvelle pi[èe]ce)/.test(t)){
     openInvite();
     botSay('Voici la fiche d’invitation : nom, type et directives à heure précise. ➕');
-  } else if (/(auto)/.test(t)){
-    setAuto(!agents[0].auto);
-    botSay(agents[0].auto ? 'Mode auto activé : j’enchaîne les tâches tout seul ! 🤖' : 'Mode auto coupé : j’attends tes ordres. 🕹️');
   } else if (/(cod|program|bug|site|développ|developp|test)/.test(t)){
     setAction(target,'code'); botSay(who + (who?'file coder ! 💻':pick(['Ça marche, je file coder ! 💻','Reçu ! Direction l’ordinateur. 💻'])));
   } else if (/(archiv|armoire|dossier|class|facture|range)/.test(t)){
@@ -406,30 +400,14 @@ function arrive(a){
 function onWorkDone(a){
   if (a.mode === 'mail'){
     commitDeposit(a);
-    if (a.auto) autoNext(a); else setAction(a,'idle');
+    setAction(a,'idle');
   } else if (a.mode === 'idle'){
-    if (a.auto) autoNext(a); else a.workUntil = Infinity;
+    a.workUntil = Infinity;   // il attend tes ordres, rien de plus
   } else {
     a.pendingReport = createReport(a);
     setAction(a,'mail');
   }
 }
-function autoNext(a){
-  const pool = ['code','research','archive','code','idle'].filter(m => m !== a.mode);
-  setAction(a, pool[Math.floor(Math.random()*pool.length)]);
-}
-function setAuto(v){
-  agents[0].auto = v;
-  const b = document.getElementById('autoBtn');
-  b.textContent = 'AUTO : ' + (v ? 'ON' : 'OFF');
-  b.classList.toggle('on', v);
-  if (v && agents[0].phase === 'working' && agents[0].workUntil === Infinity)
-    agents[0].workUntil = now + 1500;
-}
-document.getElementById('autoBtn').addEventListener('click', () => {
-  setAuto(!agents[0].auto);
-  chatSys(agents[0].auto ? '🤖 Mode auto activé pour Claude.' : '🕹️ Mode manuel : dirige Claude par le chat ou les boutons.');
-});
 
 const btns = {
   code: document.getElementById('b-code'),
@@ -577,7 +555,7 @@ function renderAgentList(){
     const sched = a.schedule.filter(r => r.time && r.action)
       .map(r => r.time + ' → ' + DEST[r.action]).join(' · ');
     row.innerHTML = '<div class="who"><b>' + a.name + '</b> — ' + TYPES[a.type].label +
-      '<span>Pièce ' + (i+1) + (sched ? ' · ⏰ ' + sched : '') + (a.auto ? ' · auto' : '') + '</span></div>';
+      '<span>Pièce ' + (i+1) + (sched ? ' · ⏰ ' + sched : '') + '</span></div>';
     if (i > 0){
       const del = document.createElement('button');
       del.textContent = '🗑️';
@@ -598,8 +576,7 @@ document.getElementById('agAdd').addEventListener('click', () => {
     if (time && action) schedule.push({time, action});
     document.getElementById(ti).value = ''; document.getElementById(ai).value = '';
   });
-  const auto = document.getElementById('agAuto').checked;
-  const a = makeAgent({name, type, schedule, auto}, agents.length);
+  const a = makeAgent({name, type, schedule}, agents.length);
   agents.push(a);
   saveAgents();
   rebuildCanvas();
@@ -609,7 +586,7 @@ document.getElementById('agAdd').addEventListener('click', () => {
   chatSys('🏠 Nouvelle pièce construite pour ' + name + ' (' + TYPES[type].label + ').');
   botSay('Bienvenue à <b>' + name + '</b> ! ' +
     (schedule.length ? 'Ses directives : ' + schedule.map(r => r.time + ' → ' + DEST[r.action]).join(', ') + '.'
-                     : (auto ? 'Il travaille en mode auto.' : 'Il attend tes ordres dans le chat.')),
+                     : 'Il attend tes ordres dans le chat.'),
     'Bienvenue à ' + name + ' !');
   invModal.hidden = true;
 });
@@ -901,7 +878,7 @@ function tick(ts){
 }
 
 /* ---------- démarrage ---------- */
-agents = [ makeAgent({id:'claude-0', name:'Claude', type:'claude', auto:true}, 0) ];
+agents = [ makeAgent({id:'claude-0', name:'Claude', type:'claude'}, 0) ];
 try {
   const saved = JSON.parse(localStorage.getItem('pixel-bureau-agents') || '[]');
   saved.slice(0,3).forEach(cfg => agents.push(makeAgent(cfg, agents.length)));
