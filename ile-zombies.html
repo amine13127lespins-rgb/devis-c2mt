@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>L'Île aux Zombies — Survie</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#05070f;
+  font-family:'Segoe UI',Arial,sans-serif;color:#fff;
+  -webkit-user-select:none;user-select:none;touch-action:none}
+canvas{display:block}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#topbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:14px;align-items:center;
+  background:rgba(0,0,0,0.55);border:2px solid #3b3b3b;border-radius:8px;
+  padding:8px 18px;font-weight:700;font-size:15px;letter-spacing:0.5px;white-space:nowrap}
+#topbar .wave{color:#ffd700}
+#topbar .rem{color:#7CFC00}
+#topbar .kills{color:#ff6b6b}
+#hearts{position:absolute;bottom:88px;left:50%;transform:translateX(-50%);
+  display:flex;gap:3px;filter:drop-shadow(0 2px 2px rgba(0,0,0,0.8))}
+#hearts span{font-size:22px;line-height:1;color:#e2201c;transition:color .15s}
+#hearts span.empty{color:#3a3a3a}
+#hearts span.half{background:linear-gradient(90deg,#e2201c 50%,#3a3a3a 50%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:22px;color:rgba(255,255,255,0.85);text-shadow:0 0 4px #000}
+#vignette{position:fixed;inset:0;pointer-events:none;z-index:6;opacity:0;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(255,0,0,0.55) 100%);
+  transition:opacity .1s}
+
+/* ---------- Bannière de manche ---------- */
+#banner{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%) scale(0.8);
+  z-index:7;text-align:center;opacity:0;pointer-events:none;
+  transition:opacity .4s,transform .4s}
+#banner.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#banner h2{font-size:52px;color:#ffd700;letter-spacing:4px;
+  text-shadow:3px 3px 0 #000,0 0 30px rgba(255,215,0,0.6)}
+#banner p{font-size:20px;color:#7CFC00;text-shadow:2px 2px 0 #000;margin-top:6px}
+
+/* ---------- Overlays ---------- */
+.overlay{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:20px;
+  background:rgba(4,8,18,0.88)}
+.overlay h1{font-size:clamp(34px,7vw,64px);color:#7CFC00;letter-spacing:3px;
+  text-shadow:4px 4px 0 #0a3a0a,0 0 40px rgba(124,252,0,0.35);margin-bottom:6px}
+.overlay h1 .z{color:#e2201c;text-shadow:4px 4px 0 #4d0000,0 0 40px rgba(226,32,28,0.4)}
+.overlay .sub{color:#cfd8e3;font-size:17px;max-width:520px;line-height:1.55;margin:14px 0 22px}
+.overlay .keys{background:rgba(255,255,255,0.06);border:1px solid #2e3a4d;border-radius:10px;
+  padding:14px 22px;font-size:15px;color:#aebdd1;line-height:1.9;margin-bottom:26px}
+.overlay .keys b{color:#ffd700}
+.bigbtn{pointer-events:auto;cursor:pointer;border:none;border-radius:10px;
+  font-size:22px;font-weight:800;letter-spacing:2px;padding:16px 52px;color:#06230a;
+  background:linear-gradient(180deg,#8dff4d,#4ec41e);
+  box-shadow:0 6px 0 #2c7a10,0 10px 25px rgba(0,0,0,0.6);transition:transform .08s}
+.bigbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #2c7a10}
+#gameover{display:none}
+#gameover h1{color:#e2201c;text-shadow:4px 4px 0 #4d0000}
+#gameover .stats{font-size:20px;color:#ffd700;line-height:2;margin-bottom:26px}
+#pause{display:none}
+
+/* ---------- Contrôles mobiles ---------- */
+#mobile{display:none;position:fixed;inset:0;z-index:8;pointer-events:none}
+#joyzone{position:absolute;left:0;bottom:0;width:45%;height:55%;pointer-events:auto}
+#joybase{position:absolute;width:110px;height:110px;border-radius:50%;
+  background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.25);
+  left:36px;bottom:36px;display:none}
+#joystick{position:absolute;width:52px;height:52px;border-radius:50%;
+  background:rgba(255,255,255,0.35);left:29px;top:29px}
+#lookzone{position:absolute;right:0;bottom:0;width:55%;height:100%;pointer-events:auto}
+.mbtn{position:absolute;pointer-events:auto;border:none;border-radius:50%;
+  width:76px;height:76px;font-size:32px;color:#fff;
+  background:rgba(0,0,0,0.45);border:2px solid rgba(255,255,255,0.35)}
+.mbtn:active{background:rgba(255,215,0,0.4)}
+#btnAtk{right:26px;bottom:60px;width:92px;height:92px;font-size:42px}
+#btnJump{right:132px;bottom:36px}
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <div id="topbar">
+    <span class="wave">🌊 Manche <b id="uiWave">1</b></span>
+    <span class="rem">🧟 Restants : <b id="uiRem">0</b></span>
+    <span class="kills">⚔️ Éliminés : <b id="uiKills">0</b></span>
+  </div>
+  <div id="hearts"></div>
+  <div id="crosshair">+</div>
+</div>
+<div id="vignette"></div>
+
+<div id="banner"><h2 id="bannerTitle">MANCHE 1</h2><p id="bannerSub"></p></div>
+
+<div id="mobile">
+  <div id="joyzone"></div>
+  <div id="lookzone"></div>
+  <div id="joybase"><div id="joystick"></div></div>
+  <button class="mbtn" id="btnJump">⬆️</button>
+  <button class="mbtn" id="btnAtk">⚔️</button>
+</div>
+
+<div class="overlay" id="start">
+  <h1>L'ÎLE AUX <span class="z">ZOMBIES</span></h1>
+  <p class="sub">Tu es seul sur une île, armé de ton épée.<br>
+  Les zombies arrivent par vagues — chaque manche en amène davantage.<br>
+  <b>Survis le plus longtemps possible !</b></p>
+  <div class="keys" id="pcKeys">
+    <b>Z Q S D</b> — se déplacer &nbsp;·&nbsp; <b>Souris</b> — regarder<br>
+    <b>Clic gauche</b> — coup d'épée &nbsp;·&nbsp; <b>Espace</b> — sauter
+  </div>
+  <div class="keys" id="mobKeys" style="display:none">
+    <b>Joystick gauche</b> — se déplacer &nbsp;·&nbsp; <b>Glisser à droite</b> — regarder<br>
+    <b>⚔️</b> — coup d'épée &nbsp;·&nbsp; <b>⬆️</b> — sauter
+  </div>
+  <button class="bigbtn" id="btnPlay">JOUER</button>
+</div>
+
+<div class="overlay" id="pause">
+  <h1>PAUSE</h1>
+  <button class="bigbtn" id="btnResume">REPRENDRE</button>
+</div>
+
+<div class="overlay" id="gameover">
+  <h1>TU ES MORT 💀</h1>
+  <div class="stats">
+    Manche atteinte : <b id="goWave">1</b><br>
+    Zombies éliminés : <b id="goKills">0</b>
+  </div>
+  <button class="bigbtn" id="btnRetry">REJOUER</button>
+</div>
+
+<script type="module">
+import * as THREE from './three.module.min.js';
+
+/* ============================================================
+   RÉGLAGES
+============================================================ */
+const ISLAND_R   = 26;      // rayon de l'île (en blocs)
+const WATER_Y    = 1.45;
+const EYE_H      = 1.62;
+const WALK_SPEED = 6.2;
+const GRAVITY    = 22;
+const JUMP_V     = 8.2;
+const ATK_RANGE  = 3.4;
+const ATK_CD     = 0.38;
+const SWORD_DMG  = 2;
+const MAX_HP     = 20;
+
+const isMobile = ('ontouchstart' in window) && matchMedia('(pointer:coarse)').matches;
+
+/* ============================================================
+   SCÈNE
+============================================================ */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a1026);
+scene.fog = new THREE.Fog(0x0a1026, 28, 85);
+
+const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 200);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.prepend(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0x93a7cc, 0.85));
+const moonLight = new THREE.DirectionalLight(0xbfd0ff, 1.0);
+moonLight.position.set(30, 50, -20);
+scene.add(moonLight);
+
+// Lune
+const moon = new THREE.Mesh(
+  new THREE.PlaneGeometry(9,9),
+  new THREE.MeshBasicMaterial({color:0xf5f3d0, fog:false})
+);
+moon.position.set(60, 75, -50); moon.lookAt(0,0,0);
+scene.add(moon);
+
+// Étoiles
+{
+  const pos = [];
+  for(let i=0;i<400;i++){
+    const a = Math.random()*Math.PI*2, e = Math.random()*Math.PI*0.48;
+    const r = 150;
+    pos.push(r*Math.cos(e)*Math.cos(a), r*Math.sin(e)+5, r*Math.cos(e)*Math.sin(a));
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({color:0xdde6ff,size:0.7,fog:false})));
+}
+
+/* ============================================================
+   TEXTURE DE BLOC (pixel-art façon Minecraft)
+============================================================ */
+function blockTexture(){
+  const c = document.createElement('canvas'); c.width = c.height = 16;
+  const x = c.getContext('2d');
+  for(let i=0;i<16;i++)for(let j=0;j<16;j++){
+    const v = 210 + Math.floor(Math.random()*45);
+    x.fillStyle = `rgb(${v},${v},${v})`;
+    x.fillRect(i,j,1,1);
+  }
+  x.fillStyle = 'rgba(0,0,0,0.28)';
+  x.fillRect(0,0,16,1); x.fillRect(0,15,16,1);
+  x.fillRect(0,0,1,16); x.fillRect(15,0,1,16);
+  const t = new THREE.CanvasTexture(c);
+  t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter;
+  return t;
+}
+const blockTex = blockTexture();
+
+/* ============================================================
+   TERRAIN — île de blocs
+============================================================ */
+function terrainH(x, z){
+  const d = Math.hypot(x, z);
+  if(d > ISLAND_R) return 0;
+  let h = 3
+    + 2.1*Math.sin(x*0.21+1.7)*Math.cos(z*0.19)
+    + 1.3*Math.sin((x*0.5+z)*0.11)
+    + 0.8*Math.cos(x*0.33-z*0.27);
+  const e = Math.min(1, Math.max(0, (d-(ISLAND_R-8))/8));
+  h = h*(1-e*e) + 0.8*e*e;
+  return Math.max(0.8, h);
+}
+// hauteur "bloc" (dessus du bloc le plus haut de la colonne)
+function topY(ix, iz){
+  const d = Math.hypot(ix, iz);
+  if(d > ISLAND_R) return -99;
+  return Math.max(1, Math.round(terrainH(ix, iz)));
+}
+// hauteur du sol sous une position quelconque
+function groundY(x, z){
+  const t = topY(Math.round(x), Math.round(z));
+  return t < -50 ? WATER_Y - 1.2 : t + 0.5;
+}
+
+const C = {
+  grass1:new THREE.Color(0x4c9e35), grass2:new THREE.Color(0x3f8a2c),
+  sand:new THREE.Color(0xd8c88a), dirt:new THREE.Color(0x7a5a3a),
+  trunk:new THREE.Color(0x6b4a2a), leaf:new THREE.Color(0x2e6b22),
+  rock:new THREE.Color(0x8a8a8a)
+};
+
+const blocks = []; // {x,y,z,color}
+for(let ix=-ISLAND_R; ix<=ISLAND_R; ix++){
+  for(let iz=-ISLAND_R; iz<=ISLAND_R; iz++){
+    const t = topY(ix, iz);
+    if(t < -50) continue;
+    const sandy = t <= 2 || Math.hypot(ix,iz) > ISLAND_R-3;
+    blocks.push({x:ix, y:t-0.5, z:iz,
+      color: sandy ? C.sand : (Math.random()<0.5?C.grass1:C.grass2)});
+    for(let y=t-1; y>=Math.max(0, t-3); y--)
+      blocks.push({x:ix, y:y-0.5, z:iz, color: sandy?C.sand:C.dirt});
+  }
+}
+
+// Arbres
+const trees = [];
+for(let i=0;i<14;i++){
+  const a = Math.random()*Math.PI*2, r = 6+Math.random()*(ISLAND_R-13);
+  const ix = Math.round(Math.cos(a)*r), iz = Math.round(Math.sin(a)*r);
+  if(trees.some(t=>Math.hypot(t.x-ix,t.z-iz)<5)) { i--; continue; }
+  const base = topY(ix, iz);
+  if(base <= 2) continue;
+  trees.push({x:ix, z:iz});
+  const h = 3+Math.floor(Math.random()*2);
+  for(let y=0;y<h;y++) blocks.push({x:ix,y:base+y+0.5,z:iz,color:C.trunk});
+  for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(let dy=0;dy<=1;dy++){
+    if(Math.abs(dx)+Math.abs(dz)+dy>2.5) continue;
+    if(dx===0&&dz===0&&dy===0) continue;
+    blocks.push({x:ix+dx,y:base+h-1+dy+0.5,z:iz+dz,color:C.leaf});
+  }
+  blocks.push({x:ix,y:base+h+1.5,z:iz,color:C.leaf});
+}
+// Rochers
+for(let i=0;i<8;i++){
+  const a=Math.random()*Math.PI*2, r=4+Math.random()*(ISLAND_R-8);
+  const ix=Math.round(Math.cos(a)*r), iz=Math.round(Math.sin(a)*r);
+  const b=topY(ix,iz); if(b<-50) continue;
+  blocks.push({x:ix,y:b+0.5,z:iz,color:C.rock});
+}
+
+// InstancedMesh
+{
+  const geo = new THREE.BoxGeometry(1,1,1);
+  const mat = new THREE.MeshLambertMaterial({map:blockTex});
+  const mesh = new THREE.InstancedMesh(geo, mat, blocks.length);
+  const m = new THREE.Matrix4();
+  blocks.forEach((b,i)=>{
+    m.setPosition(b.x, b.y, b.z);
+    mesh.setMatrixAt(i, m);
+    mesh.setColorAt(i, b.color);
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  scene.add(mesh);
+}
+
+// Eau
+const water = new THREE.Mesh(
+  new THREE.PlaneGeometry(400,400),
+  new THREE.MeshLambertMaterial({color:0x1a4a8a, transparent:true, opacity:0.85})
+);
+water.rotation.x = -Math.PI/2; water.position.y = WATER_Y;
+scene.add(water);
+
+/* ============================================================
+   ÉPÉE (vue à la première personne)
+============================================================ */
+const sword = new THREE.Group();
+{
+  const steel = new THREE.MeshLambertMaterial({color:0xc8d4e0});
+  const gold  = new THREE.MeshLambertMaterial({color:0xb8862d});
+  const wood  = new THREE.MeshLambertMaterial({color:0x5a3a1e});
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.085,0.78,0.085), steel);
+  blade.position.y = 0.55;
+  const tip = new THREE.Mesh(new THREE.BoxGeometry(0.06,0.1,0.06), steel);
+  tip.position.y = 0.98;
+  const guard = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.07,0.12), gold);
+  guard.position.y = 0.16;
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.3,0.07), wood);
+  const pommel = new THREE.Mesh(new THREE.BoxGeometry(0.11,0.08,0.11), gold);
+  pommel.position.y = -0.17;
+  sword.add(blade, tip, guard, grip, pommel);
+  sword.scale.setScalar(0.55);
+  sword.position.set(0.42, -0.38, -0.75);
+  sword.rotation.set(0.45, 0.15, -0.35);
+  camera.add(sword);
+}
+scene.add(camera);
+const SWORD_POS = sword.position.clone();
+const SWORD_ROT = sword.rotation.clone();
+
+/* ============================================================
+   ZOMBIES
+============================================================ */
+const SKIN = 0x4ba13e, SHIRT = 0x2f8f8a, PANTS = 0x4a4a8f;
+
+function limb(w,h,d,color){
+  const g = new THREE.BoxGeometry(w,h,d);
+  g.translate(0,-h/2,0); // pivot en haut
+  return new THREE.Mesh(g, new THREE.MeshLambertMaterial({color, map:blockTex}));
+}
+
+function makeZombie(hp, speed){
+  const g = new THREE.Group();
+  const skin = new THREE.MeshLambertMaterial({color:SKIN, map:blockTex});
+
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.52,0.52,0.52), skin);
+  head.position.y = 1.78;
+  const eyeMat = new THREE.MeshBasicMaterial({color:0x1a0000});
+  for(const s of [-1,1]){
+    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.08,0.03), eyeMat);
+    eye.position.set(0.12*s, 1.84, 0.27);
+    g.add(eye);
+  }
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.52,0.72,0.28),
+    new THREE.MeshLambertMaterial({color:SHIRT, map:blockTex}));
+  body.position.y = 1.16;
+
+  const armL = limb(0.2,0.68,0.2, SKIN), armR = limb(0.2,0.68,0.2, SKIN);
+  armL.position.set(-0.37,1.48,0); armR.position.set(0.37,1.48,0);
+  armL.rotation.x = armR.rotation.x = -Math.PI/2; // bras tendus
+
+  const legL = limb(0.22,0.8,0.22, PANTS), legR = limb(0.22,0.8,0.22, PANTS);
+  legL.position.set(-0.13,0.8,0); legR.position.set(0.13,0.8,0);
+
+  g.add(head, body, armL, armR, legL, legR);
+
+  return {
+    g, hp, maxhp:hp, speed,
+    armL, armR, legL, legR,
+    state:'walk', t:Math.random()*10,
+    atkCd: 1 + Math.random(),
+    kb: new THREE.Vector3(),
+    flashT:0, dieT:0, groanT: 2+Math.random()*6,
+    mats: g.children.filter(m=>m.material&&m.material.color&&m.material!==eyeMat)
+             .map(m=>({mat:m.material, col:m.material.color.clone()}))
+  };
+}
+
+let zombies = [];
+
+function spawnZombie(){
+  const a = Math.random()*Math.PI*2;
+  const r = ISLAND_R - 3 - Math.random()*2;
+  const x = Math.cos(a)*r, z = Math.sin(a)*r;
+  const zb = makeZombie(zombieHP, 1.9 + wave*0.08 + Math.random()*0.5);
+  zb.g.position.set(x, groundY(x,z), z);
+  scene.add(zb.g);
+  zombies.push(zb);
+}
+
+/* ============================================================
+   PARTICULES (coups)
+============================================================ */
+const parts = [];
+const partGeo = new THREE.BoxGeometry(0.09,0.09,0.09);
+function burst(pos, color, n=10){
+  for(let i=0;i<n;i++){
+    const p = new THREE.Mesh(partGeo, new THREE.MeshBasicMaterial({color}));
+    p.position.copy(pos);
+    p.userData.v = new THREE.Vector3((Math.random()-0.5)*4, Math.random()*4+1, (Math.random()-0.5)*4);
+    p.userData.life = 0.6;
+    scene.add(p); parts.push(p);
+  }
+}
+
+/* ============================================================
+   SONS (WebAudio, générés)
+============================================================ */
+let AC = null;
+function audio(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+function tone(freq0, freq1, dur, type='square', vol=0.15, when=0){
+  const ac = audio(); if(ac.state==='suspended') ac.resume();
+  const o = ac.createOscillator(), gn = ac.createGain();
+  o.type = type;
+  const t = ac.currentTime + when;
+  o.frequency.setValueAtTime(freq0, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(20,freq1), t+dur);
+  gn.gain.setValueAtTime(vol, t);
+  gn.gain.exponentialRampToValueAtTime(0.001, t+dur);
+  o.connect(gn); gn.connect(ac.destination);
+  o.start(t); o.stop(t+dur+0.05);
+}
+const sfx = {
+  swing: ()=>tone(320,140,0.09,'triangle',0.1),
+  hit:   ()=>{tone(240,70,0.12,'square',0.2); tone(500,200,0.05,'square',0.1);},
+  die:   ()=>tone(170,35,0.4,'sawtooth',0.2),
+  hurt:  ()=>{tone(95,45,0.28,'sawtooth',0.3); tone(60,30,0.3,'square',0.15);},
+  wave:  ()=>{tone(440,440,0.14,'square',0.15); tone(660,660,0.22,'square',0.15,0.16);},
+  groan: (v)=>tone(85+Math.random()*40,50,0.5,'sawtooth',Math.min(0.12,v)),
+  jump:  ()=>tone(200,320,0.1,'triangle',0.07),
+};
+
+/* ============================================================
+   ÉTAT DU JEU
+============================================================ */
+let wave = 0, kills = 0, hp = MAX_HP;
+let toSpawn = 0, spawnTimer = 0, zombieHP = 4;
+let playing = false, dead = false;
+let atkTimer = 0, swingT = -1, hurtFlash = 0, shakeT = 0;
+let interWave = 0; // délai avant la manche suivante
+
+const player = {
+  pos: new THREE.Vector3(0, 0, 0),
+  vy: 0, onGround: true, yaw: 0, pitch: 0
+};
+player.pos.y = groundY(0,0);
+
+const keys = {};
+addEventListener('keydown', e=>{ keys[e.code]=true; if(e.code==='Space') e.preventDefault(); });
+addEventListener('keyup',   e=>{ keys[e.code]=false; });
+
+/* ---------- UI ---------- */
+const $ = id=>document.getElementById(id);
+const heartsEl = $('hearts');
+for(let i=0;i<10;i++){ const s=document.createElement('span'); s.textContent='❤'; heartsEl.appendChild(s); }
+function updateHearts(){
+  [...heartsEl.children].forEach((s,i)=>{
+    const v = hp - i*2;
+    s.className = v>=2 ? '' : (v===1 ? 'half' : 'empty');
+  });
+}
+function updateHUD(){
+  $('uiWave').textContent = wave;
+  $('uiRem').textContent  = zombies.filter(z=>z.state!=='dying').length + toSpawn;
+  $('uiKills').textContent = kills;
+}
+let bannerTO = null;
+function showBanner(title, sub){
+  $('bannerTitle').textContent = title;
+  $('bannerSub').textContent = sub;
+  $('banner').classList.add('show');
+  clearTimeout(bannerTO);
+  bannerTO = setTimeout(()=>$('banner').classList.remove('show'), 2600);
+}
+
+/* ---------- Manches ---------- */
+function startWave(){
+  wave++;
+  zombieHP = 4 + Math.floor((wave-1)/2)*2;
+  toSpawn = 1 + wave*2;
+  spawnTimer = 0.5;
+  hp = Math.min(MAX_HP, hp+6);
+  updateHearts(); updateHUD();
+  showBanner('MANCHE '+wave, toSpawn+' zombies arrivent…');
+  sfx.wave();
+}
+
+/* ---------- Dégâts joueur ---------- */
+function hurtPlayer(dmg){
+  if(dead) return;
+  hp -= dmg;
+  hurtFlash = 1; shakeT = 0.35;
+  sfx.hurt();
+  updateHearts();
+  if(hp <= 0){ hp = 0; gameOver(); }
+}
+function gameOver(){
+  dead = true; playing = false;
+  $('goWave').textContent = wave;
+  $('goKills').textContent = kills;
+  $('gameover').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+}
+
+/* ---------- Attaque ---------- */
+const camDir = new THREE.Vector3();
+function attack(){
+  if(!playing || atkTimer > 0) return;
+  atkTimer = ATK_CD; swingT = 0;
+  sfx.swing();
+  camera.getWorldDirection(camDir);
+  let best = null, bestD = 1e9;
+  for(const z of zombies){
+    if(z.state==='dying') continue;
+    const to = z.g.position.clone(); to.y += 1.2;
+    to.sub(camera.position);
+    const d = to.length();
+    if(d > ATK_RANGE) continue;
+    to.normalize();
+    if(to.dot(camDir) < 0.62) continue;
+    if(d < bestD){ bestD = d; best = z; }
+  }
+  if(best){
+    best.hp -= SWORD_DMG;
+    best.flashT = 0.15;
+    const kb = best.g.position.clone().sub(player.pos).setY(0).normalize().multiplyScalar(7);
+    best.kb.copy(kb);
+    const hitPos = best.g.position.clone(); hitPos.y += 1.3;
+    burst(hitPos, 0x8a1414, 8);
+    sfx.hit();
+    if(best.hp <= 0){
+      best.state = 'dying'; best.dieT = 0;
+      kills++; sfx.die();
+    }
+    updateHUD();
+  }
+}
+
+/* ============================================================
+   CONTRÔLES — souris / clavier
+============================================================ */
+const canvas = renderer.domElement;
+canvas.addEventListener('click', ()=>{
+  if(!playing || isMobile) return;
+  if(!document.pointerLockElement) canvas.requestPointerLock();
+});
+addEventListener('mousedown', e=>{
+  if(playing && !isMobile && document.pointerLockElement && e.button===0) attack();
+});
+addEventListener('mousemove', e=>{
+  if(!document.pointerLockElement) return;
+  player.yaw   -= e.movementX*0.0023;
+  player.pitch -= e.movementY*0.0023;
+  player.pitch = Math.max(-1.45, Math.min(1.45, player.pitch));
+});
+document.addEventListener('pointerlockchange', ()=>{
+  if(!document.pointerLockElement && playing && !isMobile && !dead){
+    playing = false;
+    $('pause').style.display = 'flex';
+  }
+});
+
+/* ============================================================
+   CONTRÔLES — mobile
+============================================================ */
+const joy = {active:false, id:null, cx:0, cy:0, dx:0, dy:0};
+const look = {id:null, lx:0, ly:0};
+if(isMobile){
+  $('mobile').style.display = 'block';
+  $('pcKeys').style.display = 'none';
+  $('mobKeys').style.display = 'block';
+  $('crosshair').style.fontSize = '18px';
+
+  const joyzone = $('joyzone'), base = $('joybase'), stick = $('joystick');
+  joyzone.addEventListener('touchstart', e=>{
+    const t = e.changedTouches[0];
+    joy.active = true; joy.id = t.identifier;
+    joy.cx = t.clientX; joy.cy = t.clientY; joy.dx = joy.dy = 0;
+    base.style.display = 'block';
+    base.style.left = (t.clientX-55)+'px'; base.style.top = (t.clientY-55)+'px';
+    base.style.bottom = 'auto';
+    stick.style.left = '29px'; stick.style.top = '29px';
+    e.preventDefault();
+  }, {passive:false});
+  joyzone.addEventListener('touchmove', e=>{
+    for(const t of e.changedTouches){
+      if(t.identifier !== joy.id) continue;
+      let dx = t.clientX-joy.cx, dy = t.clientY-joy.cy;
+      const l = Math.hypot(dx,dy), max = 45;
+      if(l > max){ dx = dx/l*max; dy = dy/l*max; }
+      joy.dx = dx/max; joy.dy = dy/max;
+      stick.style.left = (29+dx)+'px'; stick.style.top = (29+dy)+'px';
+    }
+    e.preventDefault();
+  }, {passive:false});
+  const joyEnd = e=>{
+    for(const t of e.changedTouches){
+      if(t.identifier !== joy.id) continue;
+      joy.active = false; joy.dx = joy.dy = 0;
+      base.style.display = 'none';
+    }
+  };
+  joyzone.addEventListener('touchend', joyEnd);
+  joyzone.addEventListener('touchcancel', joyEnd);
+
+  const lookzone = $('lookzone');
+  lookzone.addEventListener('touchstart', e=>{
+    const t = e.changedTouches[0];
+    look.id = t.identifier; look.lx = t.clientX; look.ly = t.clientY;
+    e.preventDefault();
+  }, {passive:false});
+  lookzone.addEventListener('touchmove', e=>{
+    for(const t of e.changedTouches){
+      if(t.identifier !== look.id) continue;
+      player.yaw   -= (t.clientX-look.lx)*0.0045;
+      player.pitch -= (t.clientY-look.ly)*0.0045;
+      player.pitch = Math.max(-1.45, Math.min(1.45, player.pitch));
+      look.lx = t.clientX; look.ly = t.clientY;
+    }
+    e.preventDefault();
+  }, {passive:false});
+  const lookEnd = e=>{
+    for(const t of e.changedTouches) if(t.identifier===look.id) look.id = null;
+  };
+  lookzone.addEventListener('touchend', lookEnd);
+  lookzone.addEventListener('touchcancel', lookEnd);
+
+  $('btnAtk').addEventListener('touchstart', e=>{ e.preventDefault(); attack(); }, {passive:false});
+  $('btnJump').addEventListener('touchstart', e=>{
+    e.preventDefault();
+    if(player.onGround){ player.vy = JUMP_V; player.onGround = false; sfx.jump(); }
+  }, {passive:false});
+}
+
+/* ============================================================
+   DÉMARRAGE / REPRISE
+============================================================ */
+$('btnPlay').addEventListener('click', ()=>{
+  audio();
+  $('start').style.display = 'none';
+  playing = true;
+  if(!isMobile) canvas.requestPointerLock();
+  if(wave === 0) startWave();
+});
+$('btnResume').addEventListener('click', ()=>{
+  $('pause').style.display = 'none';
+  playing = true;
+  if(!isMobile) canvas.requestPointerLock();
+});
+$('btnRetry').addEventListener('click', ()=>location.reload());
+
+/* ============================================================
+   BOUCLE DE JEU
+============================================================ */
+const clock = new THREE.Clock();
+const fwd = new THREE.Vector3(), right = new THREE.Vector3(), mv = new THREE.Vector3();
+
+function tick(){
+  requestAnimationFrame(tick);
+  const dt = Math.min(0.05, clock.getDelta());
+  const time = clock.elapsedTime;
+
+  if(playing && !dead){
+    /* ----- déplacement joueur ----- */
+    fwd.set(-Math.sin(player.yaw), 0, -Math.cos(player.yaw));
+    right.set(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
+    mv.set(0,0,0);
+    if(keys['KeyW']||keys['ArrowUp'])    mv.add(fwd);
+    if(keys['KeyS']||keys['ArrowDown'])  mv.sub(fwd);
+    if(keys['KeyD']||keys['ArrowRight']) mv.add(right);
+    if(keys['KeyA']||keys['ArrowLeft'])  mv.sub(right);
+    if(joy.active){
+      mv.addScaledVector(fwd, -joy.dy);
+      mv.addScaledVector(right, joy.dx);
+    }
+    if(mv.lengthSq() > 0){
+      mv.normalize().multiplyScalar(WALK_SPEED*dt);
+      player.pos.x += mv.x; player.pos.z += mv.z;
+      const d = Math.hypot(player.pos.x, player.pos.z);
+      const maxD = ISLAND_R - 1.2;
+      if(d > maxD){ player.pos.x *= maxD/d; player.pos.z *= maxD/d; }
+    }
+    if((keys['Space']) && player.onGround){
+      player.vy = JUMP_V; player.onGround = false; sfx.jump();
+    }
+    const gy = groundY(player.pos.x, player.pos.z);
+    player.vy -= GRAVITY*dt;
+    player.pos.y += player.vy*dt;
+    if(player.pos.y <= gy){
+      // marche : on monte les marches d'un bloc en douceur
+      player.pos.y = player.onGround ? THREE.MathUtils.lerp(player.pos.y, gy, Math.min(1, dt*18)) : gy;
+      if(Math.abs(player.pos.y-gy) < 0.01) player.pos.y = gy;
+      player.vy = 0; player.onGround = true;
+    }
+    if(player.onGround && player.pos.y < gy) player.pos.y = gy;
+
+    /* ----- attaque / cooldowns ----- */
+    if(atkTimer > 0) atkTimer -= dt;
+
+    /* ----- apparition des zombies ----- */
+    if(toSpawn > 0){
+      spawnTimer -= dt;
+      if(spawnTimer <= 0){ spawnZombie(); toSpawn--; spawnTimer = 0.7; updateHUD(); }
+    }
+
+    /* ----- zombies ----- */
+    for(let i=zombies.length-1; i>=0; i--){
+      const z = zombies[i];
+      z.t += dt;
+
+      if(z.state === 'dying'){
+        z.dieT += dt;
+        z.g.rotation.x = -Math.min(1,z.dieT/0.4)*Math.PI/2;
+        if(z.dieT > 0.6) z.g.position.y -= dt*2;
+        if(z.dieT > 1.2){
+          scene.remove(z.g);
+          zombies.splice(i,1);
+          updateHUD();
+        }
+        continue;
+      }
+
+      // flash rouge quand touché
+      if(z.flashT > 0){
+        z.flashT -= dt;
+        const f = z.flashT > 0;
+        z.mats.forEach(({mat,col})=>{
+          if(f) mat.color.setRGB(1,0.15,0.15); else mat.color.copy(col);
+        });
+      }
+
+      const toP = player.pos.clone().sub(z.g.position); toP.y = 0;
+      const dist = toP.length();
+      z.g.rotation.y = Math.atan2(toP.x, toP.z);
+
+      // knockback
+      if(z.kb.lengthSq() > 0.01){
+        z.g.position.addScaledVector(z.kb, dt);
+        z.kb.multiplyScalar(Math.max(0, 1-dt*6));
+      }
+
+      if(dist > 1.55){
+        toP.normalize();
+        z.g.position.addScaledVector(toP, z.speed*dt);
+        // les zombies s'écartent un peu entre eux
+        for(const o of zombies){
+          if(o===z || o.state==='dying') continue;
+          const away = z.g.position.clone().sub(o.g.position); away.y = 0;
+          const l = away.length();
+          if(l > 0.01 && l < 0.9) z.g.position.addScaledVector(away.normalize(), (0.9-l)*dt*3);
+        }
+        const swing = Math.sin(z.t*z.speed*4);
+        z.legL.rotation.x = swing*0.6;
+        z.legR.rotation.x = -swing*0.6;
+        z.armL.rotation.x = -Math.PI/2 + Math.sin(z.t*3)*0.12;
+        z.armR.rotation.x = -Math.PI/2 - Math.sin(z.t*3)*0.12;
+      } else {
+        z.atkCd -= dt;
+        z.legL.rotation.x = z.legR.rotation.x = 0;
+        if(z.atkCd <= 0){
+          z.atkCd = 1.1;
+          z.armL.rotation.x = z.armR.rotation.x = -Math.PI/2 - 0.6;
+          hurtPlayer(3);
+        } else {
+          z.armL.rotation.x = THREE.MathUtils.lerp(z.armL.rotation.x, -Math.PI/2, dt*6);
+          z.armR.rotation.x = z.armL.rotation.x;
+        }
+      }
+
+      // suit le sol
+      const zy = groundY(z.g.position.x, z.g.position.z);
+      z.g.position.y = THREE.MathUtils.lerp(z.g.position.y, zy, Math.min(1, dt*10));
+      // reste sur l'île
+      const zd = Math.hypot(z.g.position.x, z.g.position.z);
+      if(zd > ISLAND_R-1){ z.g.position.x *= (ISLAND_R-1)/zd; z.g.position.z *= (ISLAND_R-1)/zd; }
+
+      // grognements
+      z.groanT -= dt;
+      if(z.groanT <= 0){
+        z.groanT = 4 + Math.random()*7;
+        sfx.groan(0.35/Math.max(3, dist));
+      }
+    }
+
+    /* ----- manche suivante ----- */
+    if(toSpawn === 0 && zombies.length === 0){
+      interWave += dt;
+      if(interWave > 2.2){ interWave = 0; startWave(); }
+    } else interWave = 0;
+  }
+
+  /* ----- particules ----- */
+  for(let i=parts.length-1;i>=0;i--){
+    const p = parts[i];
+    p.userData.life -= dt;
+    if(p.userData.life <= 0){ scene.remove(p); parts.splice(i,1); continue; }
+    p.userData.v.y -= 12*dt;
+    p.position.addScaledVector(p.userData.v, dt);
+    p.rotation.x += dt*8; p.rotation.y += dt*6;
+  }
+
+  /* ----- animation épée ----- */
+  if(swingT >= 0){
+    swingT += dt;
+    const k = swingT/0.28;
+    if(k >= 1){ swingT = -1; sword.position.copy(SWORD_POS); sword.rotation.copy(SWORD_ROT); }
+    else {
+      const s = Math.sin(k*Math.PI);
+      sword.rotation.x = SWORD_ROT.x - s*1.5;
+      sword.rotation.z = SWORD_ROT.z + s*0.7;
+      sword.position.z = SWORD_POS.z - s*0.35;
+      sword.position.y = SWORD_POS.y + s*0.1;
+    }
+  } else {
+    // balancement léger
+    sword.position.y = SWORD_POS.y + Math.sin(time*2)*0.012;
+  }
+
+  /* ----- caméra ----- */
+  camera.position.set(player.pos.x, player.pos.y + EYE_H, player.pos.z);
+  camera.rotation.set(0,0,0);
+  camera.rotateY(player.yaw);
+  camera.rotateX(player.pitch);
+  if(shakeT > 0){
+    shakeT -= dt;
+    camera.position.x += (Math.random()-0.5)*0.08;
+    camera.position.y += (Math.random()-0.5)*0.08;
+  }
+
+  /* ----- effets ----- */
+  if(hurtFlash > 0){
+    hurtFlash -= dt*2.5;
+    $('vignette').style.opacity = Math.max(0, hurtFlash);
+  }
+  water.position.y = WATER_Y + Math.sin(time*0.8)*0.05;
+
+  renderer.render(scene, camera);
+}
+updateHearts(); updateHUD();
+tick();
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// accès de test (uniquement avec ?debug dans l'URL)
+if(location.search.includes('debug')){
+  window.__game = {
+    player, attack,
+    zombies: ()=>zombies,
+    state: ()=>({wave, kills, hp, toSpawn})
+  };
+}
+</script>
+</body>
+</html>
