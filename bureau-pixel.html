@@ -132,7 +132,10 @@
   <div class="chat">
     <div class="hd">
       <span>Chat avec les agents</span>
-      <button id="voiceBtn" title="Voix">🔊 Voix : ON</button>
+      <span style="display:flex;gap:6px">
+        <button id="brainBtn" title="Cerveau IA">🧠 IA</button>
+        <button id="voiceBtn" title="Voix">🔊 Voix : ON</button>
+      </span>
     </div>
     <div class="msgs" id="msgs"></div>
     <div class="inrow">
@@ -148,6 +151,25 @@
     <div class="mhead"><span>📬 Boîte aux lettres</span><button id="mailClose">✕ Fermer</button></div>
     <div id="mailList"></div>
     <button id="mailClear">🗑️ Vider la boîte</button>
+  </div>
+</div>
+
+<div class="modal" id="brainModal" hidden>
+  <div class="sheet">
+    <div class="mhead"><span>🧠 Cerveau IA (Claude API)</span><button id="brainClose">✕ Fermer</button></div>
+    <div class="form" style="border-top:none;padding-top:0">
+      <p class="note">Sans clé, le chat comprend des ordres simples. Avec une <b>clé API Anthropic</b>,
+      le chat devient une vraie conversation avec Claude : il comprend tout, discute de tout,
+      et commande les personnages tout seul.<br><br>
+      Pour avoir une clé : crée un compte sur <b>console.anthropic.com</b>, ajoute un petit crédit
+      (quelques euros suffisent pour des centaines de messages), puis crée une clé API et colle-la ici.
+      La clé reste enregistrée uniquement sur ton téléphone.<br><br>
+      ⚠️ Important : sur ce lien claude.ai, les connexions vers l'extérieur sont bloquées —
+      le cerveau IA ne marchera que sur la version hébergée sur ton site GitHub Pages.</p>
+      <label>Clé API <input type="password" id="brainKeyIn" placeholder="sk-ant-…" autocomplete="off"></label>
+      <button id="brainSave">Enregistrer la clé</button>
+      <button id="brainClear" style="color:var(--dim);font-size:11px;padding:7px">Retirer la clé</button>
+    </div>
   </div>
 </div>
 
@@ -327,45 +349,159 @@ if (SR){
   micBtn.style.opacity = .4;
 }
 
+/* ---------- cerveau IA (Claude API, optionnel) ---------- */
+let brainKey = '';
+try { brainKey = localStorage.getItem('pixel-bureau-cle-api') || ''; } catch(e){}
+let brainHist = [];
+const brainModal = document.getElementById('brainModal');
+const brainBtn = document.getElementById('brainBtn');
+function syncBrainBtn(){
+  brainBtn.textContent = brainKey ? '🧠 IA : ON' : '🧠 IA';
+  brainBtn.style.color = brainKey ? 'var(--green)' : '';
+}
+brainBtn.addEventListener('click', () => {
+  document.getElementById('brainKeyIn').value = brainKey;
+  brainModal.hidden = false;
+});
+document.getElementById('brainClose').addEventListener('click', () => brainModal.hidden = true);
+brainModal.addEventListener('click', e => { if (e.target === brainModal) brainModal.hidden = true; });
+document.getElementById('brainSave').addEventListener('click', () => {
+  brainKey = document.getElementById('brainKeyIn').value.trim();
+  try { localStorage.setItem('pixel-bureau-cle-api', brainKey); } catch(e){}
+  syncBrainBtn();
+  brainModal.hidden = true;
+  if (brainKey) botSay('Cerveau IA branché ! 🧠 Maintenant tu peux me parler de tout, comme à Claude.');
+});
+document.getElementById('brainClear').addEventListener('click', () => {
+  brainKey = ''; brainHist = [];
+  try { localStorage.removeItem('pixel-bureau-cle-api'); } catch(e){}
+  document.getElementById('brainKeyIn').value = '';
+  syncBrainBtn();
+});
+function buildSystemPrompt(){
+  const d = new Date();
+  return 'Tu es le cerveau du "Pixel Bureau", un petit jeu en pixel art où des personnages travaillent ' +
+    'dans des bureaux pour Amine (il vend des menus QR code à des snacks et restaurants, il n\'est pas développeur, il parle français).\n' +
+    'Agents présents : ' + agents.map(a => a.name + ' (' + TYPES[a.type].label + ')').join(', ') + '.\n' +
+    'Courriers dans la boîte aux lettres : ' + mailbox.length + '. Heure actuelle : ' +
+    d.toLocaleTimeString('fr-FR') + ', le ' + d.toLocaleDateString('fr-FR') + '.\n' +
+    'Chaque agent peut faire ces actions dans le jeu : "code" (coder à l\'ordinateur), "research" (lire les documents), ' +
+    '"archive" (fouiller les armoires), "idle" (pause). Autres actions : "open_mail" (ouvrir la boîte aux lettres), ' +
+    '"open_invite" (ouvrir la fiche pour inviter un agent), "none" (aucune).\n' +
+    'Réponds TOUJOURS et UNIQUEMENT en JSON strict : {"reponse":"...","action":"...","agent":"NomAgent ou null"}.\n' +
+    '"reponse" : ta réponse chaleureuse en français simple, courte (1 à 3 phrases), tu tutoies Amine. ' +
+    'Tu peux discuter de tout avec lui (questions, conseils pour son activité de menus QR, blagues...) — ' +
+    'dans ce cas mets action:"none". Si Amine donne un ordre, choisis l\'action et, s\'il nomme un agent précis, mets son nom dans "agent".';
+}
+async function askBrain(txt){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'x-api-key': brainKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:300,
+      system: buildSystemPrompt(),
+      messages: brainHist.slice(-10).concat([{role:'user', content:txt}])
+    })
+  });
+  if (!res.ok) throw new Error('erreur ' + res.status);
+  const data = await res.json();
+  return data.content.map(c => c.text || '').join('');
+}
+function runBrainReply(raw){
+  let obj = null;
+  const m = raw.match(/\{[\s\S]*\}/);
+  if (m){ try { obj = JSON.parse(m[0]); } catch(e){} }
+  if (!obj){ botSay(raw.replace(/</g,'&lt;')); return; }
+  if (obj.reponse) botSay(String(obj.reponse).replace(/</g,'&lt;'));
+  const act = String(obj.action || 'none').toLowerCase();
+  const map = {code:'code', recherche:'research', research:'research', archive:'archive', archives:'archive', pause:'idle', idle:'idle'};
+  if (map[act]){
+    const target = obj.agent ? agents.find(a => a.name.toLowerCase() === String(obj.agent).toLowerCase()) : null;
+    setAction(target || agents[0], map[act]);
+  } else if (act === 'open_mail') openMailbox();
+  else if (act === 'open_invite') openInvite();
+}
+
 /* ---------- commandes ---------- */
-function sendMsg(){
+async function sendMsg(){
   const input = document.getElementById('chatIn');
   const txt = input.value.trim();
   if (!txt) return;
   input.value = '';
   addMsg('user', txt.replace(/</g,'&lt;'));
-  handleCommand(txt);
+  if (brainKey){
+    const th = document.createElement('div');
+    th.className = 'msg sys'; th.textContent = '🧠 Claude réfléchit…';
+    msgsEl.appendChild(th); msgsEl.scrollTop = msgsEl.scrollHeight;
+    try {
+      const raw = await askBrain(txt);
+      th.remove();
+      brainHist.push({role:'user', content:txt}, {role:'assistant', content:raw});
+      brainHist = brainHist.slice(-12);
+      runBrainReply(raw);
+    } catch(e){
+      th.remove();
+      chatSys('⚠️ Cerveau IA injoignable (' + e.message + '). Sur le lien claude.ai la connexion est bloquée : il faut la version GitHub Pages. Je réponds en mode simple.');
+      handleCommand(txt);
+    }
+  } else {
+    handleCommand(txt);
+  }
 }
 document.getElementById('sendBtn').addEventListener('click', sendMsg);
 document.getElementById('chatIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
 
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function handleCommand(txt){
-  const t = txt.toLowerCase();
-  const target = agents.slice(1).find(a => t.includes(a.name.toLowerCase())) || agents[0];
-  const who = target === agents[0] ? '' : target.name + ' ';
-  if (/(bonjour|salut|coucou|hello|ça va|ca va)/.test(t)){
+  const t = ' ' + txt.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')   // enlève les accents
+    .replace(/[!?.,;:']/g,' ') + ' ';
+  const named = agents.slice(1).find(a => t.includes(a.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')));
+  const everyone = /(tout le monde|toute l equipe|tous les agents|toute la team|vous tous)/.test(t);
+  const targets = everyone ? agents.slice() : [named || agents[0]];
+  const who = everyone ? 'Toute l’équipe ' : (named ? named.name + ' ' : '');
+
+  if (/(quelle heure|l heure qu il est)/.test(t)){
+    botSay('Il est ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}) + ' ⏰');
+  } else if (/(tu fais quoi|vous faites quoi|qu est ce que tu fais|statut|status|ou en es tu|ou en etes vous)/.test(t)){
+    botSay(agents.map(a => a.name + ' : ' + (a.phase==='walking' ? 'en déplacement' : CHIP[a.mode])).join(' · '));
+  } else if (/(combien)[^]*?(courrier|rapport|lettre|pdf)/.test(t)){
+    botSay(mailbox.length ? 'Il y a ' + mailbox.length + ' rapport' + (mailbox.length>1?'s':'') + ' dans la boîte aux lettres. 📬' : 'La boîte aux lettres est vide pour l’instant.');
+  } else if (/(bonjour|salut|coucou|hello|wesh|yo |ca va)/.test(t)){
     botSay(pick(['Salut Amine ! 👋 Toute l’équipe est prête. Dis-nous quoi faire !',
                  'Bonjour ! Tout va bien au bureau. Une directive ?']));
-  } else if (/(bo[iî]te|lettre|courrier|rapport|pdf|facteur)/.test(t)){
+  } else if (/(merci|bravo|super|genial|excellent|parfait|bien joue|top )/.test(t)){
+    botSay(pick(['Avec plaisir ! 😄','Merci Amine ! On continue.','À ton service ! 👍']));
+  } else if (/(ouvre|montre|voir|regarde)[^]*?(boite|lettre|courrier|rapport|pdf)/.test(t) || /(boite aux lettres|le courrier|les rapports|les pdf)/.test(t)){
     openMailbox();
     botSay('Voici la boîte aux lettres ! Touche un rapport pour ouvrir son PDF. 📬');
-  } else if (/(invit|ajout.*agent|nouvel agent|nouvelle pi[èe]ce)/.test(t)){
+  } else if (/(invit|ajoute? un agent|nouvel agent|nouvelle piece|recrute)/.test(t)){
     openInvite();
     botSay('Voici la fiche d’invitation : nom, type et directives à heure précise. ➕');
-  } else if (/(cod|program|bug|site|développ|developp|test)/.test(t)){
-    setAction(target,'code'); botSay(who + (who?'file coder ! 💻':pick(['Ça marche, je file coder ! 💻','Reçu ! Direction l’ordinateur. 💻'])));
-  } else if (/(archiv|armoire|dossier|class|facture|range)/.test(t)){
-    setAction(target,'archive'); botSay(who + (who?'part fouiller les archives ! 🗄️':'OK, je vais fouiller les armoires ! 🗄️'));
-  } else if (/(recherch|cherch|document|lis|lire|note|étudi|etudi|renseigne)/.test(t)){
-    setAction(target,'research'); botSay(who + (who?'part en recherche ! 📄':'Bien reçu, je vais lire les documents ! 📄'));
-  } else if (/(pause|repos|caf[ée]|stop|arr[êe]te|dors|repose)/.test(t)){
-    setAction(target,'idle'); botSay(who + (who?'prend une pause ! ☕':'OK, petite pause ! ☕'));
-  } else if (/(merci|bravo|super|génial|genial|bien jou)/.test(t)){
-    botSay(pick(['Avec plaisir ! 😄','Merci Amine ! On continue.']));
+  } else if (/(cod|program|bug|site|develop|informatique|ordinateur|pc |clavier)/.test(t)){
+    targets.forEach(a => setAction(a,'code'));
+    botSay(who ? who + (everyone?'file':'file') + ' coder ! 💻' : pick(['Ça marche, je file coder ! 💻','Reçu ! Direction l’ordinateur. 💻']));
+  } else if (/(archiv|armoire|dossier|classe|facture|range|retrouve|papier)/.test(t)){
+    targets.forEach(a => setAction(a,'archive'));
+    botSay(who ? who + 'part fouiller les archives ! 🗄️' : 'OK, je vais fouiller les armoires ! 🗄️');
+  } else if (/(recherch|cherch|document|lis |lire|note|etudi|renseigne|analyse|regarde les doc)/.test(t)){
+    targets.forEach(a => setAction(a,'research'));
+    botSay(who ? who + 'part en recherche ! 📄' : 'Bien reçu, je vais lire les documents ! 📄');
+  } else if (/(travail|boulot|bosse|au taf|active)/.test(t)){
+    targets.forEach(a => setAction(a,'code'));
+    botSay(who ? who + 'se met au travail ! 💻' : 'Au travail ! Je file à l’ordinateur. 💻');
+  } else if (/(pause|repos|cafe|stop|arret|dors|calme|tranquille)/.test(t)){
+    targets.forEach(a => setAction(a,'idle'));
+    botSay(who ? who + 'prend une pause ! ☕' : 'OK, petite pause ! ☕');
   } else {
-    botSay('Je peux : <b>coder</b> 💻, faire des <b>recherches</b> 📄, fouiller les <b>archives</b> 🗄️, faire une <b>pause</b> ☕, ouvrir le <b>courrier</b> 📬 ou <b>inviter</b> un agent ➕. Pour un agent précis, dis son nom : « Sarah, va coder ».',
-           'Je peux coder, faire des recherches, fouiller les archives, faire une pause, ouvrir le courrier, ou inviter un agent. Pour un agent précis, dis son nom.');
+    botSay('Hmm, je n’ai pas bien compris. 🤔 Essaie : <b>va coder</b> 💻, <b>fais des recherches</b> 📄, <b>cherche un dossier</b> 🗄️, <b>pause</b> ☕, <b>ouvre le courrier</b> 📬, <b>invite un agent</b> ➕ — ou le nom d’un agent : « Sarah, va coder ». Pour que je comprenne <b>tout</b> comme le vrai Claude, branche le cerveau 🧠 IA en haut du chat.',
+           'Je n’ai pas bien compris. Essaie : va coder, fais des recherches, cherche un dossier, pause, ouvre le courrier, ou invite un agent. Pour que je comprenne tout, branche le cerveau IA en haut du chat.');
   }
 }
 
@@ -887,6 +1023,7 @@ rebuildCanvas();
 updateMailCount();
 updateChip();
 syncButtons();
+syncBrainBtn();
 addMsg('bot', 'Salut Amine ! 👋 Donne tes directives ici (ou avec le 🎤). Touche <b>➕ Inviter</b> pour ajouter un agent et sa pièce — avec des directives à heure précise si tu veux. Chaque rapport terminé arrive en <b>PDF</b> dans la boîte aux lettres 📬.');
 requestAnimationFrame(tick);
 })();
