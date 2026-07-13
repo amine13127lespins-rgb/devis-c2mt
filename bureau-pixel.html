@@ -26,7 +26,7 @@
 
   .screen{
     border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#0e1120;
-    box-shadow:0 8px 30px rgba(0,0,0,.45); position:relative;
+    box-shadow:0 8px 30px rgba(0,0,0,.45);
   }
   canvas{
     display:block; width:100%; height:auto; cursor:pointer;
@@ -44,6 +44,7 @@
   button.active{border-color:var(--accent); color:var(--accent)}
   button#autoBtn.on{border-color:var(--green); color:var(--green)}
   #mailBtn b{color:var(--amber); font-weight:700}
+  #invBtn{border-color:#4d7cc0; color:#8fb8f0}
   .controls .spacer{flex:1}
 
   /* ---- chat ---- */
@@ -70,37 +71,55 @@
   @keyframes pulse{50%{background:#3a1b22}}
   @media (prefers-reduced-motion: reduce){ #micBtn.rec{animation:none} }
 
-  /* ---- boîte aux lettres (modal) ---- */
+  /* ---- modals ---- */
   .modal{
     position:fixed; inset:0; background:rgba(10,12,25,.75); z-index:50;
     display:flex; align-items:center; justify-content:center; padding:20px;
   }
   .modal[hidden]{display:none}
   .sheet{
-    width:100%; max-width:460px; max-height:80vh; overflow-y:auto;
+    width:100%; max-width:460px; max-height:85vh; overflow-y:auto;
     background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px;
     display:flex; flex-direction:column; gap:10px;
   }
   .mhead{display:flex; align-items:center; justify-content:space-between; font-size:14px; font-weight:700}
   .mhead button{padding:6px 11px}
-  .mailItem{
-    text-align:left; display:block; width:100%; padding:10px 12px; line-height:1.5;
-  }
+  .mailItem{text-align:left; display:block; width:100%; padding:10px 12px; line-height:1.5}
   .mailItem b{color:var(--amber)}
   .mailItem span{display:block; color:var(--dim); font-size:11px}
   .mempty{color:var(--dim); font-size:12px; text-align:center; padding:16px 0}
   #mailClear{color:var(--dim); font-size:11px; padding:7px}
 
-  footer{color:var(--dim); font-size:11px; line-height:1.6}
+  /* ---- formulaire inviter ---- */
+  .form{display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--line); padding-top:10px}
+  .form label{display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:.1em}
+  .form input[type=text], .form select, .form input[type=time]{
+    font-family:var(--mono); font-size:15px; background:#0e1120; color:var(--ink);
+    border:1px solid var(--line); border-radius:6px; padding:9px 10px;
+  }
+  .form input:focus, .form select:focus{outline:none; border-color:var(--accent)}
+  .schedRow{display:flex; gap:8px}
+  .schedRow input[type=time]{flex:0 0 118px}
+  .schedRow select{flex:1; min-width:0}
+  .chk{flex-direction:row !important; align-items:center; gap:8px !important; text-transform:none !important; font-size:12px !important; letter-spacing:0 !important}
+  .note{margin:0; font-size:11px; color:var(--dim); line-height:1.6}
+  #agAdd{border-color:#4d7cc0; color:#8fb8f0; font-weight:700}
+  .agentRow{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:#0e1120; border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:12px;
+  }
+  .agentRow .who b{color:var(--ink)}
+  .agentRow .who span{display:block; color:var(--dim); font-size:10.5px; margin-top:2px}
+  .agentRow button{padding:5px 9px; font-size:12px}
 </style>
 
 <div class="app">
   <header>
     <h1>▸ Pixel Bureau <span>— Claude au travail</span></h1>
-    <div class="chip">● statut : <b id="statusChip">pause</b></div>
+    <div class="chip">● <b id="statusChip">pause</b></div>
   </header>
 
-  <div class="screen"><canvas id="cv" width="640" height="416" aria-label="Bureau virtuel en pixel art — touche la boîte aux lettres pour lire le courrier"></canvas></div>
+  <div class="screen"><canvas id="cv" width="640" height="416" aria-label="Immeuble de bureaux virtuel en pixel art — touche une boîte aux lettres pour lire le courrier"></canvas></div>
 
   <div class="controls">
     <button id="b-code">💻 Coder</button>
@@ -108,28 +127,23 @@
     <button id="b-archive">🗄️ Archives</button>
     <button id="b-idle">☕ Pause</button>
     <button id="mailBtn">📬 Courrier <b id="mailCount">0</b></button>
+    <button id="invBtn">➕ Inviter</button>
     <span class="spacer"></span>
     <button id="autoBtn" class="on">AUTO : ON</button>
   </div>
 
   <div class="chat">
     <div class="hd">
-      <span>Chat avec Claude</span>
-      <button id="voiceBtn" title="Voix de Claude">🔊 Voix : ON</button>
+      <span>Chat avec les agents</span>
+      <button id="voiceBtn" title="Voix">🔊 Voix : ON</button>
     </div>
     <div class="msgs" id="msgs"></div>
     <div class="inrow">
       <button id="micBtn" title="Parler">🎤</button>
-      <input id="chatIn" type="text" placeholder="Donne-moi une directive… (ex : va coder)" autocomplete="off">
+      <input id="chatIn" type="text" placeholder="ex : va coder — ou : Sarah, cherche un dossier" autocomplete="off">
       <button id="sendBtn" title="Envoyer">➤</button>
     </div>
   </div>
-
-  <footer>
-    Dirige-moi par le chat (écrit ou 🎤 vocal) : « va coder », « fais des recherches »,
-    « cherche un dossier dans les archives », « pause »… Chaque tâche terminée, je dépose un
-    <b>rapport PDF</b> dans la boîte aux lettres 📬 (en bas à gauche de la pièce — touche-la pour l'ouvrir).
-  </footer>
 </div>
 
 <div class="modal" id="mailModal" hidden>
@@ -140,33 +154,67 @@
   </div>
 </div>
 
+<div class="modal" id="invModal" hidden>
+  <div class="sheet">
+    <div class="mhead"><span>➕ Inviter un agent</span><button id="invClose">✕ Fermer</button></div>
+    <div id="agentList"></div>
+    <div class="form" id="invForm">
+      <label>Nom de l'agent <input type="text" id="agName" placeholder="ex : Sarah" maxlength="12"></label>
+      <label>Type d'agent
+        <select id="agType">
+          <option value="claude">🤖 Claude</option>
+          <option value="chatgpt">🟢 ChatGPT (API)</option>
+          <option value="meta">📣 Meta Ads (API)</option>
+        </select>
+      </label>
+      <label>Directives à heure précise (optionnel)</label>
+      <div class="schedRow"><input type="time" id="t1"><select id="a1"><option value="">— aucune —</option><option value="code">💻 Coder</option><option value="research">📄 Rechercher</option><option value="archive">🗄️ Archives</option><option value="idle">☕ Pause</option></select></div>
+      <div class="schedRow"><input type="time" id="t2"><select id="a2"><option value="">— aucune —</option><option value="code">💻 Coder</option><option value="research">📄 Rechercher</option><option value="archive">🗄️ Archives</option><option value="idle">☕ Pause</option></select></div>
+      <div class="schedRow"><input type="time" id="t3"><select id="a3"><option value="">— aucune —</option><option value="code">💻 Coder</option><option value="research">📄 Rechercher</option><option value="archive">🗄️ Archives</option><option value="idle">☕ Pause</option></select></div>
+      <label class="chk"><input type="checkbox" id="agAuto"> Mode auto entre les directives</label>
+      <p class="note">Une nouvelle pièce s'ajoute pour chaque agent. Les agents sont connectés entre eux :
+      chaque rapport déposé est partagé dans la boîte aux lettres commune. Pour ChatGPT et Meta Ads,
+      la vraie connexion API pourra être branchée plus tard — en attendant l'agent travaille en simulation.</p>
+      <button id="agAdd">Ajouter l'agent + sa pièce</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (() => {
 "use strict";
 const cv = document.getElementById('cv');
-const ctx = cv.getContext('2d');
-ctx.imageSmoothingEnabled = false;
-ctx.scale(2, 2);                 // monde logique : 320 × 208
+let ctx = cv.getContext('2d');
 
-const W = 320, H = 208, T = 16;
+const W = 320, ROOM_H = 208, T = 16;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ---------- palette du monde ---------- */
+/* ---------- palette ---------- */
 const C = {
-  wallTop:'#252c4a', wall:'#3a4466', plinthe:'#2b3252',
+  plinthe:'#2b3252',
   floorA:'#c1885e', floorB:'#b87f56', floorLine:'#a9744e',
-  rug:'#556487', rugEdge:'#48566f',
   woodTop:'#6e4630', woodFront:'#59371f', woodHi:'#8a5a3b',
   metal:'#7a8296', metalHi:'#99a2b8', metalLo:'#5c6478',
   screenOff:'#1b2038', screenOn:'#0f2a24',
   paper:'#f2ead8', paperLine:'#b8ad91',
-  hair:'#5d3a28', skin:'#f0c297', shirt:'#e8e4d8', pants:'#4a5878', shoe:'#2b2b3a',
+  skin:'#f0c297', pants:'#4a5878', shoe:'#2b2b3a',
   leaf:'#3e8948', leafHi:'#63c74d', pot:'#b0563a',
   bubble:'#f5f3ea', bubbleInk:'#2b3252',
   folder:'#f2c14e', boxRed:'#c0553f', boxRedHi:'#d97757'
 };
+const THEMES = [
+  {wall:'#3a4466', wallTop:'#252c4a', rug:'#556487', rugEdge:'#48566f'},
+  {wall:'#3f5a4a', wallTop:'#283d32', rug:'#5d7a5c', rugEdge:'#4b634a'},
+  {wall:'#544267', wallTop:'#3a2d49', rug:'#75608a', rugEdge:'#5e4d70'},
+  {wall:'#5f4a3c', wallTop:'#423227', rug:'#8a6f52', rugEdge:'#705a43'}
+];
+const TYPES = {
+  claude:  {label:'Claude',         shirt:'#e8e4d8', shirtLo:'#c9c3b2', hair:'#5d3a28'},
+  chatgpt: {label:'ChatGPT (API)',  shirt:'#74c69d', shirtLo:'#57a880', hair:'#2f2f3d'},
+  meta:    {label:'Meta Ads (API)', shirt:'#6ea8fe', shirtLo:'#5289dd', hair:'#3d2a1e'}
+};
 
-/* ---------- postes de travail ---------- */
+/* ---------- postes de travail (dans une pièce) ---------- */
 const CORRIDOR_Y = 144;
 const STATIONS = {
   code:     { x: 40,  y: 80,  face:'up',   bulle:'Code…' },
@@ -176,25 +224,45 @@ const STATIONS = {
   idle:     { x: 168, y: 168, face:'down', bulle:'Idle' }
 };
 const MSG = {
-  code:     { go:'Je me dirige vers l’ordinateur…',
-              do:['J’écris du code…','Je corrige un bug…','Je lance les tests…','Je relis mon code…'] },
-  research: { go:'Direction le bureau : je vais lire les documents…',
-              do:['Je lis les documents…','Je prends des notes…','Je fais des recherches…'] },
-  archive:  { go:'Je vais fouiller dans les armoires d’archives…',
-              do:['Je fouille les archives…','Je récupère un dossier…','Je classe des papiers…'] },
-  mail:     { go:'Je vais poster mon rapport dans la boîte aux lettres…',
-              do:['Je poste mon rapport… ✉️'] },
-  idle:     { go:'Je retourne au centre de la pièce…',
-              do:['Petite pause ☕'] }
+  code:     { go:'file vers l’ordinateur…', do:['J’écris du code…','Je corrige un bug…','Je lance les tests…','Je relis mon code…'] },
+  research: { go:'va lire les documents…',  do:['Je lis les documents…','Je prends des notes…','Je fais des recherches…'] },
+  archive:  { go:'va fouiller les armoires d’archives…', do:['Je fouille les archives…','Je récupère un dossier…','Je classe des papiers…'] },
+  mail:     { go:'va poster son rapport…',  do:['Je poste mon rapport… ✉️'] },
+  idle:     { go:'retourne au centre de la pièce…', do:['Petite pause ☕'] }
 };
-const CHIP = { code:'en train de coder', research:'en recherche', archive:'dans les archives', mail:'dépose le courrier', idle:'pause' };
+const CHIP = { code:'code', research:'recherche', archive:'archives', mail:'courrier', idle:'pause' };
 const DEST = { code:'PC', research:'bureau', archive:'archives', mail:'boîte', idle:'pause' };
+const ICO  = { code:'💻 ', research:'📄 ', archive:'🗄️ ', mail:'✉️ ', idle:'☕ ' };
 
-/* ---------- état ---------- */
-const hero = { x: STATIONS.idle.x, y: STATIONS.idle.y, face:'down', dist:0 };
-let mode = 'idle', phase = 'working', path = [], workUntil = 0, auto = true;
-let pendingReport = null;
+/* ---------- agents ---------- */
+let agents = [];
 let now = 0;
+function makeAgent(cfg, room){
+  return {
+    id: cfg.id || ('ag' + Date.now()),
+    name: cfg.name, type: cfg.type || 'claude',
+    schedule: cfg.schedule || [], auto: !!cfg.auto,
+    room, mode:'idle', phase:'working', path:[],
+    workUntil: performance.now() + 2500 + room*1500,
+    pendingReport: null, codeLines: [], fired: {},
+    hero: { x: STATIONS.idle.x, y: STATIONS.idle.y + room*ROOM_H, face:'down', dist:0 }
+  };
+}
+function saveAgents(){
+  try {
+    localStorage.setItem('pixel-bureau-agents', JSON.stringify(
+      agents.slice(1).map(a => ({id:a.id, name:a.name, type:a.type, schedule:a.schedule, auto:a.auto}))
+    ));
+  } catch(e){}
+}
+function rebuildCanvas(){
+  cv.width = 640;
+  cv.height = ROOM_H * 2 * agents.length;
+  ctx = cv.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(2,2);
+  ctx.imageSmoothingEnabled = false;
+}
 
 /* ---------- chat ---------- */
 const msgsEl = document.getElementById('msgs');
@@ -212,12 +280,17 @@ function botSay(t, spoken){
   speak(spoken !== undefined ? spoken : t);
 }
 const chipEl = document.getElementById('statusChip');
+function updateChip(){
+  const me = agents[0];
+  chipEl.textContent = 'Claude : ' + (me.phase==='walking' ? 'en déplacement' : CHIP[me.mode]) +
+    (agents.length > 1 ? ' · ' + agents.length + ' agents' : '');
+}
 
 /* ---------- voix (synthèse locale) ---------- */
 let voiceOn = true;
 function speak(t){
   if (!voiceOn || !('speechSynthesis' in window)) return;
-  const clean = t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}✉️📬💻📄🗄️☕]/gu,'').trim();
+  const clean = t.replace(/<[^>]*>/g,'').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}✉️📬💻📄🗄️☕🤖🟢📣⏰🔗]/gu,'').trim();
   if (!clean) return;
   const u = new SpeechSynthesisUtterance(clean);
   u.lang = 'fr-FR'; u.rate = 1.05;
@@ -226,7 +299,7 @@ function speak(t){
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
-if ('speechSynthesis' in window) speechSynthesis.getVoices(); // pré-chargement
+if ('speechSynthesis' in window) speechSynthesis.getVoices();
 const voiceBtn = document.getElementById('voiceBtn');
 voiceBtn.addEventListener('click', () => {
   voiceOn = !voiceOn;
@@ -234,7 +307,7 @@ voiceBtn.addEventListener('click', () => {
   if (!voiceOn && 'speechSynthesis' in window) speechSynthesis.cancel();
 });
 
-/* ---------- micro (reconnaissance vocale) ---------- */
+/* ---------- micro ---------- */
 const micBtn = document.getElementById('micBtn');
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, recOn = false;
@@ -242,16 +315,14 @@ if (SR){
   rec = new SR();
   rec.lang = 'fr-FR'; rec.interimResults = false; rec.maxAlternatives = 1;
   rec.onresult = e => {
-    const t = e.results[0][0].transcript;
-    document.getElementById('chatIn').value = t;
+    document.getElementById('chatIn').value = e.results[0][0].transcript;
     sendMsg();
   };
   rec.onend = () => { recOn = false; micBtn.classList.remove('rec'); };
   rec.onerror = () => { recOn = false; micBtn.classList.remove('rec'); };
   micBtn.addEventListener('click', () => {
     if (recOn){ rec.stop(); return; }
-    try { rec.start(); recOn = true; micBtn.classList.add('rec'); }
-    catch(e){}
+    try { rec.start(); recOn = true; micBtn.classList.add('rec'); } catch(e){}
   });
 } else {
   micBtn.disabled = true;
@@ -259,7 +330,7 @@ if (SR){
   micBtn.style.opacity = .4;
 }
 
-/* ---------- commandes du chat ---------- */
+/* ---------- commandes ---------- */
 function sendMsg(){
   const input = document.getElementById('chatIn');
   const txt = input.value.trim();
@@ -274,81 +345,90 @@ document.getElementById('chatIn').addEventListener('keydown', e => { if (e.key =
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function handleCommand(txt){
   const t = txt.toLowerCase();
+  const target = agents.slice(1).find(a => t.includes(a.name.toLowerCase())) || agents[0];
+  const who = target === agents[0] ? '' : target.name + ' ';
   if (/(bonjour|salut|coucou|hello|ça va|ca va)/.test(t)){
-    botSay(pick(['Salut Amine ! 👋 Prêt à bosser. Dis-moi quoi faire !',
-                 'Bonjour ! Tout va bien au bureau. Une directive pour moi ?']));
+    botSay(pick(['Salut Amine ! 👋 Toute l’équipe est prête. Dis-nous quoi faire !',
+                 'Bonjour ! Tout va bien au bureau. Une directive ?']));
   } else if (/(bo[iî]te|lettre|courrier|rapport|pdf|facteur)/.test(t)){
     openMailbox();
     botSay('Voici la boîte aux lettres ! Touche un rapport pour ouvrir son PDF. 📬');
+  } else if (/(invit|ajout.*agent|nouvel agent|nouvelle pi[èe]ce)/.test(t)){
+    openInvite();
+    botSay('Voici la fiche d’invitation : nom, type et directives à heure précise. ➕');
   } else if (/(auto)/.test(t)){
-    setAuto(!auto);
-    botSay(auto ? 'Mode auto activé : j’enchaîne les tâches tout seul ! 🤖' : 'Mode auto coupé : j’attends tes ordres. 🕹️');
+    setAuto(!agents[0].auto);
+    botSay(agents[0].auto ? 'Mode auto activé : j’enchaîne les tâches tout seul ! 🤖' : 'Mode auto coupé : j’attends tes ordres. 🕹️');
   } else if (/(cod|program|bug|site|développ|developp|test)/.test(t)){
-    setAction('code'); botSay(pick(['Ça marche, je file coder ! 💻','Reçu ! Direction l’ordinateur. 💻']));
+    setAction(target,'code'); botSay(who + (who?'file coder ! 💻':pick(['Ça marche, je file coder ! 💻','Reçu ! Direction l’ordinateur. 💻'])));
   } else if (/(archiv|armoire|dossier|class|facture|range)/.test(t)){
-    setAction('archive'); botSay(pick(['OK, je vais fouiller les armoires ! 🗄️','Compris, je cherche dans les archives. 🗄️']));
+    setAction(target,'archive'); botSay(who + (who?'part fouiller les archives ! 🗄️':'OK, je vais fouiller les armoires ! 🗄️'));
   } else if (/(recherch|cherch|document|lis|lire|note|étudi|etudi|renseigne)/.test(t)){
-    setAction('research'); botSay(pick(['Bien reçu, je vais lire les documents ! 📄','OK, je pars en recherche. 📄']));
+    setAction(target,'research'); botSay(who + (who?'part en recherche ! 📄':'Bien reçu, je vais lire les documents ! 📄'));
   } else if (/(pause|repos|caf[ée]|stop|arr[êe]te|dors|repose)/.test(t)){
-    setAction('idle'); botSay('OK, petite pause ! ☕');
-  } else if (/(merci|bravo|super|génial|genial|bien joué|bien joue)/.test(t)){
-    botSay(pick(['Avec plaisir ! 😄','Merci Amine ! Je continue.']));
+    setAction(target,'idle'); botSay(who + (who?'prend une pause ! ☕':'OK, petite pause ! ☕'));
+  } else if (/(merci|bravo|super|génial|genial|bien jou)/.test(t)){
+    botSay(pick(['Avec plaisir ! 😄','Merci Amine ! On continue.']));
   } else {
-    botSay('Je peux : <b>coder</b> 💻, faire des <b>recherches</b> 📄, fouiller les <b>archives</b> 🗄️, faire une <b>pause</b> ☕ ou t’ouvrir le <b>courrier</b> 📬. Dis-moi !',
-           'Je peux coder, faire des recherches, fouiller les archives, faire une pause, ou ouvrir le courrier. Dis-moi !');
+    botSay('Je peux : <b>coder</b> 💻, faire des <b>recherches</b> 📄, fouiller les <b>archives</b> 🗄️, faire une <b>pause</b> ☕, ouvrir le <b>courrier</b> 📬 ou <b>inviter</b> un agent ➕. Pour un agent précis, dis son nom : « Sarah, va coder ».',
+           'Je peux coder, faire des recherches, fouiller les archives, faire une pause, ouvrir le courrier, ou inviter un agent. Pour un agent précis, dis son nom.');
   }
 }
 
-/* ---------- actions ---------- */
-function setAction(next){
-  if (next === mode && phase === 'working') return;
-  if (pendingReport && next !== 'mail') commitDeposit(); // ne jamais perdre un rapport
-  mode = next; phase = 'walking';
-  path = buildPath(hero, STATIONS[next]);
-  chatSys('🚶 ' + MSG[next].go);
-  chipEl.textContent = 'en déplacement…';
-  syncButtons();
+/* ---------- machine à états (par agent) ---------- */
+function stationFor(a, key){
+  const s = STATIONS[key];
+  return { x: s.x, y: s.y + a.room*ROOM_H, face: s.face };
 }
-function buildPath(from, to){
+function setAction(a, next){
+  if (next === a.mode && a.phase === 'working') return;
+  if (a.pendingReport && next !== 'mail') commitDeposit(a);
+  a.mode = next; a.phase = 'walking';
+  a.path = buildPath(a, stationFor(a, next));
+  chatSys('🚶 ' + a.name + ' ' + MSG[next].go);
+  updateChip(); syncButtons();
+}
+function buildPath(a, to){
+  const cy = CORRIDOR_Y + a.room*ROOM_H;
   const pts = [];
-  if (Math.round(from.y) !== CORRIDOR_Y) pts.push({x:from.x, y:CORRIDOR_Y});
-  pts.push({x:to.x, y:CORRIDOR_Y});
+  if (Math.round(a.hero.y) !== cy) pts.push({x:a.hero.x, y:cy});
+  pts.push({x:to.x, y:cy});
   pts.push({x:to.x, y:to.y});
-  return pts.filter((p,i,a) => i===0 || p.x!==a[i-1].x || p.y!==a[i-1].y);
+  return pts.filter((p,i,arr) => i===0 || p.x!==arr[i-1].x || p.y!==arr[i-1].y);
 }
-function arrive(){
-  phase = 'working';
-  hero.face = STATIONS[mode].face;
-  const icons = {code:'💻 ', research:'📄 ', archive:'🗄️ ', mail:'✉️ ', idle:'☕ '};
-  chatSys(icons[mode] + pick(MSG[mode].do));
-  chipEl.textContent = CHIP[mode];
-  workUntil = now + (mode === 'mail' ? 1800 : 5000 + Math.random()*4000);
+function arrive(a){
+  a.phase = 'working';
+  a.hero.face = stationFor(a, a.mode).face;
+  chatSys(ICO[a.mode] + a.name + ' : ' + pick(MSG[a.mode].do));
+  a.workUntil = now + (a.mode === 'mail' ? 1800 : 5000 + Math.random()*4000);
+  updateChip();
 }
-function onWorkDone(){
-  if (mode === 'mail'){
-    commitDeposit();
-    if (auto) autoNext(); else setAction('idle');
-  } else if (mode === 'idle'){
-    if (auto) autoNext(); else workUntil = Infinity;
+function onWorkDone(a){
+  if (a.mode === 'mail'){
+    commitDeposit(a);
+    if (a.auto) autoNext(a); else setAction(a,'idle');
+  } else if (a.mode === 'idle'){
+    if (a.auto) autoNext(a); else a.workUntil = Infinity;
   } else {
-    pendingReport = createReport(mode);
-    setAction('mail');
+    a.pendingReport = createReport(a);
+    setAction(a,'mail');
   }
 }
-function autoNext(){
-  const pool = ['code','research','archive','code','idle'].filter(m => m !== mode);
-  setAction(pool[Math.floor(Math.random()*pool.length)]);
+function autoNext(a){
+  const pool = ['code','research','archive','code','idle'].filter(m => m !== a.mode);
+  setAction(a, pool[Math.floor(Math.random()*pool.length)]);
 }
 function setAuto(v){
-  auto = v;
+  agents[0].auto = v;
   const b = document.getElementById('autoBtn');
-  b.textContent = 'AUTO : ' + (auto ? 'ON' : 'OFF');
-  b.classList.toggle('on', auto);
-  if (auto && phase === 'working' && workUntil === Infinity) workUntil = now + 1500;
+  b.textContent = 'AUTO : ' + (v ? 'ON' : 'OFF');
+  b.classList.toggle('on', v);
+  if (v && agents[0].phase === 'working' && agents[0].workUntil === Infinity)
+    agents[0].workUntil = now + 1500;
 }
 document.getElementById('autoBtn').addEventListener('click', () => {
-  setAuto(!auto);
-  chatSys(auto ? '🤖 Mode auto activé.' : '🕹️ Mode manuel : dirige-moi par le chat ou les boutons.');
+  setAuto(!agents[0].auto);
+  chatSys(agents[0].auto ? '🤖 Mode auto activé pour Claude.' : '🕹️ Mode manuel : dirige Claude par le chat ou les boutons.');
 });
 
 const btns = {
@@ -357,97 +437,196 @@ const btns = {
   archive: document.getElementById('b-archive'),
   idle: document.getElementById('b-idle')
 };
-for (const k in btns) btns[k].addEventListener('click', () => setAction(k));
+for (const k in btns) btns[k].addEventListener('click', () => setAction(agents[0], k));
 function syncButtons(){
-  for (const k in btns) btns[k].classList.toggle('active', k === mode);
+  for (const k in btns) btns[k].classList.toggle('active', k === agents[0].mode);
+}
+
+/* ---------- directives programmées ---------- */
+let lastSchedCheck = 0;
+function checkSchedules(){
+  const d = new Date();
+  const hm = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  const dayKey = d.toLocaleDateString('fr-FR');
+  for (const a of agents){
+    for (const r of a.schedule){
+      if (!r.time || !r.action) continue;
+      const key = r.time + '|' + r.action;
+      if (r.time === hm && a.fired[key] !== dayKey){
+        a.fired[key] = dayKey;
+        chatSys('⏰ ' + r.time + ' — directive programmée : ' + a.name + ' → ' + DEST[r.action]);
+        setAction(a, r.action);
+      }
+    }
+  }
 }
 
 /* ---------- rapports + boîte aux lettres ---------- */
 let mailbox = [];
 try { mailbox = JSON.parse(localStorage.getItem('pixel-bureau-courrier') || '[]'); } catch(e){}
-function saveMail(){ try { localStorage.setItem('pixel-bureau-courrier', JSON.stringify(mailbox.slice(0,20))); } catch(e){} }
+function saveMail(){ try { localStorage.setItem('pixel-bureau-courrier', JSON.stringify(mailbox.slice(0,30))); } catch(e){} }
 
-function createReport(kind){
+function createReport(a){
   const t = new Date();
   const heure = t.toLocaleTimeString('fr-FR');
-  if (kind === 'code'){
+  const base = { agentId:a.id, agentName:a.name, agentType:TYPES[a.type].label, time:t.toISOString() };
+  if (a.mode === 'code'){
     const taches = ['Correction d’un bug d’affichage sur la page menu',
                     'Ajout d’un bouton de commande plus visible',
                     'Optimisation du chargement des photos de plats',
                     'Amélioration du QR code pour les mobiles'];
-    return { kind, title:'Rapport de code', time:t.toISOString(), lines:[
+    return Object.assign(base, { title:'Rapport de code', lines:[
       'Tâche : ' + pick(taches),
       'Fichiers modifiés : menu.html, script.js',
-      'Tests : ' + (8+Math.floor(Math.random()*8)) + '/' + '15 vérifiés — OK',
-      'Heure : ' + heure, 'Statut : terminé'] };
+      'Tests : ' + (8+Math.floor(Math.random()*8)) + '/15 vérifiés — OK',
+      'Heure : ' + heure, 'Statut : terminé'] });
   }
-  if (kind === 'research'){
+  if (a.mode === 'research'){
     const sujets = ['Les tendances des menus QR code en 2026',
                     'Idées de design pour les snacks',
                     'Les prix pratiqués par la concurrence',
                     'Comment mettre en avant les plats du jour'];
-    return { kind, title:'Note de recherche', time:t.toISOString(), lines:[
+    return Object.assign(base, { title:'Note de recherche', lines:[
       'Sujet : ' + pick(sujets),
       '- Point 1 : les clients scannent surtout entre 12h et 14h',
       '- Point 2 : les photos de plats augmentent les commandes',
       '- Point 3 : un menu clair = des clients contents',
-      'Heure : ' + heure] };
+      'Heure : ' + heure] });
   }
-  return { kind, title:'Fiche d’archives', time:t.toISOString(), lines:[
+  return Object.assign(base, { title:'Fiche d’archives', lines:[
     'Dossier retrouvé : ' + pick(['Facture client n°2026-0' + (10+Math.floor(Math.random()*89)),
                                   'Ancien menu du snack Le 444',
                                   'Contrat d’abonnement mensuel',
                                   'Maquette de la carte des desserts']),
     'Emplacement : armoire ' + pick(['A','B','C']) + ', tiroir ' + (1+Math.floor(Math.random()*3)),
     'État : bon état, reclassé correctement',
-    'Heure : ' + heure] };
+    'Heure : ' + heure] });
 }
-function commitDeposit(){
-  if (!pendingReport) return;
-  mailbox.unshift(pendingReport);
-  mailbox = mailbox.slice(0,20);
-  pendingReport = null;
+function commitDeposit(a){
+  if (!a.pendingReport) return;
+  mailbox.unshift(a.pendingReport);
+  mailbox = mailbox.slice(0,30);
+  a.pendingReport = null;
   saveMail();
   updateMailCount();
-  chatSys('📬 Rapport déposé dans la boîte aux lettres ! (' + mailbox.length + ' courrier' + (mailbox.length>1?'s':'') + ')');
+  chatSys('📬 ' + a.name + ' a déposé un rapport dans la boîte aux lettres. (' + mailbox.length + ' courrier' + (mailbox.length>1?'s':'') + ')');
+  if (agents.length > 1)
+    chatSys('🔗 Rapport transmis aux autres agents connectés.');
 }
 function updateMailCount(){
   document.getElementById('mailCount').textContent = mailbox.length;
 }
+function mailCountFor(a){
+  return mailbox.filter(r => (r.agentId || 'claude-0') === a.id).length;
+}
 
-/* ----- modal ----- */
-const modal = document.getElementById('mailModal');
+/* ----- modal courrier ----- */
+const mailModal = document.getElementById('mailModal');
 function openMailbox(){
   const list = document.getElementById('mailList');
   list.innerHTML = '';
   if (!mailbox.length){
-    list.innerHTML = '<div class="mempty">La boîte est vide pour l’instant.<br>Donne-moi une tâche et je déposerai mon rapport ici !</div>';
+    list.innerHTML = '<div class="mempty">La boîte est vide pour l’instant.<br>Donne une tâche à un agent et son rapport arrivera ici !</div>';
   } else {
-    mailbox.forEach((r, i) => {
+    mailbox.forEach(r => {
       const b = document.createElement('button');
       b.className = 'mailItem';
       const d = new Date(r.time);
-      b.innerHTML = '📄 <b>' + r.title + '</b> — ' + r.lines[0].replace(/</g,'&lt;').slice(0,60) +
-        '<span>' + d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR') + ' — Toucher pour ouvrir le PDF</span>';
+      b.innerHTML = '📄 <b>' + r.title + '</b> — ' + r.lines[0].replace(/</g,'&lt;').slice(0,55) +
+        '<span>par ' + (r.agentName || 'Claude') + (r.agentType ? ' · ' + r.agentType : '') +
+        ' · ' + d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR') +
+        ' — Toucher pour ouvrir le PDF</span>';
       b.addEventListener('click', () => openPdf(r));
       list.appendChild(b);
     });
   }
-  modal.hidden = false;
+  mailModal.hidden = false;
 }
 document.getElementById('mailBtn').addEventListener('click', openMailbox);
-document.getElementById('mailClose').addEventListener('click', () => modal.hidden = true);
-modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
+document.getElementById('mailClose').addEventListener('click', () => mailModal.hidden = true);
+mailModal.addEventListener('click', e => { if (e.target === mailModal) mailModal.hidden = true; });
 document.getElementById('mailClear').addEventListener('click', () => {
   mailbox = []; saveMail(); updateMailCount(); openMailbox();
 });
-// clic sur la boîte aux lettres dans la pièce
 cv.addEventListener('click', e => {
   const r = cv.getBoundingClientRect();
   const x = (e.clientX - r.left) * W / r.width;
-  const y = (e.clientY - r.top) * H / r.height;
-  if (x >= 8 && x <= 56 && y >= 128 && y <= 186) openMailbox();
+  const y = (e.clientY - r.top) * (ROOM_H*agents.length) / r.height;
+  const ry = y % ROOM_H;
+  if (x >= 8 && x <= 56 && ry >= 128 && ry <= 186) openMailbox();
 });
+
+/* ----- modal inviter ----- */
+const invModal = document.getElementById('invModal');
+function openInvite(){
+  renderAgentList();
+  document.getElementById('agName').value = '';
+  document.getElementById('invForm').style.display = agents.length >= 4 ? 'none' : 'flex';
+  invModal.hidden = false;
+}
+document.getElementById('invBtn').addEventListener('click', openInvite);
+document.getElementById('invClose').addEventListener('click', () => invModal.hidden = true);
+invModal.addEventListener('click', e => { if (e.target === invModal) invModal.hidden = true; });
+
+function renderAgentList(){
+  const box = document.getElementById('agentList');
+  box.innerHTML = '';
+  agents.forEach((a, i) => {
+    const row = document.createElement('div');
+    row.className = 'agentRow';
+    const sched = a.schedule.filter(r => r.time && r.action)
+      .map(r => r.time + ' → ' + DEST[r.action]).join(' · ');
+    row.innerHTML = '<div class="who"><b>' + a.name + '</b> — ' + TYPES[a.type].label +
+      '<span>Pièce ' + (i+1) + (sched ? ' · ⏰ ' + sched : '') + (a.auto ? ' · auto' : '') + '</span></div>';
+    if (i > 0){
+      const del = document.createElement('button');
+      del.textContent = '🗑️';
+      del.title = 'Retirer cet agent';
+      del.addEventListener('click', () => removeAgent(i));
+      row.appendChild(del);
+    }
+    box.appendChild(row);
+  });
+}
+document.getElementById('agAdd').addEventListener('click', () => {
+  if (agents.length >= 4) return;
+  const name = (document.getElementById('agName').value.trim() || 'Agent ' + (agents.length+1));
+  const type = document.getElementById('agType').value;
+  const schedule = [];
+  [['t1','a1'],['t2','a2'],['t3','a3']].forEach(([ti,ai]) => {
+    const time = document.getElementById(ti).value, action = document.getElementById(ai).value;
+    if (time && action) schedule.push({time, action});
+    document.getElementById(ti).value = ''; document.getElementById(ai).value = '';
+  });
+  const auto = document.getElementById('agAuto').checked;
+  const a = makeAgent({name, type, schedule, auto}, agents.length);
+  agents.push(a);
+  saveAgents();
+  rebuildCanvas();
+  renderAgentList();
+  updateChip();
+  document.getElementById('invForm').style.display = agents.length >= 4 ? 'none' : 'flex';
+  chatSys('🏠 Nouvelle pièce construite pour ' + name + ' (' + TYPES[type].label + ').');
+  botSay('Bienvenue à <b>' + name + '</b> ! ' +
+    (schedule.length ? 'Ses directives : ' + schedule.map(r => r.time + ' → ' + DEST[r.action]).join(', ') + '.'
+                     : (auto ? 'Il travaille en mode auto.' : 'Il attend tes ordres dans le chat.')),
+    'Bienvenue à ' + name + ' !');
+  invModal.hidden = true;
+});
+function removeAgent(i){
+  const gone = agents.splice(i,1)[0];
+  agents.forEach((a, idx) => {
+    a.room = idx;
+    a.mode = 'idle'; a.phase = 'working'; a.path = []; a.pendingReport = null;
+    a.hero.x = STATIONS.idle.x; a.hero.y = STATIONS.idle.y + idx*ROOM_H; a.hero.face = 'down';
+    a.workUntil = performance.now() + 2000 + idx*1000;
+  });
+  saveAgents();
+  rebuildCanvas();
+  renderAgentList();
+  updateChip();
+  chatSys('👋 ' + gone.name + ' a quitté le bureau, sa pièce est retirée.');
+}
 
 /* ---------- génération PDF (sans librairie) ---------- */
 function pdfText(s){
@@ -460,8 +639,9 @@ function pdfText(s){
 }
 function makePdf(rep){
   const d = new Date(rep.time);
-  const body = [ d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR'), '',
-                 ...rep.lines, '', '--', 'Généré par Pixel Bureau — Claude' ];
+  const body = [ d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR'),
+                 'Agent : ' + (rep.agentName || 'Claude') + (rep.agentType ? ' (' + rep.agentType + ')' : ''), '',
+                 ...rep.lines, '', '--', 'Généré par Pixel Bureau' ];
   let content = 'BT /F1 18 Tf 50 780 Td (' + pdfText(rep.title) + ') Tj ET\n';
   content += 'BT /F1 11 Tf 50 745 Td 18 TL\n';
   body.forEach(l => { content += '(' + pdfText(l) + ') Tj T*\n'; });
@@ -496,42 +676,46 @@ function openPdf(rep){
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
-/* ---------- helpers dessin ---------- */
+/* ---------- dessin ---------- */
 function rect(x,y,w,h,c){ ctx.fillStyle = c; ctx.fillRect(x,y,w,h); }
 
-/* ---------- décor ---------- */
-let codeLines = [];
-function drawRoom(){
-  rect(0,0,W,10,C.wallTop);
-  rect(0,10,W,36,C.wall);
-  rect(0,44,W,4,C.plinthe);
+function drawRoom(a){
+  const oy = a.room * ROOM_H;
+  const th = THEMES[a.room % THEMES.length];
+  rect(0,oy,W,10,th.wallTop);
+  rect(0,oy+10,W,36,th.wall);
+  rect(0,oy+44,W,4,C.plinthe);
   for (let ty=3; ty<13; ty++)
     for (let tx=0; tx<20; tx++){
-      rect(tx*T, ty*T, T, T, (tx+ty)%2 ? C.floorA : C.floorB);
-      rect(tx*T, ty*T+T-1, T, 1, C.floorLine);
+      rect(tx*T, oy+ty*T, T, T, (tx+ty)%2 ? C.floorA : C.floorB);
+      rect(tx*T, oy+ty*T+T-1, T, 1, C.floorLine);
     }
-  rect(114,132,108,52,C.rugEdge);
-  rect(118,136,100,44,C.rug);
-  rect(118,136,100,3,'#617096');
+  rect(114,oy+132,108,52,th.rugEdge);
+  rect(118,oy+136,100,44,th.rug);
+  // plaque avec le nom de l'agent sur le mur
+  ctx.font = '7px monospace';
+  const label = a.name.toUpperCase() + ' · ' + TYPES[a.type].label.toUpperCase();
+  ctx.fillStyle = 'rgba(255,255,255,.4)';
+  ctx.fillText(label, 8, oy+8);
   // étagère murale (livres)
-  rect(82,22,30,26,C.woodFront);
-  rect(84,24,26,10,'#3a2a1c'); rect(84,36,26,10,'#3a2a1c');
+  rect(82,oy+22,30,26,C.woodFront);
+  rect(84,oy+24,26,10,'#3a2a1c'); rect(84,oy+36,26,10,'#3a2a1c');
   const spines = ['#c0553f','#4d7cc0','#63c74d','#f2c14e','#9b6ec8'];
-  for (let i=0;i<5;i++){ rect(85+i*5,25,4,8,spines[i]); rect(85+i*5,37,4,8,spines[(i+2)%5]); }
+  for (let i=0;i<5;i++){ rect(85+i*5,oy+25,4,8,spines[i]); rect(85+i*5,oy+37,4,8,spines[(i+2)%5]); }
   // cadre au mur
-  rect(128,16,24,18,C.woodHi);
-  rect(130,18,20,14,'#7fb2d9');
-  rect(130,26,20,6,'#5a9a4f');
-  rect(144,20,3,3,'#f2c14e');
+  rect(128,oy+16,24,18,C.woodHi);
+  rect(130,oy+18,20,14,'#7fb2d9');
+  rect(130,oy+26,20,6,'#5a9a4f');
+  rect(144,oy+20,3,3,'#f2c14e');
   // horloge (heure réelle)
-  ctx.fillStyle = C.paper; ctx.beginPath(); ctx.arc(204,24,7,0,7); ctx.fill();
+  ctx.fillStyle = C.paper; ctx.beginPath(); ctx.arc(204,oy+24,7,0,7); ctx.fill();
   ctx.strokeStyle = C.plinthe; ctx.lineWidth = 1; ctx.stroke();
   const d = new Date(), am = (d.getHours()%12+d.getMinutes()/60)/12*6.283-1.571, bm = d.getMinutes()/60*6.283-1.571;
   ctx.strokeStyle = '#2b3252'; ctx.beginPath();
-  ctx.moveTo(204,24); ctx.lineTo(204+Math.cos(am)*3.5, 24+Math.sin(am)*3.5);
-  ctx.moveTo(204,24); ctx.lineTo(204+Math.cos(bm)*5, 24+Math.sin(bm)*5);
+  ctx.moveTo(204,oy+24); ctx.lineTo(204+Math.cos(am)*3.5, oy+24+Math.sin(am)*3.5);
+  ctx.moveTo(204,oy+24); ctx.lineTo(204+Math.cos(bm)*5, oy+24+Math.sin(bm)*5);
   ctx.stroke();
-  drawPlant(6,64); drawPlant(300,184);
+  drawPlant(6,oy+64); drawPlant(300,oy+184);
 }
 function drawPlant(x,y){
   rect(x, y-8, 10, 8, C.pot); rect(x+1, y-8, 8, 2, '#c96a48');
@@ -539,122 +723,121 @@ function drawPlant(x,y){
   rect(x-1, y-14, 4, 5, C.leafHi); rect(x+7, y-15, 4, 6, C.leaf);
   rect(x+2, y-19, 6, 4, C.leafHi);
 }
-function drawComputerDesk(){
-  rect(16,48,48,10,C.woodHi); rect(16,48,48,3,'#9c6a45');
-  rect(16,58,48,8,C.woodFront);
-  rect(18,66,4,4,C.woodFront); rect(58,66,4,4,C.woodFront);
-  rect(28,28,24,18,'#22263a');
-  const on = (mode==='code' && phase==='working');
-  rect(30,30,20,13, on ? C.screenOn : C.screenOff);
+function drawComputerDesk(a){
+  const oy = a.room * ROOM_H;
+  rect(16,oy+48,48,10,C.woodHi); rect(16,oy+48,48,3,'#9c6a45');
+  rect(16,oy+58,48,8,C.woodFront);
+  rect(18,oy+66,4,4,C.woodFront); rect(58,oy+66,4,4,C.woodFront);
+  rect(28,oy+28,24,18,'#22263a');
+  const on = (a.mode==='code' && a.phase==='working');
+  rect(30,oy+30,20,13, on ? C.screenOn : C.screenOff);
   if (on){
     if (!reduceMotion && Math.random() < .12){
-      codeLines.push({w:4+Math.random()*13, c:['#7ee787','#79b8ff','#ff7b72','#d2a8ff'][Math.floor(Math.random()*4)]});
-      if (codeLines.length > 6) codeLines.shift();
+      a.codeLines.push({w:4+Math.random()*13, c:['#7ee787','#79b8ff','#ff7b72','#d2a8ff'][Math.floor(Math.random()*4)]});
+      if (a.codeLines.length > 6) a.codeLines.shift();
     }
-    codeLines.forEach((l,i) => rect(31, 31+i*2, l.w, 1, l.c));
+    a.codeLines.forEach((l,i) => rect(31, oy+31+i*2, l.w, 1, l.c));
   } else {
-    rect(31,31,7,1,'#333a5c');
+    rect(31,oy+31,7,1,'#333a5c');
   }
-  rect(37,46,6,3,'#181c30');
-  rect(30,50,18,4,'#2b3252');
-  rect(52,51,6,4,C.paper);
+  rect(37,oy+46,6,3,'#181c30');
+  rect(30,oy+50,18,4,'#2b3252');
+  rect(52,oy+51,6,4,C.paper);
 }
-function drawDocsDesk(){
-  rect(128,96,48,10,C.woodHi); rect(128,96,48,3,'#9c6a45');
-  rect(128,106,48,8,C.woodFront);
-  rect(130,114,4,4,C.woodFront); rect(170,114,4,4,C.woodFront);
-  rect(133,98,12,8,C.paper); rect(134,100,9,1,C.paperLine); rect(134,102,7,1,C.paperLine);
-  rect(148,97,13,9,'#e9dfc6'); rect(149,99,10,1,C.paperLine); rect(149,101,8,1,C.paperLine);
-  rect(163,99,10,7,C.folder); rect(163,99,10,2,'#d9a83a');
-  rect(171,88,2,9,'#3a3f5e'); rect(168,86,8,4,'#c0553f');
-  if (mode==='research' && phase==='working'){
+function drawDocsDesk(a){
+  const oy = a.room * ROOM_H;
+  rect(128,oy+96,48,10,C.woodHi); rect(128,oy+96,48,3,'#9c6a45');
+  rect(128,oy+106,48,8,C.woodFront);
+  rect(130,oy+114,4,4,C.woodFront); rect(170,oy+114,4,4,C.woodFront);
+  rect(133,oy+98,12,8,C.paper); rect(134,oy+100,9,1,C.paperLine); rect(134,oy+102,7,1,C.paperLine);
+  rect(148,oy+97,13,9,'#e9dfc6'); rect(149,oy+99,10,1,C.paperLine); rect(149,oy+101,8,1,C.paperLine);
+  rect(163,oy+99,10,7,C.folder); rect(163,oy+99,10,2,'#d9a83a');
+  rect(171,oy+88,2,9,'#3a3f5e'); rect(168,oy+86,8,4,'#c0553f');
+  if (a.mode==='research' && a.phase==='working'){
     const f = reduceMotion ? 0 : Math.sin(now/300)*2;
-    rect(146,78+f,14,11,C.paper);
-    rect(148,80+f,10,1,C.paperLine); rect(148,83+f,8,1,C.paperLine); rect(148,86+f,9,1,C.paperLine);
+    rect(146,oy+78+f,14,11,C.paper);
+    rect(148,oy+80+f,10,1,C.paperLine); rect(148,oy+83+f,8,1,C.paperLine); rect(148,oy+86+f,9,1,C.paperLine);
   }
 }
-function drawCabinets(){
+function drawCabinets(a){
+  const oy = a.room * ROOM_H;
   for (let i=0;i<3;i++){
     const x = 240 + i*18;
-    rect(x,20,16,44,C.metal);
-    rect(x,20,16,2,C.metalHi); rect(x,62,16,2,C.metalLo);
+    rect(x,oy+20,16,44,C.metal);
+    rect(x,oy+20,16,2,C.metalHi); rect(x,oy+62,16,2,C.metalLo);
     for (let dTier=0;dTier<3;dTier++){
-      const y = 24 + dTier*13;
+      const y = oy + 24 + dTier*13;
       rect(x+2,y,12,10,C.metalLo);
       rect(x+2,y,12,2,C.metalHi);
       rect(x+6,y+5,4,2,'#2b3252');
     }
   }
-  if (mode==='archive' && phase==='working'){
+  if (a.mode==='archive' && a.phase==='working'){
     const open = reduceMotion ? 6 : Math.min(6, (now%9000)/150);
-    rect(260, 37+open, 12, 10, C.metalLo);
-    rect(260, 37+open, 12, 2, C.metalHi);
-    rect(261, 39+open, 3, 4, C.folder);
-    rect(265, 39+open, 3, 4, '#e9a13b');
-    rect(269, 39+open, 2, 4, C.folder);
+    rect(260, oy+37+open, 12, 10, C.metalLo);
+    rect(260, oy+37+open, 12, 2, C.metalHi);
+    rect(261, oy+39+open, 3, 4, C.folder);
+    rect(265, oy+39+open, 3, 4, '#e9a13b');
+    rect(269, oy+39+open, 2, 4, C.folder);
   }
 }
-function drawMailbox(){
-  // poteau
-  rect(24,152,5,26,C.woodFront);
-  // boîte
-  rect(14,138,26,16,C.boxRed);
-  rect(14,138,26,3,C.boxRedHi);
-  rect(17,144,20,2,'#5c1f14'); // fente
-  // drapeau levé quand il y a du courrier
-  if (mailbox.length){
-    rect(40,134,2,12,'#8a3325');
-    rect(42,134,7,5,C.folder);
+function drawMailbox(a){
+  const oy = a.room * ROOM_H;
+  const count = mailCountFor(a);
+  rect(24,oy+152,5,26,C.woodFront);
+  rect(14,oy+138,26,16,C.boxRed);
+  rect(14,oy+138,26,3,C.boxRedHi);
+  rect(17,oy+144,20,2,'#5c1f14');
+  if (count){
+    rect(40,oy+134,2,12,'#8a3325');
+    rect(42,oy+134,7,5,C.folder);
   }
-  // enveloppe qui entre pendant le dépôt
-  if (mode==='mail' && phase==='working'){
+  if (a.mode==='mail' && a.phase==='working'){
     const f = reduceMotion ? 0 : Math.abs(Math.sin(now/200))*3;
-    rect(22,128-f,12,8,C.paper);
+    rect(22,oy+128-f,12,8,C.paper);
     ctx.strokeStyle = C.paperLine; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(22,128-f); ctx.lineTo(28,133-f); ctx.lineTo(34,128-f); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(22,oy+128-f); ctx.lineTo(28,oy+133-f); ctx.lineTo(34,oy+128-f); ctx.stroke();
   }
-  // badge nombre de courriers
-  if (mailbox.length){
-    const n = String(mailbox.length);
+  if (count){
+    const n = String(count);
     ctx.font = '7px monospace';
     const w = ctx.measureText(n).width + 6;
     ctx.fillStyle = C.bubble;
-    if (ctx.roundRect){ ctx.beginPath(); ctx.roundRect(27-w/2, 118, w, 10, 3); ctx.fill(); }
-    else ctx.fillRect(27-w/2, 118, w, 10);
+    if (ctx.roundRect){ ctx.beginPath(); ctx.roundRect(27-w/2, oy+118, w, 10, 3); ctx.fill(); }
+    else ctx.fillRect(27-w/2, oy+118, w, 10);
     ctx.fillStyle = C.bubbleInk;
-    ctx.fillText(n, 27-w/2+3, 126);
+    ctx.fillText(n, 27-w/2+3, oy+126);
   }
 }
 
-/* ---------- personnage ---------- */
-function drawHero(){
-  const walking = phase === 'walking';
-  const step = walking && !reduceMotion ? Math.floor(hero.dist/6)%2 : 0;
+function drawHero(a){
+  const ty = TYPES[a.type];
+  const walking = a.phase === 'walking';
+  const step = walking && !reduceMotion ? Math.floor(a.hero.dist/6)%2 : 0;
   const bob = walking ? -step
-    : (phase==='working' && mode!=='idle' && !reduceMotion ? (Math.sin(now/220) > 0 ? -1 : 0) : 0);
-  const x = Math.round(hero.x), y = Math.round(hero.y) + bob;
+    : (a.phase==='working' && a.mode!=='idle' && !reduceMotion ? (Math.sin(now/220 + a.room) > 0 ? -1 : 0) : 0);
+  const x = Math.round(a.hero.x), y = Math.round(a.hero.y) + bob;
   ctx.fillStyle = 'rgba(0,0,0,.25)';
   ctx.beginPath(); ctx.ellipse(x, y, 6, 2, 0, 0, 7); ctx.fill();
   const top = y - 16;
   const lL = walking && step ? 1 : 0, lR = walking && !step ? 1 : 0;
   rect(x-4, y-5, 3, 4-lL, C.pants); rect(x+1, y-5, 3, 4-lR, C.pants);
   rect(x-4, y-1-lL, 3, 1, C.shoe); rect(x+1, y-1-lR, 3, 1, C.shoe);
-  rect(x-5, top+7, 10, 8, C.shirt);
-  rect(x-6, top+8, 2, 5, C.shirt); rect(x+4, top+8, 2, 5, C.shirt);
-  rect(x-5, top+13, 10, 2, '#c9c3b2');
-  rect(x-5, top, 10, 7, C.hair);
-  if (hero.face !== 'up'){
+  rect(x-5, top+7, 10, 8, ty.shirt);
+  rect(x-6, top+8, 2, 5, ty.shirt); rect(x+4, top+8, 2, 5, ty.shirt);
+  rect(x-5, top+13, 10, 2, ty.shirtLo);
+  rect(x-5, top, 10, 7, ty.hair);
+  if (a.hero.face !== 'up'){
     rect(x-4, top+3, 8, 4, C.skin);
     ctx.fillStyle = '#2b2b3a';
-    if (hero.face === 'down'){ ctx.fillRect(x-3, top+4, 1, 2); ctx.fillRect(x+2, top+4, 1, 2); }
-    if (hero.face === 'left')  ctx.fillRect(x-4, top+4, 1, 2);
-    if (hero.face === 'right') ctx.fillRect(x+3, top+4, 1, 2);
+    if (a.hero.face === 'down'){ ctx.fillRect(x-3, top+4, 1, 2); ctx.fillRect(x+2, top+4, 1, 2); }
+    if (a.hero.face === 'left')  ctx.fillRect(x-4, top+4, 1, 2);
+    if (a.hero.face === 'right') ctx.fillRect(x+3, top+4, 1, 2);
   } else {
-    rect(x-5, top+3, 10, 3, C.hair);
+    rect(x-5, top+3, 10, 3, ty.hair);
   }
-  rect(x-5, top, 10, 2, '#4a2c1d');
-  drawBubble(x, top - 6);
-  if (mode==='idle' && phase==='working' && !reduceMotion){
+  drawBubble(a, x, top - 6);
+  if (a.mode==='idle' && a.phase==='working' && !reduceMotion){
     ctx.fillStyle = '#8b93b8';
     ctx.font = '6px monospace';
     const f = Math.sin(now/500)*2;
@@ -662,8 +845,8 @@ function drawHero(){
     ctx.fillText('Z', x+13, top-15+f);
   }
 }
-function drawBubble(cx, by){
-  const txt = phase==='walking' ? '→ ' + DEST[mode] : STATIONS[mode].bulle;
+function drawBubble(a, cx, by){
+  const txt = a.phase==='walking' ? '→ ' + DEST[a.mode] : STATIONS[a.mode].bulle;
   ctx.font = '7px monospace';
   const w = ctx.measureText(txt).width + 8;
   let bx = cx - w/2;
@@ -684,37 +867,50 @@ function tick(ts){
   const dt = Math.min(50, ts - last) / 1000;
   last = ts;
 
-  if (phase === 'walking' && path.length){
-    const tgt = path[0];
-    const dx = tgt.x - hero.x, dy = tgt.y - hero.y;
-    const d = Math.hypot(dx, dy);
-    const speed = 55;
-    if (d < speed*dt){
-      hero.x = tgt.x; hero.y = tgt.y; path.shift();
-      if (!path.length) arrive();
-    } else {
-      hero.x += dx/d*speed*dt; hero.y += dy/d*speed*dt;
-      hero.dist += speed*dt;
-      hero.face = Math.abs(dx) > Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up');
+  if (ts - lastSchedCheck > 1000){ lastSchedCheck = ts; checkSchedules(); }
+
+  for (const a of agents){
+    if (a.phase === 'walking' && a.path.length){
+      const tgt = a.path[0];
+      const dx = tgt.x - a.hero.x, dy = tgt.y - a.hero.y;
+      const d = Math.hypot(dx, dy);
+      const speed = 55;
+      if (d < speed*dt){
+        a.hero.x = tgt.x; a.hero.y = tgt.y; a.path.shift();
+        if (!a.path.length) arrive(a);
+      } else {
+        a.hero.x += dx/d*speed*dt; a.hero.y += dy/d*speed*dt;
+        a.hero.dist += speed*dt;
+        a.hero.face = Math.abs(dx) > Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up');
+      }
+    } else if (a.phase === 'working' && ts > a.workUntil){
+      onWorkDone(a);
     }
-  } else if (phase === 'working' && ts > workUntil){
-    onWorkDone();
   }
 
-  ctx.clearRect(0,0,W,H);
-  drawRoom();
-  drawComputerDesk();
-  drawDocsDesk();
-  drawCabinets();
-  drawMailbox();
-  drawHero();
+  ctx.clearRect(0, 0, W, ROOM_H*agents.length);
+  for (const a of agents){
+    drawRoom(a);
+    drawComputerDesk(a);
+    drawDocsDesk(a);
+    drawCabinets(a);
+    drawMailbox(a);
+  }
+  for (const a of agents) drawHero(a);
   requestAnimationFrame(tick);
 }
 
+/* ---------- démarrage ---------- */
+agents = [ makeAgent({id:'claude-0', name:'Claude', type:'claude', auto:true}, 0) ];
+try {
+  const saved = JSON.parse(localStorage.getItem('pixel-bureau-agents') || '[]');
+  saved.slice(0,3).forEach(cfg => agents.push(makeAgent(cfg, agents.length)));
+} catch(e){}
+rebuildCanvas();
 updateMailCount();
-addMsg('bot', 'Salut Amine ! 👋 Donne-moi des directives ici (ou avec le 🎤). Quand je finis une tâche, je dépose mon <b>rapport PDF</b> dans la boîte aux lettres 📬 en bas à gauche — touche-la pour lire le courrier !');
+updateChip();
 syncButtons();
-workUntil = performance.now() + 2500;
+addMsg('bot', 'Salut Amine ! 👋 Donne tes directives ici (ou avec le 🎤). Touche <b>➕ Inviter</b> pour ajouter un agent et sa pièce — avec des directives à heure précise si tu veux. Chaque rapport terminé arrive en <b>PDF</b> dans la boîte aux lettres 📬.');
 requestAnimationFrame(tick);
 })();
 </script>
