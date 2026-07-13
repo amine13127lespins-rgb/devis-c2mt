@@ -1,0 +1,405 @@
+<title>Pixel Bureau — Claude au travail</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#14172b; --panel:#1b2038; --line:#2b3252; --ink:#dfe3f0;
+    --dim:#8b93b8; --accent:#e0764f; --green:#7ee787; --amber:#f2c14e;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--mono);
+    display:flex; justify-content:center; padding:16px 12px 40px;
+  }
+  .app{width:100%; max-width:720px; display:flex; flex-direction:column; gap:12px}
+  .app > *{flex-shrink:0}
+
+  header{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+  h1{font-size:13px; letter-spacing:.22em; text-transform:uppercase; margin:0; font-weight:700}
+  h1 span{color:var(--accent)}
+  .chip{
+    font-size:12px; padding:4px 10px; border:1px solid var(--line); border-radius:999px;
+    background:var(--panel); color:var(--dim); white-space:nowrap;
+  }
+  .chip b{color:var(--green); font-weight:400}
+
+  .screen{
+    border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#0e1120;
+    box-shadow:0 8px 30px rgba(0,0,0,.45);
+  }
+  canvas{
+    display:block; width:100%; height:auto;
+    image-rendering:pixelated; image-rendering:crisp-edges;
+  }
+
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  button{
+    font-family:var(--mono); font-size:13px; cursor:pointer;
+    padding:10px 14px; border-radius:6px; border:1px solid var(--line);
+    background:var(--panel); color:var(--ink);
+  }
+  button:hover{border-color:var(--dim)}
+  button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  button.active{border-color:var(--accent); color:var(--accent)}
+  button#autoBtn.on{border-color:var(--green); color:var(--green)}
+  .controls .spacer{flex:1}
+
+  .term{
+    border:1px solid var(--line); border-radius:8px; background:#0e1120;
+    padding:10px 12px; min-height:120px; max-height:190px; overflow-y:auto;
+    font-size:12px; line-height:1.7;
+  }
+  .term .hd{color:var(--dim); text-transform:uppercase; letter-spacing:.18em; font-size:10px; margin-bottom:6px}
+  .term p{margin:0; color:var(--green)}
+  .term p .t{color:var(--dim); margin-right:8px}
+
+  footer{color:var(--dim); font-size:11px; line-height:1.6}
+</style>
+
+<div class="app">
+  <header>
+    <h1>▸ Pixel Bureau <span>— Claude au travail</span></h1>
+    <div class="chip">● statut : <b id="statusChip">pause</b></div>
+  </header>
+
+  <div class="screen"><canvas id="cv" width="640" height="416" aria-label="Bureau virtuel en pixel art"></canvas></div>
+
+  <div class="controls">
+    <button id="b-code">💻 Coder</button>
+    <button id="b-research">📄 Rechercher</button>
+    <button id="b-archive">🗄️ Archives</button>
+    <button id="b-idle">☕ Pause</button>
+    <span class="spacer"></span>
+    <button id="autoBtn" class="on">AUTO : ON</button>
+  </div>
+
+  <div class="term">
+    <div class="hd">Terminal</div>
+    <div id="log"></div>
+  </div>
+
+  <footer>
+    Démo inspirée de l'extension « Pixel Agents » vue sur TikTok : le personnage se déplace
+    vers l'ordinateur pour coder, vers le bureau pour lire les documents, et vers les armoires
+    pour chercher dans les archives. Utilise les boutons ou laisse le mode AUTO tourner.
+  </footer>
+</div>
+
+<script>
+(() => {
+"use strict";
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+ctx.scale(2, 2);                 // monde logique : 320 × 208
+
+const W = 320, H = 208, T = 16;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- palette du monde ---------- */
+const C = {
+  wallTop:'#252c4a', wall:'#3a4466', plinthe:'#2b3252',
+  floorA:'#c1885e', floorB:'#b87f56', floorLine:'#a9744e',
+  rug:'#556487', rugEdge:'#48566f',
+  woodTop:'#6e4630', woodFront:'#59371f', woodHi:'#8a5a3b',
+  metal:'#7a8296', metalHi:'#99a2b8', metalLo:'#5c6478',
+  screenOff:'#1b2038', screenOn:'#0f2a24',
+  paper:'#f2ead8', paperLine:'#b8ad91',
+  hair:'#5d3a28', skin:'#f0c297', shirt:'#e8e4d8', pants:'#4a5878', shoe:'#2b2b3a',
+  leaf:'#3e8948', leafHi:'#63c74d', pot:'#b0563a',
+  bubble:'#f5f3ea', bubbleInk:'#2b3252',
+  folder:'#f2c14e'
+};
+
+/* ---------- postes de travail ---------- */
+const CORRIDOR_Y = 144;
+const STATIONS = {
+  code:     { x: 40,  y: 80,  face:'up',   bulle:'Code…' },
+  research: { x: 152, y: 128, face:'up',   bulle:'Lecture…' },
+  archive:  { x: 264, y: 80,  face:'up',   bulle:'Archives…' },
+  idle:     { x: 168, y: 168, face:'down', bulle:'Idle' }
+};
+const MSG = {
+  code:     { go:'Je me dirige vers l’ordinateur…',
+              do:['J’écris du code…','Je corrige un bug…','Je lance les tests…','Je relis mon code…'] },
+  research: { go:'Direction le bureau : je vais lire les documents…',
+              do:['Je lis les documents…','Je prends des notes…','Je fais des recherches…'] },
+  archive:  { go:'Je vais fouiller dans les armoires d’archives…',
+              do:['Je fouille les archives…','Je récupère un dossier…','Je classe des papiers…'] },
+  idle:     { go:'Je retourne au centre de la pièce…',
+              do:['Petite pause ☕'] }
+};
+const CHIP = { code:'en train de coder', research:'en recherche', archive:'dans les archives', idle:'pause' };
+
+/* ---------- état ---------- */
+const hero = { x: STATIONS.idle.x, y: STATIONS.idle.y, face:'down', dist:0 };
+let mode = 'idle', phase = 'working', path = [], workUntil = 0, auto = true;
+let now = 0;
+
+/* ---------- journal ---------- */
+const logBox = document.getElementById('log');
+function log(msg){
+  const p = document.createElement('p');
+  const t = new Date().toLocaleTimeString('fr-FR');
+  p.innerHTML = '<span class="t">' + t + '</span>' + msg;
+  logBox.prepend(p);
+  while (logBox.children.length > 30) logBox.lastChild.remove();
+}
+const chipEl = document.getElementById('statusChip');
+
+/* ---------- actions ---------- */
+function setAction(next){
+  if (next === mode && phase === 'working') return;
+  mode = next; phase = 'walking';
+  path = buildPath(hero, STATIONS[next]);
+  log('🚶 ' + MSG[next].go);
+  chipEl.textContent = 'en déplacement…';
+  syncButtons();
+}
+function buildPath(from, to){
+  const pts = [];
+  if (Math.round(from.y) !== CORRIDOR_Y) pts.push({x:from.x, y:CORRIDOR_Y});
+  pts.push({x:to.x, y:CORRIDOR_Y});
+  pts.push({x:to.x, y:to.y});
+  return pts.filter((p,i,a) => i===0 || p.x!==a[i-1].x || p.y!==a[i-1].y);
+}
+function arrive(){
+  phase = 'working';
+  hero.face = STATIONS[mode].face;
+  const list = MSG[mode].do;
+  log((mode==='code'?'💻 ':mode==='research'?'📄 ':mode==='archive'?'🗄️ ':'☕ ')
+      + list[Math.floor(Math.random()*list.length)]);
+  chipEl.textContent = CHIP[mode];
+  workUntil = now + 5000 + Math.random()*4000;
+}
+function autoNext(){
+  const pool = ['code','research','archive','code','idle'].filter(m => m !== mode);
+  setAction(pool[Math.floor(Math.random()*pool.length)]);
+}
+
+/* ---------- boutons ---------- */
+const btns = {
+  code: document.getElementById('b-code'),
+  research: document.getElementById('b-research'),
+  archive: document.getElementById('b-archive'),
+  idle: document.getElementById('b-idle')
+};
+for (const k in btns) btns[k].addEventListener('click', () => setAction(k));
+const autoBtn = document.getElementById('autoBtn');
+autoBtn.addEventListener('click', () => {
+  auto = !auto;
+  autoBtn.textContent = 'AUTO : ' + (auto ? 'ON' : 'OFF');
+  autoBtn.classList.toggle('on', auto);
+  log(auto ? '🤖 Mode auto activé.' : '🕹️ Mode manuel : dirige-moi avec les boutons.');
+});
+function syncButtons(){
+  for (const k in btns) btns[k].classList.toggle('active', k === mode);
+}
+
+/* ---------- helpers dessin ---------- */
+function rect(x,y,w,h,c){ ctx.fillStyle = c; ctx.fillRect(x,y,w,h); }
+
+/* ---------- décor ---------- */
+let codeLines = [];
+function drawRoom(){
+  // mur
+  rect(0,0,W,10,C.wallTop);
+  rect(0,10,W,36,C.wall);
+  rect(0,44,W,4,C.plinthe);
+  // sol
+  for (let ty=3; ty<13; ty++)
+    for (let tx=0; tx<20; tx++){
+      rect(tx*T, ty*T, T, T, (tx+ty)%2 ? C.floorA : C.floorB);
+      rect(tx*T, ty*T+T-1, T, 1, C.floorLine);
+    }
+  // tapis
+  rect(114,132,108,52,C.rugEdge);
+  rect(118,136,100,44,C.rug);
+  rect(118,136,100,3,'#617096');
+  // étagère murale (livres)
+  rect(82,22,30,26,C.woodFront);
+  rect(84,24,26,10,'#3a2a1c'); rect(84,36,26,10,'#3a2a1c');
+  const spines = ['#c0553f','#4d7cc0','#63c74d','#f2c14e','#9b6ec8'];
+  for (let i=0;i<5;i++){ rect(85+i*5,25,4,8,spines[i]); rect(85+i*5,37,4,8,spines[(i+2)%5]); }
+  // cadre au mur
+  rect(128,16,24,18,C.woodHi);
+  rect(130,18,20,14,'#7fb2d9');
+  rect(130,26,20,6,'#5a9a4f');
+  rect(144,20,3,3,'#f2c14e');
+  // horloge (heure réelle)
+  ctx.fillStyle = C.paper; ctx.beginPath(); ctx.arc(204,24,7,0,7); ctx.fill();
+  ctx.strokeStyle = C.plinthe; ctx.lineWidth = 1; ctx.stroke();
+  const d = new Date(), am = (d.getHours()%12+d.getMinutes()/60)/12*6.283-1.571, bm = d.getMinutes()/60*6.283-1.571;
+  ctx.strokeStyle = '#2b3252'; ctx.beginPath();
+  ctx.moveTo(204,24); ctx.lineTo(204+Math.cos(am)*3.5, 24+Math.sin(am)*3.5);
+  ctx.moveTo(204,24); ctx.lineTo(204+Math.cos(bm)*5, 24+Math.sin(bm)*5);
+  ctx.stroke();
+  // plantes
+  drawPlant(6,64); drawPlant(300,184);
+}
+function drawPlant(x,y){
+  rect(x, y-8, 10, 8, C.pot); rect(x+1, y-8, 8, 2, '#c96a48');
+  rect(x+3, y-16, 4, 8, C.leaf);
+  rect(x-1, y-14, 4, 5, C.leafHi); rect(x+7, y-15, 4, 6, C.leaf);
+  rect(x+2, y-19, 6, 4, C.leafHi);
+}
+function drawComputerDesk(){
+  // bureau
+  rect(16,48,48,10,C.woodHi); rect(16,48,48,3,'#9c6a45');
+  rect(16,58,48,8,C.woodFront);
+  rect(18,66,4,4,C.woodFront); rect(58,66,4,4,C.woodFront);
+  // écran
+  rect(28,28,24,18,'#22263a');
+  const on = (mode==='code' && phase==='working');
+  rect(30,30,20,13, on ? C.screenOn : C.screenOff);
+  if (on){
+    if (!reduceMotion && Math.random() < .12){
+      codeLines.push({w:4+Math.random()*13, c:['#7ee787','#79b8ff','#ff7b72','#d2a8ff'][Math.floor(Math.random()*4)]});
+      if (codeLines.length > 6) codeLines.shift();
+    }
+    codeLines.forEach((l,i) => rect(31, 31+i*2, l.w, 1, l.c));
+  } else {
+    rect(31,31,7,1,'#333a5c');
+  }
+  rect(37,46,6,3,'#181c30');  // pied
+  rect(30,50,18,4,'#2b3252'); // clavier
+  rect(52,51,6,4,C.paper);    // bloc-notes
+}
+function drawDocsDesk(){
+  rect(128,96,48,10,C.woodHi); rect(128,96,48,3,'#9c6a45');
+  rect(128,106,48,8,C.woodFront);
+  rect(130,114,4,4,C.woodFront); rect(170,114,4,4,C.woodFront);
+  // documents posés
+  rect(133,98,12,8,C.paper); rect(134,100,9,1,C.paperLine); rect(134,102,7,1,C.paperLine);
+  rect(148,97,13,9,'#e9dfc6'); rect(149,99,10,1,C.paperLine); rect(149,101,8,1,C.paperLine);
+  rect(163,99,10,7,C.folder); rect(163,99,10,2,'#d9a83a');
+  // lampe
+  rect(171,88,2,9,'#3a3f5e'); rect(168,86,8,4,'#c0553f');
+  // lecture en cours : feuille qui flotte
+  if (mode==='research' && phase==='working'){
+    const f = reduceMotion ? 0 : Math.sin(now/300)*2;
+    rect(146,78+f,14,11,C.paper);
+    rect(148,80+f,10,1,C.paperLine); rect(148,83+f,8,1,C.paperLine); rect(148,86+f,9,1,C.paperLine);
+  }
+}
+function drawCabinets(){
+  for (let i=0;i<3;i++){
+    const x = 240 + i*18;
+    rect(x,20,16,44,C.metal);
+    rect(x,20,16,2,C.metalHi); rect(x,62,16,2,C.metalLo);
+    for (let dTier=0;dTier<3;dTier++){
+      const y = 24 + dTier*13;
+      rect(x+2,y,12,10,C.metalLo);
+      rect(x+2,y,12,2,C.metalHi);
+      rect(x+6,y+5,4,2,'#2b3252');
+    }
+  }
+  // tiroir du milieu ouvert pendant la fouille
+  if (mode==='archive' && phase==='working'){
+    const open = reduceMotion ? 6 : Math.min(6, (now%9000)/150);
+    rect(258+2, 37+open, 12, 10, C.metalLo);
+    rect(258+2, 37+open, 12, 2, C.metalHi);
+    rect(258+3, 39+open, 3, 4, C.folder);
+    rect(258+7, 39+open, 3, 4, '#e9a13b');
+    rect(258+11, 39+open, 2, 4, C.folder);
+  }
+}
+
+/* ---------- personnage ---------- */
+function drawHero(){
+  const walking = phase === 'walking';
+  const step = walking && !reduceMotion ? Math.floor(hero.dist/6)%2 : 0;
+  const bob = walking ? -step
+    : (phase==='working' && mode!=='idle' && !reduceMotion ? (Math.sin(now/220) > 0 ? -1 : 0) : 0);
+  const x = Math.round(hero.x), y = Math.round(hero.y) + bob;
+  // ombre
+  ctx.fillStyle = 'rgba(0,0,0,.25)';
+  ctx.beginPath(); ctx.ellipse(x, y, 6, 2, 0, 0, 7); ctx.fill();
+  const top = y - 16;
+  // jambes + chaussures
+  const lL = walking && step ? 1 : 0, lR = walking && !step ? 1 : 0;
+  rect(x-4, y-5, 3, 4-lL, C.pants); rect(x+1, y-5, 3, 4-lR, C.pants);
+  rect(x-4, y-1-lL, 3, 1, C.shoe); rect(x+1, y-1-lR, 3, 1, C.shoe);
+  // corps
+  rect(x-5, top+7, 10, 8, C.shirt);
+  rect(x-6, top+8, 2, 5, C.shirt); rect(x+4, top+8, 2, 5, C.shirt); // bras
+  rect(x-5, top+13, 10, 2, '#c9c3b2');
+  // tête
+  rect(x-5, top, 10, 7, C.hair);
+  if (hero.face !== 'up'){
+    rect(x-4, top+3, 8, 4, C.skin);
+    ctx.fillStyle = '#2b2b3a';
+    if (hero.face === 'down'){ ctx.fillRect(x-3, top+4, 1, 2); ctx.fillRect(x+2, top+4, 1, 2); }
+    if (hero.face === 'left')  ctx.fillRect(x-4, top+4, 1, 2);
+    if (hero.face === 'right') ctx.fillRect(x+3, top+4, 1, 2);
+  } else {
+    rect(x-5, top+3, 10, 3, C.hair);
+  }
+  rect(x-5, top, 10, 2, '#4a2c1d'); // reflet cheveux
+  drawBubble(x, top - 6);
+  // Zzz en pause
+  if (mode==='idle' && phase==='working' && !reduceMotion){
+    ctx.fillStyle = C.dimText || '#8b93b8';
+    ctx.font = '6px monospace';
+    const f = Math.sin(now/500)*2;
+    ctx.fillText('z', x+9, top-10+f);
+    ctx.fillText('Z', x+13, top-15+f);
+  }
+}
+function drawBubble(cx, by){
+  const txt = phase==='walking'
+    ? '→ ' + (mode==='code'?'PC':mode==='research'?'bureau':mode==='archive'?'archives':'pause')
+    : STATIONS[mode].bulle;
+  ctx.font = '7px monospace';
+  const w = ctx.measureText(txt).width + 8;
+  let bx = cx - w/2;
+  bx = Math.max(2, Math.min(W - w - 2, bx));
+  ctx.fillStyle = C.bubble;
+  ctx.beginPath();
+  if (ctx.roundRect) { ctx.roundRect(bx, by-11, w, 11, 3); ctx.fill(); }
+  else ctx.fillRect(bx, by-11, w, 11);
+  ctx.fillRect(cx-2, by-1, 4, 3);
+  ctx.fillStyle = C.bubbleInk;
+  ctx.fillText(txt, bx+4, by-3);
+}
+
+/* ---------- boucle ---------- */
+let last = performance.now();
+function tick(ts){
+  now = ts;
+  const dt = Math.min(50, ts - last) / 1000;
+  last = ts;
+
+  if (phase === 'walking' && path.length){
+    const tgt = path[0];
+    const dx = tgt.x - hero.x, dy = tgt.y - hero.y;
+    const d = Math.hypot(dx, dy);
+    const speed = 55;
+    if (d < speed*dt){
+      hero.x = tgt.x; hero.y = tgt.y; path.shift();
+      if (!path.length) arrive();
+    } else {
+      hero.x += dx/d*speed*dt; hero.y += dy/d*speed*dt;
+      hero.dist += speed*dt;
+      hero.face = Math.abs(dx) > Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up');
+    }
+  } else if (phase === 'working' && auto && ts > workUntil){
+    autoNext();
+  }
+
+  ctx.clearRect(0,0,W,H);
+  drawRoom();
+  drawComputerDesk();
+  drawDocsDesk();
+  drawCabinets();
+  drawHero();
+  requestAnimationFrame(tick);
+}
+
+log('👋 Bonjour Amine ! Voici mon bureau. Regarde-moi travailler…');
+syncButtons();
+workUntil = performance.now() + 2000;
+requestAnimationFrame(tick);
+})();
+</script>
