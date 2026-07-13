@@ -26,10 +26,10 @@
 
   .screen{
     border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#0e1120;
-    box-shadow:0 8px 30px rgba(0,0,0,.45);
+    box-shadow:0 8px 30px rgba(0,0,0,.45); position:relative;
   }
   canvas{
-    display:block; width:100%; height:auto;
+    display:block; width:100%; height:auto; cursor:pointer;
     image-rendering:pixelated; image-rendering:crisp-edges;
   }
 
@@ -43,16 +43,53 @@
   button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
   button.active{border-color:var(--accent); color:var(--accent)}
   button#autoBtn.on{border-color:var(--green); color:var(--green)}
+  #mailBtn b{color:var(--amber); font-weight:700}
   .controls .spacer{flex:1}
 
-  .term{
-    border:1px solid var(--line); border-radius:8px; background:#0e1120;
-    padding:10px 12px; min-height:120px; max-height:190px; overflow-y:auto;
-    font-size:12px; line-height:1.7;
+  /* ---- chat ---- */
+  .chat{border:1px solid var(--line); border-radius:8px; background:#0e1120; overflow:hidden}
+  .chat .hd{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 12px; border-bottom:1px solid var(--line);
+    color:var(--dim); text-transform:uppercase; letter-spacing:.18em; font-size:10px;
   }
-  .term .hd{color:var(--dim); text-transform:uppercase; letter-spacing:.18em; font-size:10px; margin-bottom:6px}
-  .term p{margin:0; color:var(--green)}
-  .term p .t{color:var(--dim); margin-right:8px}
+  .chat .hd button{padding:4px 10px; font-size:13px}
+  .msgs{padding:12px; max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:8px}
+  .msg{max-width:85%; padding:8px 12px; border-radius:10px; font-size:13px; line-height:1.55}
+  .msg.bot{align-self:flex-start; background:var(--panel); border:1px solid var(--line); border-bottom-left-radius:2px}
+  .msg.user{align-self:flex-end; background:#3a2418; border:1px solid #5c3423; color:#f5cdb8; border-bottom-right-radius:2px}
+  .msg.sys{align-self:flex-start; background:none; border:none; padding:0 2px; color:var(--dim); font-size:11.5px}
+  .inrow{display:flex; gap:8px; padding:10px; border-top:1px solid var(--line)}
+  .inrow input{
+    flex:1; min-width:0; font-family:var(--mono); font-size:16px;
+    background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:10px 12px;
+  }
+  .inrow input:focus{outline:none; border-color:var(--accent)}
+  .inrow button{padding:10px 13px}
+  #micBtn.rec{border-color:#ff5c5c; color:#ff5c5c; animation:pulse 1s infinite}
+  @keyframes pulse{50%{background:#3a1b22}}
+  @media (prefers-reduced-motion: reduce){ #micBtn.rec{animation:none} }
+
+  /* ---- boîte aux lettres (modal) ---- */
+  .modal{
+    position:fixed; inset:0; background:rgba(10,12,25,.75); z-index:50;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal[hidden]{display:none}
+  .sheet{
+    width:100%; max-width:460px; max-height:80vh; overflow-y:auto;
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .mhead{display:flex; align-items:center; justify-content:space-between; font-size:14px; font-weight:700}
+  .mhead button{padding:6px 11px}
+  .mailItem{
+    text-align:left; display:block; width:100%; padding:10px 12px; line-height:1.5;
+  }
+  .mailItem b{color:var(--amber)}
+  .mailItem span{display:block; color:var(--dim); font-size:11px}
+  .mempty{color:var(--dim); font-size:12px; text-align:center; padding:16px 0}
+  #mailClear{color:var(--dim); font-size:11px; padding:7px}
 
   footer{color:var(--dim); font-size:11px; line-height:1.6}
 </style>
@@ -63,27 +100,44 @@
     <div class="chip">● statut : <b id="statusChip">pause</b></div>
   </header>
 
-  <div class="screen"><canvas id="cv" width="640" height="416" aria-label="Bureau virtuel en pixel art"></canvas></div>
+  <div class="screen"><canvas id="cv" width="640" height="416" aria-label="Bureau virtuel en pixel art — touche la boîte aux lettres pour lire le courrier"></canvas></div>
 
   <div class="controls">
     <button id="b-code">💻 Coder</button>
     <button id="b-research">📄 Rechercher</button>
     <button id="b-archive">🗄️ Archives</button>
     <button id="b-idle">☕ Pause</button>
+    <button id="mailBtn">📬 Courrier <b id="mailCount">0</b></button>
     <span class="spacer"></span>
     <button id="autoBtn" class="on">AUTO : ON</button>
   </div>
 
-  <div class="term">
-    <div class="hd">Terminal</div>
-    <div id="log"></div>
+  <div class="chat">
+    <div class="hd">
+      <span>Chat avec Claude</span>
+      <button id="voiceBtn" title="Voix de Claude">🔊 Voix : ON</button>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="inrow">
+      <button id="micBtn" title="Parler">🎤</button>
+      <input id="chatIn" type="text" placeholder="Donne-moi une directive… (ex : va coder)" autocomplete="off">
+      <button id="sendBtn" title="Envoyer">➤</button>
+    </div>
   </div>
 
   <footer>
-    Démo inspirée de l'extension « Pixel Agents » vue sur TikTok : le personnage se déplace
-    vers l'ordinateur pour coder, vers le bureau pour lire les documents, et vers les armoires
-    pour chercher dans les archives. Utilise les boutons ou laisse le mode AUTO tourner.
+    Dirige-moi par le chat (écrit ou 🎤 vocal) : « va coder », « fais des recherches »,
+    « cherche un dossier dans les archives », « pause »… Chaque tâche terminée, je dépose un
+    <b>rapport PDF</b> dans la boîte aux lettres 📬 (en bas à gauche de la pièce — touche-la pour l'ouvrir).
   </footer>
+</div>
+
+<div class="modal" id="mailModal" hidden>
+  <div class="sheet">
+    <div class="mhead"><span>📬 Boîte aux lettres</span><button id="mailClose">✕ Fermer</button></div>
+    <div id="mailList"></div>
+    <button id="mailClear">🗑️ Vider la boîte</button>
+  </div>
 </div>
 
 <script>
@@ -109,7 +163,7 @@ const C = {
   hair:'#5d3a28', skin:'#f0c297', shirt:'#e8e4d8', pants:'#4a5878', shoe:'#2b2b3a',
   leaf:'#3e8948', leafHi:'#63c74d', pot:'#b0563a',
   bubble:'#f5f3ea', bubbleInk:'#2b3252',
-  folder:'#f2c14e'
+  folder:'#f2c14e', boxRed:'#c0553f', boxRedHi:'#d97757'
 };
 
 /* ---------- postes de travail ---------- */
@@ -118,6 +172,7 @@ const STATIONS = {
   code:     { x: 40,  y: 80,  face:'up',   bulle:'Code…' },
   research: { x: 152, y: 128, face:'up',   bulle:'Lecture…' },
   archive:  { x: 264, y: 80,  face:'up',   bulle:'Archives…' },
+  mail:     { x: 60,  y: 168, face:'left', bulle:'Courrier…' },
   idle:     { x: 168, y: 168, face:'down', bulle:'Idle' }
 };
 const MSG = {
@@ -127,33 +182,130 @@ const MSG = {
               do:['Je lis les documents…','Je prends des notes…','Je fais des recherches…'] },
   archive:  { go:'Je vais fouiller dans les armoires d’archives…',
               do:['Je fouille les archives…','Je récupère un dossier…','Je classe des papiers…'] },
+  mail:     { go:'Je vais poster mon rapport dans la boîte aux lettres…',
+              do:['Je poste mon rapport… ✉️'] },
   idle:     { go:'Je retourne au centre de la pièce…',
               do:['Petite pause ☕'] }
 };
-const CHIP = { code:'en train de coder', research:'en recherche', archive:'dans les archives', idle:'pause' };
+const CHIP = { code:'en train de coder', research:'en recherche', archive:'dans les archives', mail:'dépose le courrier', idle:'pause' };
+const DEST = { code:'PC', research:'bureau', archive:'archives', mail:'boîte', idle:'pause' };
 
 /* ---------- état ---------- */
 const hero = { x: STATIONS.idle.x, y: STATIONS.idle.y, face:'down', dist:0 };
 let mode = 'idle', phase = 'working', path = [], workUntil = 0, auto = true;
+let pendingReport = null;
 let now = 0;
 
-/* ---------- journal ---------- */
-const logBox = document.getElementById('log');
-function log(msg){
-  const p = document.createElement('p');
-  const t = new Date().toLocaleTimeString('fr-FR');
-  p.innerHTML = '<span class="t">' + t + '</span>' + msg;
-  logBox.prepend(p);
-  while (logBox.children.length > 30) logBox.lastChild.remove();
+/* ---------- chat ---------- */
+const msgsEl = document.getElementById('msgs');
+function addMsg(cls, html){
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.innerHTML = html;
+  msgsEl.appendChild(d);
+  while (msgsEl.children.length > 60) msgsEl.firstChild.remove();
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+function chatSys(t){ addMsg('sys', new Date().toLocaleTimeString('fr-FR') + ' · ' + t); }
+function botSay(t, spoken){
+  addMsg('bot', t);
+  speak(spoken !== undefined ? spoken : t);
 }
 const chipEl = document.getElementById('statusChip');
+
+/* ---------- voix (synthèse locale) ---------- */
+let voiceOn = true;
+function speak(t){
+  if (!voiceOn || !('speechSynthesis' in window)) return;
+  const clean = t.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}✉️📬💻📄🗄️☕]/gu,'').trim();
+  if (!clean) return;
+  const u = new SpeechSynthesisUtterance(clean);
+  u.lang = 'fr-FR'; u.rate = 1.05;
+  const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith('fr'));
+  if (v) u.voice = v;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+if ('speechSynthesis' in window) speechSynthesis.getVoices(); // pré-chargement
+const voiceBtn = document.getElementById('voiceBtn');
+voiceBtn.addEventListener('click', () => {
+  voiceOn = !voiceOn;
+  voiceBtn.textContent = voiceOn ? '🔊 Voix : ON' : '🔇 Voix : OFF';
+  if (!voiceOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+});
+
+/* ---------- micro (reconnaissance vocale) ---------- */
+const micBtn = document.getElementById('micBtn');
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, recOn = false;
+if (SR){
+  rec = new SR();
+  rec.lang = 'fr-FR'; rec.interimResults = false; rec.maxAlternatives = 1;
+  rec.onresult = e => {
+    const t = e.results[0][0].transcript;
+    document.getElementById('chatIn').value = t;
+    sendMsg();
+  };
+  rec.onend = () => { recOn = false; micBtn.classList.remove('rec'); };
+  rec.onerror = () => { recOn = false; micBtn.classList.remove('rec'); };
+  micBtn.addEventListener('click', () => {
+    if (recOn){ rec.stop(); return; }
+    try { rec.start(); recOn = true; micBtn.classList.add('rec'); }
+    catch(e){}
+  });
+} else {
+  micBtn.disabled = true;
+  micBtn.title = 'Micro non disponible sur ce navigateur';
+  micBtn.style.opacity = .4;
+}
+
+/* ---------- commandes du chat ---------- */
+function sendMsg(){
+  const input = document.getElementById('chatIn');
+  const txt = input.value.trim();
+  if (!txt) return;
+  input.value = '';
+  addMsg('user', txt.replace(/</g,'&lt;'));
+  handleCommand(txt);
+}
+document.getElementById('sendBtn').addEventListener('click', sendMsg);
+document.getElementById('chatIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function handleCommand(txt){
+  const t = txt.toLowerCase();
+  if (/(bonjour|salut|coucou|hello|ça va|ca va)/.test(t)){
+    botSay(pick(['Salut Amine ! 👋 Prêt à bosser. Dis-moi quoi faire !',
+                 'Bonjour ! Tout va bien au bureau. Une directive pour moi ?']));
+  } else if (/(bo[iî]te|lettre|courrier|rapport|pdf|facteur)/.test(t)){
+    openMailbox();
+    botSay('Voici la boîte aux lettres ! Touche un rapport pour ouvrir son PDF. 📬');
+  } else if (/(auto)/.test(t)){
+    setAuto(!auto);
+    botSay(auto ? 'Mode auto activé : j’enchaîne les tâches tout seul ! 🤖' : 'Mode auto coupé : j’attends tes ordres. 🕹️');
+  } else if (/(cod|program|bug|site|développ|developp|test)/.test(t)){
+    setAction('code'); botSay(pick(['Ça marche, je file coder ! 💻','Reçu ! Direction l’ordinateur. 💻']));
+  } else if (/(archiv|armoire|dossier|class|facture|range)/.test(t)){
+    setAction('archive'); botSay(pick(['OK, je vais fouiller les armoires ! 🗄️','Compris, je cherche dans les archives. 🗄️']));
+  } else if (/(recherch|cherch|document|lis|lire|note|étudi|etudi|renseigne)/.test(t)){
+    setAction('research'); botSay(pick(['Bien reçu, je vais lire les documents ! 📄','OK, je pars en recherche. 📄']));
+  } else if (/(pause|repos|caf[ée]|stop|arr[êe]te|dors|repose)/.test(t)){
+    setAction('idle'); botSay('OK, petite pause ! ☕');
+  } else if (/(merci|bravo|super|génial|genial|bien joué|bien joue)/.test(t)){
+    botSay(pick(['Avec plaisir ! 😄','Merci Amine ! Je continue.']));
+  } else {
+    botSay('Je peux : <b>coder</b> 💻, faire des <b>recherches</b> 📄, fouiller les <b>archives</b> 🗄️, faire une <b>pause</b> ☕ ou t’ouvrir le <b>courrier</b> 📬. Dis-moi !',
+           'Je peux coder, faire des recherches, fouiller les archives, faire une pause, ou ouvrir le courrier. Dis-moi !');
+  }
+}
 
 /* ---------- actions ---------- */
 function setAction(next){
   if (next === mode && phase === 'working') return;
+  if (pendingReport && next !== 'mail') commitDeposit(); // ne jamais perdre un rapport
   mode = next; phase = 'walking';
   path = buildPath(hero, STATIONS[next]);
-  log('🚶 ' + MSG[next].go);
+  chatSys('🚶 ' + MSG[next].go);
   chipEl.textContent = 'en déplacement…';
   syncButtons();
 }
@@ -167,18 +319,38 @@ function buildPath(from, to){
 function arrive(){
   phase = 'working';
   hero.face = STATIONS[mode].face;
-  const list = MSG[mode].do;
-  log((mode==='code'?'💻 ':mode==='research'?'📄 ':mode==='archive'?'🗄️ ':'☕ ')
-      + list[Math.floor(Math.random()*list.length)]);
+  const icons = {code:'💻 ', research:'📄 ', archive:'🗄️ ', mail:'✉️ ', idle:'☕ '};
+  chatSys(icons[mode] + pick(MSG[mode].do));
   chipEl.textContent = CHIP[mode];
-  workUntil = now + 5000 + Math.random()*4000;
+  workUntil = now + (mode === 'mail' ? 1800 : 5000 + Math.random()*4000);
+}
+function onWorkDone(){
+  if (mode === 'mail'){
+    commitDeposit();
+    if (auto) autoNext(); else setAction('idle');
+  } else if (mode === 'idle'){
+    if (auto) autoNext(); else workUntil = Infinity;
+  } else {
+    pendingReport = createReport(mode);
+    setAction('mail');
+  }
 }
 function autoNext(){
   const pool = ['code','research','archive','code','idle'].filter(m => m !== mode);
   setAction(pool[Math.floor(Math.random()*pool.length)]);
 }
+function setAuto(v){
+  auto = v;
+  const b = document.getElementById('autoBtn');
+  b.textContent = 'AUTO : ' + (auto ? 'ON' : 'OFF');
+  b.classList.toggle('on', auto);
+  if (auto && phase === 'working' && workUntil === Infinity) workUntil = now + 1500;
+}
+document.getElementById('autoBtn').addEventListener('click', () => {
+  setAuto(!auto);
+  chatSys(auto ? '🤖 Mode auto activé.' : '🕹️ Mode manuel : dirige-moi par le chat ou les boutons.');
+});
 
-/* ---------- boutons ---------- */
 const btns = {
   code: document.getElementById('b-code'),
   research: document.getElementById('b-research'),
@@ -186,15 +358,142 @@ const btns = {
   idle: document.getElementById('b-idle')
 };
 for (const k in btns) btns[k].addEventListener('click', () => setAction(k));
-const autoBtn = document.getElementById('autoBtn');
-autoBtn.addEventListener('click', () => {
-  auto = !auto;
-  autoBtn.textContent = 'AUTO : ' + (auto ? 'ON' : 'OFF');
-  autoBtn.classList.toggle('on', auto);
-  log(auto ? '🤖 Mode auto activé.' : '🕹️ Mode manuel : dirige-moi avec les boutons.');
-});
 function syncButtons(){
   for (const k in btns) btns[k].classList.toggle('active', k === mode);
+}
+
+/* ---------- rapports + boîte aux lettres ---------- */
+let mailbox = [];
+try { mailbox = JSON.parse(localStorage.getItem('pixel-bureau-courrier') || '[]'); } catch(e){}
+function saveMail(){ try { localStorage.setItem('pixel-bureau-courrier', JSON.stringify(mailbox.slice(0,20))); } catch(e){} }
+
+function createReport(kind){
+  const t = new Date();
+  const heure = t.toLocaleTimeString('fr-FR');
+  if (kind === 'code'){
+    const taches = ['Correction d’un bug d’affichage sur la page menu',
+                    'Ajout d’un bouton de commande plus visible',
+                    'Optimisation du chargement des photos de plats',
+                    'Amélioration du QR code pour les mobiles'];
+    return { kind, title:'Rapport de code', time:t.toISOString(), lines:[
+      'Tâche : ' + pick(taches),
+      'Fichiers modifiés : menu.html, script.js',
+      'Tests : ' + (8+Math.floor(Math.random()*8)) + '/' + '15 vérifiés — OK',
+      'Heure : ' + heure, 'Statut : terminé'] };
+  }
+  if (kind === 'research'){
+    const sujets = ['Les tendances des menus QR code en 2026',
+                    'Idées de design pour les snacks',
+                    'Les prix pratiqués par la concurrence',
+                    'Comment mettre en avant les plats du jour'];
+    return { kind, title:'Note de recherche', time:t.toISOString(), lines:[
+      'Sujet : ' + pick(sujets),
+      '- Point 1 : les clients scannent surtout entre 12h et 14h',
+      '- Point 2 : les photos de plats augmentent les commandes',
+      '- Point 3 : un menu clair = des clients contents',
+      'Heure : ' + heure] };
+  }
+  return { kind, title:'Fiche d’archives', time:t.toISOString(), lines:[
+    'Dossier retrouvé : ' + pick(['Facture client n°2026-0' + (10+Math.floor(Math.random()*89)),
+                                  'Ancien menu du snack Le 444',
+                                  'Contrat d’abonnement mensuel',
+                                  'Maquette de la carte des desserts']),
+    'Emplacement : armoire ' + pick(['A','B','C']) + ', tiroir ' + (1+Math.floor(Math.random()*3)),
+    'État : bon état, reclassé correctement',
+    'Heure : ' + heure] };
+}
+function commitDeposit(){
+  if (!pendingReport) return;
+  mailbox.unshift(pendingReport);
+  mailbox = mailbox.slice(0,20);
+  pendingReport = null;
+  saveMail();
+  updateMailCount();
+  chatSys('📬 Rapport déposé dans la boîte aux lettres ! (' + mailbox.length + ' courrier' + (mailbox.length>1?'s':'') + ')');
+}
+function updateMailCount(){
+  document.getElementById('mailCount').textContent = mailbox.length;
+}
+
+/* ----- modal ----- */
+const modal = document.getElementById('mailModal');
+function openMailbox(){
+  const list = document.getElementById('mailList');
+  list.innerHTML = '';
+  if (!mailbox.length){
+    list.innerHTML = '<div class="mempty">La boîte est vide pour l’instant.<br>Donne-moi une tâche et je déposerai mon rapport ici !</div>';
+  } else {
+    mailbox.forEach((r, i) => {
+      const b = document.createElement('button');
+      b.className = 'mailItem';
+      const d = new Date(r.time);
+      b.innerHTML = '📄 <b>' + r.title + '</b> — ' + r.lines[0].replace(/</g,'&lt;').slice(0,60) +
+        '<span>' + d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR') + ' — Toucher pour ouvrir le PDF</span>';
+      b.addEventListener('click', () => openPdf(r));
+      list.appendChild(b);
+    });
+  }
+  modal.hidden = false;
+}
+document.getElementById('mailBtn').addEventListener('click', openMailbox);
+document.getElementById('mailClose').addEventListener('click', () => modal.hidden = true);
+modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
+document.getElementById('mailClear').addEventListener('click', () => {
+  mailbox = []; saveMail(); updateMailCount(); openMailbox();
+});
+// clic sur la boîte aux lettres dans la pièce
+cv.addEventListener('click', e => {
+  const r = cv.getBoundingClientRect();
+  const x = (e.clientX - r.left) * W / r.width;
+  const y = (e.clientY - r.top) * H / r.height;
+  if (x >= 8 && x <= 56 && y >= 128 && y <= 186) openMailbox();
+});
+
+/* ---------- génération PDF (sans librairie) ---------- */
+function pdfText(s){
+  return s
+    .replace(/[’‘]/g,"'").replace(/[“”]/g,'"').replace(/…/g,'...')
+    .replace(/œ/g,'oe').replace(/Œ/g,'OE').replace(/[–—]/g,'-')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,'')
+    .replace(/[^\x00-\xFF]/g,'?')
+    .replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+}
+function makePdf(rep){
+  const d = new Date(rep.time);
+  const body = [ d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR'), '',
+                 ...rep.lines, '', '--', 'Généré par Pixel Bureau — Claude' ];
+  let content = 'BT /F1 18 Tf 50 780 Td (' + pdfText(rep.title) + ') Tj ET\n';
+  content += 'BT /F1 11 Tf 50 745 Td 18 TL\n';
+  body.forEach(l => { content += '(' + pdfText(l) + ') Tj T*\n'; });
+  content += 'ET';
+  const objs = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
+    '<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'
+  ];
+  let pdf = '%PDF-1.4\n';
+  const offs = [];
+  objs.forEach((o,i) => { offs.push(pdf.length); pdf += (i+1) + ' 0 obj\n' + o + '\nendobj\n'; });
+  const xref = pdf.length;
+  pdf += 'xref\n0 6\n0000000000 65535 f \n' +
+         offs.map(o => String(o).padStart(10,'0') + ' 00000 n \n').join('') +
+         'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF';
+  const bytes = new Uint8Array(pdf.length);
+  for (let i=0;i<pdf.length;i++) bytes[i] = pdf.charCodeAt(i) & 0xFF;
+  return new Blob([bytes], {type:'application/pdf'});
+}
+function openPdf(rep){
+  const url = URL.createObjectURL(makePdf(rep));
+  const a = document.createElement('a');
+  const d = new Date(rep.time);
+  a.href = url;
+  a.download = rep.title.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '-' +
+               d.toLocaleTimeString('fr-FR').replace(/:/g,'h') + '.pdf';
+  a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 /* ---------- helpers dessin ---------- */
@@ -203,17 +502,14 @@ function rect(x,y,w,h,c){ ctx.fillStyle = c; ctx.fillRect(x,y,w,h); }
 /* ---------- décor ---------- */
 let codeLines = [];
 function drawRoom(){
-  // mur
   rect(0,0,W,10,C.wallTop);
   rect(0,10,W,36,C.wall);
   rect(0,44,W,4,C.plinthe);
-  // sol
   for (let ty=3; ty<13; ty++)
     for (let tx=0; tx<20; tx++){
       rect(tx*T, ty*T, T, T, (tx+ty)%2 ? C.floorA : C.floorB);
       rect(tx*T, ty*T+T-1, T, 1, C.floorLine);
     }
-  // tapis
   rect(114,132,108,52,C.rugEdge);
   rect(118,136,100,44,C.rug);
   rect(118,136,100,3,'#617096');
@@ -235,7 +531,6 @@ function drawRoom(){
   ctx.moveTo(204,24); ctx.lineTo(204+Math.cos(am)*3.5, 24+Math.sin(am)*3.5);
   ctx.moveTo(204,24); ctx.lineTo(204+Math.cos(bm)*5, 24+Math.sin(bm)*5);
   ctx.stroke();
-  // plantes
   drawPlant(6,64); drawPlant(300,184);
 }
 function drawPlant(x,y){
@@ -245,11 +540,9 @@ function drawPlant(x,y){
   rect(x+2, y-19, 6, 4, C.leafHi);
 }
 function drawComputerDesk(){
-  // bureau
   rect(16,48,48,10,C.woodHi); rect(16,48,48,3,'#9c6a45');
   rect(16,58,48,8,C.woodFront);
   rect(18,66,4,4,C.woodFront); rect(58,66,4,4,C.woodFront);
-  // écran
   rect(28,28,24,18,'#22263a');
   const on = (mode==='code' && phase==='working');
   rect(30,30,20,13, on ? C.screenOn : C.screenOff);
@@ -262,21 +555,18 @@ function drawComputerDesk(){
   } else {
     rect(31,31,7,1,'#333a5c');
   }
-  rect(37,46,6,3,'#181c30');  // pied
-  rect(30,50,18,4,'#2b3252'); // clavier
-  rect(52,51,6,4,C.paper);    // bloc-notes
+  rect(37,46,6,3,'#181c30');
+  rect(30,50,18,4,'#2b3252');
+  rect(52,51,6,4,C.paper);
 }
 function drawDocsDesk(){
   rect(128,96,48,10,C.woodHi); rect(128,96,48,3,'#9c6a45');
   rect(128,106,48,8,C.woodFront);
   rect(130,114,4,4,C.woodFront); rect(170,114,4,4,C.woodFront);
-  // documents posés
   rect(133,98,12,8,C.paper); rect(134,100,9,1,C.paperLine); rect(134,102,7,1,C.paperLine);
   rect(148,97,13,9,'#e9dfc6'); rect(149,99,10,1,C.paperLine); rect(149,101,8,1,C.paperLine);
   rect(163,99,10,7,C.folder); rect(163,99,10,2,'#d9a83a');
-  // lampe
   rect(171,88,2,9,'#3a3f5e'); rect(168,86,8,4,'#c0553f');
-  // lecture en cours : feuille qui flotte
   if (mode==='research' && phase==='working'){
     const f = reduceMotion ? 0 : Math.sin(now/300)*2;
     rect(146,78+f,14,11,C.paper);
@@ -295,14 +585,44 @@ function drawCabinets(){
       rect(x+6,y+5,4,2,'#2b3252');
     }
   }
-  // tiroir du milieu ouvert pendant la fouille
   if (mode==='archive' && phase==='working'){
     const open = reduceMotion ? 6 : Math.min(6, (now%9000)/150);
-    rect(258+2, 37+open, 12, 10, C.metalLo);
-    rect(258+2, 37+open, 12, 2, C.metalHi);
-    rect(258+3, 39+open, 3, 4, C.folder);
-    rect(258+7, 39+open, 3, 4, '#e9a13b');
-    rect(258+11, 39+open, 2, 4, C.folder);
+    rect(260, 37+open, 12, 10, C.metalLo);
+    rect(260, 37+open, 12, 2, C.metalHi);
+    rect(261, 39+open, 3, 4, C.folder);
+    rect(265, 39+open, 3, 4, '#e9a13b');
+    rect(269, 39+open, 2, 4, C.folder);
+  }
+}
+function drawMailbox(){
+  // poteau
+  rect(24,152,5,26,C.woodFront);
+  // boîte
+  rect(14,138,26,16,C.boxRed);
+  rect(14,138,26,3,C.boxRedHi);
+  rect(17,144,20,2,'#5c1f14'); // fente
+  // drapeau levé quand il y a du courrier
+  if (mailbox.length){
+    rect(40,134,2,12,'#8a3325');
+    rect(42,134,7,5,C.folder);
+  }
+  // enveloppe qui entre pendant le dépôt
+  if (mode==='mail' && phase==='working'){
+    const f = reduceMotion ? 0 : Math.abs(Math.sin(now/200))*3;
+    rect(22,128-f,12,8,C.paper);
+    ctx.strokeStyle = C.paperLine; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(22,128-f); ctx.lineTo(28,133-f); ctx.lineTo(34,128-f); ctx.stroke();
+  }
+  // badge nombre de courriers
+  if (mailbox.length){
+    const n = String(mailbox.length);
+    ctx.font = '7px monospace';
+    const w = ctx.measureText(n).width + 6;
+    ctx.fillStyle = C.bubble;
+    if (ctx.roundRect){ ctx.beginPath(); ctx.roundRect(27-w/2, 118, w, 10, 3); ctx.fill(); }
+    else ctx.fillRect(27-w/2, 118, w, 10);
+    ctx.fillStyle = C.bubbleInk;
+    ctx.fillText(n, 27-w/2+3, 126);
   }
 }
 
@@ -313,19 +633,15 @@ function drawHero(){
   const bob = walking ? -step
     : (phase==='working' && mode!=='idle' && !reduceMotion ? (Math.sin(now/220) > 0 ? -1 : 0) : 0);
   const x = Math.round(hero.x), y = Math.round(hero.y) + bob;
-  // ombre
   ctx.fillStyle = 'rgba(0,0,0,.25)';
   ctx.beginPath(); ctx.ellipse(x, y, 6, 2, 0, 0, 7); ctx.fill();
   const top = y - 16;
-  // jambes + chaussures
   const lL = walking && step ? 1 : 0, lR = walking && !step ? 1 : 0;
   rect(x-4, y-5, 3, 4-lL, C.pants); rect(x+1, y-5, 3, 4-lR, C.pants);
   rect(x-4, y-1-lL, 3, 1, C.shoe); rect(x+1, y-1-lR, 3, 1, C.shoe);
-  // corps
   rect(x-5, top+7, 10, 8, C.shirt);
-  rect(x-6, top+8, 2, 5, C.shirt); rect(x+4, top+8, 2, 5, C.shirt); // bras
+  rect(x-6, top+8, 2, 5, C.shirt); rect(x+4, top+8, 2, 5, C.shirt);
   rect(x-5, top+13, 10, 2, '#c9c3b2');
-  // tête
   rect(x-5, top, 10, 7, C.hair);
   if (hero.face !== 'up'){
     rect(x-4, top+3, 8, 4, C.skin);
@@ -336,11 +652,10 @@ function drawHero(){
   } else {
     rect(x-5, top+3, 10, 3, C.hair);
   }
-  rect(x-5, top, 10, 2, '#4a2c1d'); // reflet cheveux
+  rect(x-5, top, 10, 2, '#4a2c1d');
   drawBubble(x, top - 6);
-  // Zzz en pause
   if (mode==='idle' && phase==='working' && !reduceMotion){
-    ctx.fillStyle = C.dimText || '#8b93b8';
+    ctx.fillStyle = '#8b93b8';
     ctx.font = '6px monospace';
     const f = Math.sin(now/500)*2;
     ctx.fillText('z', x+9, top-10+f);
@@ -348,9 +663,7 @@ function drawHero(){
   }
 }
 function drawBubble(cx, by){
-  const txt = phase==='walking'
-    ? '→ ' + (mode==='code'?'PC':mode==='research'?'bureau':mode==='archive'?'archives':'pause')
-    : STATIONS[mode].bulle;
+  const txt = phase==='walking' ? '→ ' + DEST[mode] : STATIONS[mode].bulle;
   ctx.font = '7px monospace';
   const w = ctx.measureText(txt).width + 8;
   let bx = cx - w/2;
@@ -384,8 +697,8 @@ function tick(ts){
       hero.dist += speed*dt;
       hero.face = Math.abs(dx) > Math.abs(dy) ? (dx>0?'right':'left') : (dy>0?'down':'up');
     }
-  } else if (phase === 'working' && auto && ts > workUntil){
-    autoNext();
+  } else if (phase === 'working' && ts > workUntil){
+    onWorkDone();
   }
 
   ctx.clearRect(0,0,W,H);
@@ -393,13 +706,15 @@ function tick(ts){
   drawComputerDesk();
   drawDocsDesk();
   drawCabinets();
+  drawMailbox();
   drawHero();
   requestAnimationFrame(tick);
 }
 
-log('👋 Bonjour Amine ! Voici mon bureau. Regarde-moi travailler…');
+updateMailCount();
+addMsg('bot', 'Salut Amine ! 👋 Donne-moi des directives ici (ou avec le 🎤). Quand je finis une tâche, je dépose mon <b>rapport PDF</b> dans la boîte aux lettres 📬 en bas à gauche — touche-la pour lire le courrier !');
 syncButtons();
-workUntil = performance.now() + 2000;
+workUntil = performance.now() + 2500;
 requestAnimationFrame(tick);
 })();
 </script>
