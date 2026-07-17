@@ -36,6 +36,19 @@ canvas{display:block}
   background:radial-gradient(ellipse at center,transparent 40%,rgba(255,0,0,0.55) 100%);
   transition:opacity .1s}
 
+/* ---------- Barre de vie du BOSS ---------- */
+#bossbar{position:absolute;top:64px;left:50%;transform:translateX(-50%);
+  width:min(420px,80vw);display:none;text-align:center}
+#bossbar .blabel{font-weight:800;font-size:15px;letter-spacing:2px;color:#ff4b4b;
+  text-shadow:2px 2px 0 #000;margin-bottom:4px}
+#bossbar .track{height:14px;border:2px solid #000;border-radius:7px;
+  background:rgba(0,0,0,0.6);overflow:hidden}
+#bossfill{height:100%;width:100%;border-radius:5px;
+  background:linear-gradient(180deg,#ff5b5b,#a80f0f);transition:width .15s}
+@media (max-width:600px){
+  #bossbar{top:100px}
+}
+
 /* ---------- Bannière de manche ---------- */
 #banner{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%) scale(0.8);
   z-index:7;text-align:center;opacity:0;pointer-events:none;
@@ -93,6 +106,10 @@ canvas{display:block}
   </div>
   <div id="hearts"></div>
   <div id="crosshair">+</div>
+  <div id="bossbar">
+    <div class="blabel">⚠️ BOSS 👑</div>
+    <div class="track"><div id="bossfill"></div></div>
+  </div>
 </div>
 <div id="vignette"></div>
 
@@ -362,13 +379,13 @@ function limb(w,h,d,color){
   return new THREE.Mesh(g, new THREE.MeshLambertMaterial({color, map:blockTex}));
 }
 
-function makeZombie(hp, speed){
+function makeZombie(hp, speed, isBoss=false){
   const g = new THREE.Group();
-  const skin = new THREE.MeshLambertMaterial({color:SKIN, map:blockTex});
+  const skin = new THREE.MeshLambertMaterial({color:isBoss?0x2e7a26:SKIN, map:blockTex});
 
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.52,0.52,0.52), skin);
   head.position.y = 1.78;
-  const eyeMat = new THREE.MeshBasicMaterial({color:0x1a0000});
+  const eyeMat = new THREE.MeshBasicMaterial({color:isBoss?0xff2020:0x1a0000});
   for(const s of [-1,1]){
     const eye = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.08,0.03), eyeMat);
     eye.position.set(0.12*s, 1.84, 0.27);
@@ -387,8 +404,24 @@ function makeZombie(hp, speed){
 
   g.add(head, body, armL, armR, legL, legR);
 
+  if(isBoss){
+    // couronne dorée
+    const crownMat = new THREE.MeshLambertMaterial({color:0xe8b923});
+    const crown = new THREE.Mesh(new THREE.BoxGeometry(0.56,0.1,0.56), crownMat);
+    crown.position.y = 2.09;
+    for(let k=0;k<4;k++){
+      const spike = new THREE.Mesh(new THREE.BoxGeometry(0.09,0.14,0.09), crownMat);
+      spike.position.set([-0.2,0.2,-0.2,0.2][k], 2.2, [-0.2,-0.2,0.2,0.2][k]);
+      g.add(spike);
+    }
+    g.add(crown);
+    g.scale.setScalar(1.9);
+  }
+
   return {
-    g, hp, maxhp:hp, speed,
+    g, hp, maxhp:hp, speed, isBoss,
+    dmg: isBoss ? 6 : 3,
+    reach: isBoss ? 2.9 : 1.55,
     armL, armR, legL, legR,
     state:'walk', t:Math.random()*10,
     atkCd: 1 + Math.random(),
@@ -401,14 +434,17 @@ function makeZombie(hp, speed){
 
 let zombies = [];
 
-function spawnZombie(){
+function spawnZombie(isBoss=false){
   const a = Math.random()*Math.PI*2;
   const r = ISLAND_R - 3 - Math.random()*2;
   const x = Math.cos(a)*r, z = Math.sin(a)*r;
-  const zb = makeZombie(zombieHP, 1.9 + wave*0.08 + Math.random()*0.5);
+  const zb = isBoss
+    ? makeZombie(20 + wave*2, 1.5 + wave*0.03, true)
+    : makeZombie(zombieHP, 1.9 + wave*0.08 + Math.random()*0.5);
   zb.g.position.set(x, groundY(x,z), z);
   scene.add(zb.g);
   zombies.push(zb);
+  if(isBoss){ sfx.boss(); updateBossBar(); }
 }
 
 /* ============================================================
@@ -451,13 +487,15 @@ const sfx = {
   wave:  ()=>{tone(440,440,0.14,'square',0.15); tone(660,660,0.22,'square',0.15,0.16);},
   groan: (v)=>tone(85+Math.random()*40,50,0.5,'sawtooth',Math.min(0.12,v)),
   jump:  ()=>tone(200,320,0.1,'triangle',0.07),
+  boss:  ()=>{tone(75,55,0.6,'sawtooth',0.3); tone(50,38,0.8,'square',0.25,0.15);},
+  bossDie:()=>{tone(140,25,0.9,'sawtooth',0.3); tone(90,20,1.1,'square',0.2,0.1);},
 };
 
 /* ============================================================
    ÉTAT DU JEU
 ============================================================ */
 let wave = 0, kills = 0, hp = MAX_HP;
-let toSpawn = 0, spawnTimer = 0, zombieHP = 4;
+let toSpawn = 0, bossToSpawn = 0, spawnTimer = 0, zombieHP = 4;
 let playing = false, dead = false;
 let atkTimer = 0, swingT = -1, hurtFlash = 0, shakeT = 0;
 let interWave = 0; // délai avant la manche suivante
@@ -484,8 +522,20 @@ function updateHearts(){
 }
 function updateHUD(){
   $('uiWave').textContent = wave;
-  $('uiRem').textContent  = zombies.filter(z=>z.state!=='dying').length + toSpawn;
+  $('uiRem').textContent  = zombies.filter(z=>z.state!=='dying').length + toSpawn + bossToSpawn;
   $('uiKills').textContent = kills;
+  updateBossBar();
+}
+function updateBossBar(){
+  const bosses = zombies.filter(z=>z.isBoss && z.state!=='dying');
+  if(bosses.length === 0 && bossToSpawn === 0){
+    $('bossbar').style.display = 'none';
+    return;
+  }
+  $('bossbar').style.display = 'block';
+  let cur = bossToSpawn, max = bossToSpawn; // les boss pas encore apparus comptent pleins
+  for(const b of bosses){ cur += b.hp/b.maxhp; max += 1; }
+  $('bossfill').style.width = Math.max(0, cur/max*100) + '%';
 }
 let bannerTO = null;
 function showBanner(title, sub){
@@ -501,10 +551,14 @@ function startWave(){
   wave++;
   zombieHP = 4 + Math.floor((wave-1)/2)*2;
   toSpawn = 1 + wave*2;
+  bossToSpawn = wave >= 5 ? Math.floor(wave/5) : 0;
   spawnTimer = 0.5;
   hp = Math.min(MAX_HP, hp+6);
   updateHearts(); updateHUD();
-  showBanner('MANCHE '+wave, toSpawn+' zombies arrivent…');
+  let sub = toSpawn + ' zombies arrivent…';
+  if(bossToSpawn === 1) sub = toSpawn + ' zombies + un BOSS arrivent ! ⚠️';
+  else if(bossToSpawn > 1) sub = toSpawn + ' zombies + ' + bossToSpawn + ' BOSS arrivent ! ⚠️';
+  showBanner('MANCHE '+wave, sub);
   sfx.wave();
 }
 
@@ -535,10 +589,10 @@ function attack(){
   let best = null, bestD = 1e9;
   for(const z of zombies){
     if(z.state==='dying') continue;
-    const to = z.g.position.clone(); to.y += 1.2;
+    const to = z.g.position.clone(); to.y += z.isBoss ? 2.2 : 1.2;
     to.sub(camera.position);
     const d = to.length();
-    if(d > ATK_RANGE) continue;
+    if(d > ATK_RANGE + (z.isBoss ? 1.2 : 0)) continue;
     to.normalize();
     if(to.dot(camDir) < 0.62) continue;
     if(d < bestD){ bestD = d; best = z; }
@@ -546,14 +600,18 @@ function attack(){
   if(best){
     best.hp -= SWORD_DMG;
     best.flashT = 0.15;
-    const kb = best.g.position.clone().sub(player.pos).setY(0).normalize().multiplyScalar(7);
+    // le boss résiste au recul
+    const kb = best.g.position.clone().sub(player.pos).setY(0).normalize()
+      .multiplyScalar(best.isBoss ? 1.5 : 7);
     best.kb.copy(kb);
-    const hitPos = best.g.position.clone(); hitPos.y += 1.3;
-    burst(hitPos, 0x8a1414, 8);
+    const hitPos = best.g.position.clone(); hitPos.y += best.isBoss ? 2.4 : 1.3;
+    burst(hitPos, 0x8a1414, best.isBoss ? 12 : 8);
     sfx.hit();
     if(best.hp <= 0){
       best.state = 'dying'; best.dieT = 0;
-      kills++; sfx.die();
+      kills++;
+      if(best.isBoss){ burst(hitPos, 0xe8b923, 24); sfx.bossDie(); }
+      else sfx.die();
     }
     updateHUD();
   }
@@ -721,9 +779,14 @@ function tick(){
     if(atkTimer > 0) atkTimer -= dt;
 
     /* ----- apparition des zombies ----- */
-    if(toSpawn > 0){
+    if(toSpawn > 0 || bossToSpawn > 0){
       spawnTimer -= dt;
-      if(spawnTimer <= 0){ spawnZombie(); toSpawn--; spawnTimer = 0.7; updateHUD(); }
+      if(spawnTimer <= 0){
+        if(toSpawn > 0){ spawnZombie(); toSpawn--; }
+        else { spawnZombie(true); bossToSpawn--; }
+        spawnTimer = 0.7;
+        updateHUD();
+      }
     }
 
     /* ----- zombies ----- */
@@ -762,7 +825,7 @@ function tick(){
         z.kb.multiplyScalar(Math.max(0, 1-dt*6));
       }
 
-      if(dist > 1.55){
+      if(dist > z.reach){
         toP.normalize();
         z.g.position.addScaledVector(toP, z.speed*dt);
         // les zombies s'écartent un peu entre eux
@@ -781,9 +844,9 @@ function tick(){
         z.atkCd -= dt;
         z.legL.rotation.x = z.legR.rotation.x = 0;
         if(z.atkCd <= 0){
-          z.atkCd = 1.1;
+          z.atkCd = z.isBoss ? 1.5 : 1.1;
           z.armL.rotation.x = z.armR.rotation.x = -Math.PI/2 - 0.6;
-          hurtPlayer(3);
+          hurtPlayer(z.dmg);
         } else {
           z.armL.rotation.x = THREE.MathUtils.lerp(z.armL.rotation.x, -Math.PI/2, dt*6);
           z.armR.rotation.x = z.armL.rotation.x;
@@ -806,7 +869,7 @@ function tick(){
     }
 
     /* ----- manche suivante ----- */
-    if(toSpawn === 0 && zombies.length === 0){
+    if(toSpawn === 0 && bossToSpawn === 0 && zombies.length === 0){
       interWave += dt;
       if(interWave > 2.2){ interWave = 0; startWave(); }
     } else interWave = 0;
@@ -871,10 +934,12 @@ addEventListener('resize', ()=>{
 
 // accès de test (uniquement avec ?debug dans l'URL)
 if(location.search.includes('debug')){
+  const ws = new URLSearchParams(location.search).get('wave');
+  if(ws) wave = parseInt(ws) - 1; // démarrer directement à une manche donnée
   window.__game = {
     player, attack,
     zombies: ()=>zombies,
-    state: ()=>({wave, kills, hp, toSpawn})
+    state: ()=>({wave, kills, hp, toSpawn, bossToSpawn})
   };
 }
 </script>
