@@ -22,6 +22,10 @@ canvas{display:block}
 #topbar .kills{color:#ff6b6b}
 #hearts{position:absolute;bottom:88px;left:50%;transform:translateX(-50%);
   display:flex;gap:3px;filter:drop-shadow(0 2px 2px rgba(0,0,0,0.8))}
+@media (max-width:600px){
+  #hearts{bottom:auto;top:64px}
+  #hearts span{font-size:18px}
+}
 #hearts span{font-size:22px;line-height:1;color:#e2201c;transition:color .15s}
 #hearts span.empty{color:#3a3a3a}
 #hearts span.half{background:linear-gradient(90deg,#e2201c 50%,#3a3a3a 50%);
@@ -132,6 +136,15 @@ canvas{display:block}
   <button class="bigbtn" id="btnRetry">REJOUER</button>
 </div>
 
+<script>
+// Affiche toute erreur à l'écran (aide au diagnostic sur téléphone)
+addEventListener('error', ev=>{
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999;background:#a00;color:#fff;font-size:13px;padding:8px;word-break:break-all;font-family:monospace';
+  d.textContent = '⚠️ Erreur : ' + (ev.message || (ev.error && ev.error.message) || 'chargement impossible');
+  document.body.appendChild(d);
+}, true);
+</script>
 <script type="module">
 import * as THREE from './three.module.min.js';
 
@@ -331,6 +344,12 @@ const sword = new THREE.Group();
 scene.add(camera);
 const SWORD_POS = sword.position.clone();
 const SWORD_ROT = sword.rotation.clone();
+// garde l'épée visible même sur écran étroit (téléphone en portrait)
+function fitSword(){
+  SWORD_POS.x = Math.min(0.42, 0.4*camera.aspect);
+  sword.position.x = SWORD_POS.x;
+}
+fitSword();
 
 /* ============================================================
    ZOMBIES
@@ -847,6 +866,7 @@ addEventListener('resize', ()=>{
   camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  fitSword();
 });
 
 // accès de test (uniquement avec ?debug dans l'URL)
