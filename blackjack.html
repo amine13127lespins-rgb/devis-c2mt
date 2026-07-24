@@ -119,6 +119,17 @@
     display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;opacity:.9;margin-top:10px;
     justify-content:center;
   }
+  .goalbar{margin:0 0 12px}
+  .goalbar .lbl{display:flex;justify-content:space-between;font-size:.78rem;opacity:.85;margin-bottom:3px}
+  .goalbar .track{height:10px;border-radius:6px;background:rgba(0,0,0,.35);overflow:hidden;border:1px solid rgba(232,195,90,.3)}
+  .goalbar .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#37a45f,var(--gold));transition:width .4s;width:25%}
+  .bet-coach{
+    margin:4px auto 6px;max-width:420px;padding:8px 12px;border-radius:10px;
+    font-size:.85rem;line-height:1.4;text-align:center;
+    background:rgba(41,128,185,.16);border:1px solid rgba(41,128,185,.6);
+  }
+  .bet-coach.hot{background:rgba(232,195,90,.14);border-color:var(--gold)}
+  .bet-coach b{color:var(--gold)}
   .statline span b{color:var(--gold)}
   .toggle-row{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;margin-top:8px;justify-content:center}
   .toggle-row label{display:flex;gap:6px;align-items:center;cursor:pointer}
@@ -202,6 +213,11 @@
     <div id="countShow" style="display:none">Compte : <b id="rcShow">0</b> <span id="tcShow" style="opacity:.8"></span></div>
   </div>
 
+  <div class="goalbar">
+    <div class="lbl"><span>🏆 Défi ×4 : 1000 € → 4000 €</span><span id="goalPct">25%</span></div>
+    <div class="track"><div class="fill" id="goalFill"></div></div>
+  </div>
+
   <div class="panel">
     <div class="zone-label">Croupier <span class="total-badge" id="dealerTotal"></span></div>
     <div class="cards" id="dealerCards"></div>
@@ -212,6 +228,7 @@
     <div id="playerHands"></div>
 
     <div id="betZone">
+      <div class="bet-coach" id="betCoach" style="display:none"></div>
       <p style="text-align:center;font-size:.9rem;margin-top:6px">Choisis ta mise :</p>
       <div class="chips">
         <button class="chip c5" onclick="addBet(5)">5</button>
@@ -254,6 +271,7 @@
     <div class="toggle-row">
       <label><input type="checkbox" id="coachOn" checked> Coach expert</label>
       <label><input type="checkbox" id="showCount" onchange="toggleCount()"> Afficher le compte (Hi-Lo)</label>
+      <label><input type="checkbox" id="betCoachOn" checked onchange="refreshBar()"> 💶 Coach de mise</label>
     </div>
     <div class="statline">
       <span>Décisions expertes : <b id="accPlay">—</b></span>
@@ -427,6 +445,8 @@
         <li>Compte vrai <b>+2 ou plus</b> : le sabot est chaud → augmente ta mise.</li>
         <li>Compte négatif : mise le minimum.</li>
       </ul>
+      <p>👉 Dans l'onglet 🎰 Jouer, active le <b>💶 Coach de mise</b> : il applique exactement cette règle avec une mise de base de 30 €, et te dit combien miser avant chaque main.</p>
+      <p>⚠️ Même avec le comptage, <b>rien ne garantit un gain</b> (ni un ×4) : c'est un avantage moyen sur des milliers de mains, pas une promesse. Le Défi ×4 du jeu est là pour te le faire vivre sans risque.</p>
       <p>⚠️ Compter est légal mais les casinos détestent ça : ils peuvent te refuser l'accès. Ici, entraîne-toi sans risque !</p>
     </div>
   </details>
@@ -453,7 +473,7 @@
         <li><b>Étape 2</b> — Onglet 🎯 Entraînement : vise <b>20 bonnes réponses d'affilée</b>. Puis active le mode difficile.</li>
         <li><b>Étape 3</b> — Onglet 🎰 Jouer avec le coach activé : vise <b>95% de décisions expertes</b> sur 50 mains.</li>
         <li><b>Étape 4</b> — Onglet 🧮 Comptage : commence lent avec 10 cartes, monte jusqu'à Expert avec 40 cartes sans erreur.</li>
-        <li><b>Étape 5</b> — Joue en affichant le compte Hi-Lo, et vérifie que ton compte de tête est juste.</li>
+        <li><b>Étape 5</b> — Joue en affichant le compte Hi-Lo, et vérifie que ton compte de tête est juste. Suis le 💶 Coach de mise et tente le <b>Défi ×4</b> (1000 € → 4000 €).</li>
         <li><b>Étape finale</b> — Coach désactivé, compte masqué : si tu gardes 95%+ de bonnes décisions, tu joues comme un expert. 🏆</li>
       </ul>
     </div>
@@ -614,17 +634,54 @@ function addBet(v){
 }
 function clearBet(){ if(phase!=='bet')return; bet=0; refreshBar(); $('dealBtn').disabled=true; }
 
+const BET_UNIT=30, GOAL=4000, START_BANK=1000;
+let goalDone=false;
+
+function trueCount(){
+  const decksLeft=Math.max(1,Math.round(shoe.length/52*2)/2);
+  return Math.round(runningCount/decksLeft*10)/10;
+}
+
 function refreshBar(){
   $('bank').textContent=bank;
   $('betShow').textContent=bet;
   $('rcShow').textContent=(runningCount>0?'+':'')+runningCount;
-  const decksLeft=Math.max(1,Math.round(shoe.length/52*2)/2);
-  const tc=Math.round(runningCount/decksLeft*10)/10;
+  const tc=trueCount();
   $('tcShow').textContent='(vrai : '+(tc>0?'+':'')+tc+')';
   $('shoeInfo').textContent=shoe.length+' cartes dans le sabot';
   $('winCount').textContent=stats.win;
   $('loseCount').textContent=stats.lose;
   $('accPlay').textContent=stats.dec?Math.round(stats.ok/stats.dec*100)+'% ('+stats.ok+'/'+stats.dec+')':'—';
+  // défi ×4
+  const pct=Math.max(0,Math.min(100,Math.round(bank/GOAL*100)));
+  $('goalPct').textContent=bank+' € ('+pct+'%)';
+  $('goalFill').style.width=pct+'%';
+  updateBetCoach(tc);
+}
+
+function suggestedBet(tc){
+  // mise de base 30 € ; le compteur monte quand le compte vrai passe +2
+  if(tc<2) return BET_UNIT;
+  return Math.min(BET_UNIT*Math.min(Math.floor(tc-1)+1,5), bank);
+}
+
+function updateBetCoach(tc){
+  const box=$('betCoach');
+  if(!$('betCoachOn').checked || phase!=='bet'){ box.style.display='none'; return; }
+  box.style.display='';
+  const s=suggestedBet(tc);
+  if(tc>=2){
+    box.className='bet-coach hot';
+    box.innerHTML='🔥 Compte vrai <b>+'+tc+'</b> : le sabot est chaud, l\'avantage penche vers toi.<br>'+
+      'Mise conseillée du compteur : <b>'+s+' €</b> ('+(s/BET_UNIT)+'× la mise de base). Aucune garantie — juste les probabilités de ton côté.';
+  } else if(tc<=-1){
+    box.className='bet-coach';
+    box.innerHTML='🧊 Compte vrai <b>'+tc+'</b> : le sabot est froid, le casino a l\'avantage.<br>'+
+      'Mise conseillée : le minimum, <b>'+BET_UNIT+' €</b> (ou saute la main si tu peux).';
+  } else {
+    box.className='bet-coach';
+    box.innerHTML='😐 Compte vrai <b>'+(tc>0?'+':'')+tc+'</b> : sabot neutre. Mise de base : <b>'+BET_UNIT+' €</b>. On ne monte JAMAIS les mises pour « se refaire ».';
+  }
 }
 function toggleCount(){ $('countShow').style.display=$('showCount').checked?'':'none'; }
 
@@ -782,9 +839,15 @@ function settle(){
   }
   $('nextZone').style.display='';
   render();
+  if(bank>=GOAL && !goalDone){
+    goalDone=true;
+    flashCoach('ok','🏆 <b>DÉFI ×4 RÉUSSI !</b> Tu es passé de '+START_BANK+' € à '+bank+' €. '+
+      'Retiens bien ce moment : au vrai casino, c\'est LÀ qu\'un expert se lève et encaisse. Continuer, c\'est tout rendre.');
+  }
   if(bank<=0){
-    flashCoach('info','💸 Plus de jetons ! La banque t\'offre 1000 € pour continuer à t\'entraîner. (Au vrai casino, personne ne fait ça : leçon n°4 !)');
-    bank=1000;
+    flashCoach('info','💸 Plus de jetons ! La banque t\'offre 1000 € pour continuer à t\'entraîner. (Au vrai casino, personne ne fait ça : leçon n°4 !) Le Défi ×4 repart de zéro.');
+    bank=START_BANK;
+    goalDone=false;
     refreshBar();
   }
 }
