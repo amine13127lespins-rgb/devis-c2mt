@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Académie — Apprends comme un expert</title>
+<style>
+  :root{
+    --felt:#0b5d3b; --felt-dark:#07422a; --gold:#e8c35a; --cream:#f7f3e8;
+    --red:#c0392b; --green:#27ae60; --blue:#2980b9; --purple:#8e44ad;
+    --ink:#1b1b1b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:radial-gradient(ellipse at 50% 30%, var(--felt) 0%, var(--felt-dark) 80%);
+    min-height:100vh;color:var(--cream);
+  }
+  header{
+    text-align:center;padding:14px 10px 8px;
+  }
+  header h1{
+    font-size:clamp(1.3rem,4vw,1.9rem);color:var(--gold);
+    letter-spacing:2px;text-transform:uppercase;
+    text-shadow:0 2px 6px rgba(0,0,0,.5);
+  }
+  header p{font-size:.8rem;opacity:.75}
+  nav{
+    display:flex;gap:6px;justify-content:center;flex-wrap:wrap;
+    padding:8px 10px;position:sticky;top:0;z-index:50;
+    background:rgba(7,66,42,.92);backdrop-filter:blur(4px);
+    border-bottom:1px solid rgba(232,195,90,.35);
+  }
+  nav button{
+    background:transparent;border:1px solid rgba(232,195,90,.5);color:var(--cream);
+    padding:8px 12px;border-radius:20px;font-size:.85rem;cursor:pointer;
+    transition:.15s;
+  }
+  nav button.active{background:var(--gold);color:#3a2c00;font-weight:700;border-color:var(--gold)}
+  main{max-width:860px;margin:0 auto;padding:14px 12px 60px}
+  .tab{display:none}
+  .tab.show{display:block;animation:fadeIn .25s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+
+  /* ---------- cartes ---------- */
+  .cards{display:flex;gap:6px;flex-wrap:wrap;min-height:86px;align-items:center}
+  .card{
+    width:58px;height:82px;border-radius:8px;background:#fff;color:#111;
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:5px 6px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.45);
+    animation:dealIn .3s;position:relative;flex-shrink:0;
+  }
+  @keyframes dealIn{from{opacity:0;transform:translateY(-14px) rotate(-4deg)}to{opacity:1}}
+  .card .top{font-size:1rem;line-height:1}
+  .card .mid{font-size:1.5rem;text-align:center}
+  .card .bot{font-size:1rem;align-self:flex-end;transform:rotate(180deg);line-height:1}
+  .card.red{color:#c0392b}
+  .card.back{
+    background:repeating-linear-gradient(45deg,#7a1f1f,#7a1f1f 6px,#932626 6px,#932626 12px);
+    border:4px solid #fff;
+  }
+  .card.big{width:90px;height:128px}
+  .card.big .mid{font-size:2.4rem}
+  .card.big .top,.card.big .bot{font-size:1.4rem}
+
+  /* ---------- zone de jeu ---------- */
+  .panel{
+    background:rgba(0,0,0,.22);border:1px solid rgba(232,195,90,.25);
+    border-radius:14px;padding:14px;margin-bottom:14px;
+  }
+  .zone-label{
+    font-size:.75rem;text-transform:uppercase;letter-spacing:2px;
+    color:var(--gold);margin-bottom:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  }
+  .total-badge{
+    background:rgba(232,195,90,.18);border:1px solid rgba(232,195,90,.4);
+    padding:1px 10px;border-radius:12px;font-size:.8rem;color:var(--cream);
+  }
+  .hand-box{padding:6px;border-radius:10px;margin-bottom:6px}
+  .hand-box.active{outline:2px dashed var(--gold);background:rgba(232,195,90,.07)}
+  .hand-result{font-size:.85rem;font-weight:700;margin-top:4px}
+
+  .bankbar{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+    margin-bottom:12px;font-size:.9rem;
+  }
+  .bankbar b{color:var(--gold);font-size:1.1rem}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+  .chip{
+    width:58px;height:58px;border-radius:50%;border:5px dashed rgba(255,255,255,.85);
+    color:#fff;font-weight:800;cursor:pointer;font-size:.9rem;
+    box-shadow:0 3px 6px rgba(0,0,0,.4);transition:.12s;
+  }
+  .chip:active{transform:scale(.92)}
+  .chip.c5{background:#b03a3a}.chip.c10{background:#2c5faa}.chip.c25{background:#1f8a4c}
+  .chip.c50{background:#8e44ad}.chip.c100{background:#222}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+  .btn{
+    border:none;border-radius:10px;padding:12px 18px;font-size:1rem;font-weight:700;
+    cursor:pointer;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.35);transition:.12s;min-width:104px;
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.hit{background:var(--red)}.btn.stand{background:var(--green)}
+  .btn.double{background:var(--blue)}.btn.split{background:var(--purple)}
+  .btn.deal{background:var(--gold);color:#3a2c00}
+  .btn.ghost{background:rgba(255,255,255,.14)}
+  .btn.small{padding:8px 12px;font-size:.85rem;min-width:0}
+
+  .coach{
+    margin-top:12px;padding:10px 12px;border-radius:10px;font-size:.92rem;line-height:1.45;
+    display:none;
+  }
+  .coach.ok{display:block;background:rgba(39,174,96,.18);border:1px solid var(--green)}
+  .coach.ko{display:block;background:rgba(192,57,43,.2);border:1px solid var(--red)}
+  .coach.info{display:block;background:rgba(41,128,185,.18);border:1px solid var(--blue)}
+
+  .statline{
+    display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;opacity:.9;margin-top:10px;
+    justify-content:center;
+  }
+  .statline span b{color:var(--gold)}
+  .toggle-row{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;margin-top:8px;justify-content:center}
+  .toggle-row label{display:flex;gap:6px;align-items:center;cursor:pointer}
+
+  /* ---------- entraînement ---------- */
+  .quiz-q{font-size:1rem;margin-bottom:10px;text-align:center}
+  .score-big{font-size:1rem;text-align:center;margin-bottom:8px}
+  .score-big b{color:var(--gold)}
+  .streak{color:#ffb347}
+
+  /* ---------- comptage ---------- */
+  .count-stage{
+    min-height:170px;display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:10px;
+  }
+  .count-input{display:flex;gap:10px;align-items:center;justify-content:center;margin:10px 0}
+  .count-input input{
+    width:90px;padding:10px;font-size:1.3rem;text-align:center;border-radius:10px;border:none;
+  }
+  .opts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+  .opts button{
+    background:rgba(255,255,255,.12);border:1px solid rgba(232,195,90,.4);color:var(--cream);
+    padding:6px 12px;border-radius:16px;cursor:pointer;font-size:.85rem;
+  }
+  .opts button.sel{background:var(--gold);color:#3a2c00;font-weight:700}
+
+  /* ---------- tableau ---------- */
+  .chart-wrap{overflow-x:auto;margin-bottom:16px}
+  table.chart{border-collapse:collapse;margin:0 auto;font-size:.78rem}
+  table.chart th,table.chart td{
+    border:1px solid rgba(0,0,0,.4);width:32px;height:28px;text-align:center;font-weight:700;
+  }
+  table.chart th{background:#083b26;color:var(--gold);font-size:.75rem}
+  td.A-T{background:#d35d4e;color:#fff}
+  td.A-R{background:#37a45f;color:#fff}
+  td.A-D{background:#3d84c6;color:#fff}
+  td.A-DR{background:#7fb3d9;color:#123}
+  td.A-S{background:#9b59b6;color:#fff}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:.78rem;margin:8px 0 16px}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .legend i{width:16px;height:16px;border-radius:4px;display:inline-block}
+
+  /* ---------- leçons ---------- */
+  .lesson{margin-bottom:10px;border-radius:12px;overflow:hidden;border:1px solid rgba(232,195,90,.3)}
+  .lesson summary{
+    padding:12px 14px;background:rgba(0,0,0,.3);cursor:pointer;font-weight:700;color:var(--gold);
+    list-style:none;
+  }
+  .lesson summary::before{content:"▸ "}
+  .lesson[open] summary::before{content:"▾ "}
+  .lesson .body{padding:12px 16px;font-size:.92rem;line-height:1.6;background:rgba(0,0,0,.15)}
+  .lesson .body ul{margin:6px 0 6px 18px}
+  .lesson .body li{margin-bottom:4px}
+  .lesson .body b{color:var(--gold)}
+  h2.sec{color:var(--gold);font-size:1.1rem;margin:4px 0 10px;text-align:center}
+  .hint{font-size:.8rem;opacity:.75;text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>♠ Blackjack Académie ♥</h1>
+  <p>Apprends à jouer comme un expert : stratégie de base + comptage de cartes</p>
+</header>
+
+<nav>
+  <button class="active" data-tab="play">🎰 Jouer</button>
+  <button data-tab="train">🎯 Entraînement</button>
+  <button data-tab="count">🧮 Comptage</button>
+  <button data-tab="chart">📋 Tableau</button>
+  <button data-tab="lessons">📖 Leçons</button>
+</nav>
+
+<main>
+
+<!-- ================= JOUER ================= -->
+<section class="tab show" id="tab-play">
+  <div class="bankbar">
+    <div>💰 Solde : <b id="bank">1000</b> €</div>
+    <div>Mise : <b id="betShow">0</b> €</div>
+    <div id="countShow" style="display:none">Compte : <b id="rcShow">0</b> <span id="tcShow" style="opacity:.8"></span></div>
+  </div>
+
+  <div class="panel">
+    <div class="zone-label">Croupier <span class="total-badge" id="dealerTotal"></span></div>
+    <div class="cards" id="dealerCards"></div>
+  </div>
+
+  <div class="panel">
+    <div class="zone-label">Toi <span id="shoeInfo" style="margin-left:auto;font-size:.7rem;opacity:.7;text-transform:none;letter-spacing:0"></span></div>
+    <div id="playerHands"></div>
+
+    <div id="betZone">
+      <p style="text-align:center;font-size:.9rem;margin-top:6px">Choisis ta mise :</p>
+      <div class="chips">
+        <button class="chip c5" onclick="addBet(5)">5</button>
+        <button class="chip c10" onclick="addBet(10)">10</button>
+        <button class="chip c25" onclick="addBet(25)">25</button>
+        <button class="chip c50" onclick="addBet(50)">50</button>
+        <button class="chip c100" onclick="addBet(100)">100</button>
+      </div>
+      <div class="actions">
+        <button class="btn ghost small" onclick="clearBet()">Annuler</button>
+        <button class="btn deal" id="dealBtn" onclick="deal()" disabled>DISTRIBUER</button>
+      </div>
+    </div>
+
+    <div id="insuranceZone" style="display:none;text-align:center">
+      <p style="margin:8px 0">Le croupier montre un As. Assurance ? (coûte la moitié de ta mise)</p>
+      <div class="actions">
+        <button class="btn ghost" onclick="insurance(true)">Oui</button>
+        <button class="btn stand" onclick="insurance(false)">Non</button>
+      </div>
+    </div>
+
+    <div id="actionZone" style="display:none">
+      <div class="actions">
+        <button class="btn hit" id="btnHit" onclick="playerAction('hit')">Tirer</button>
+        <button class="btn stand" id="btnStand" onclick="playerAction('stand')">Rester</button>
+        <button class="btn double" id="btnDouble" onclick="playerAction('double')">Doubler</button>
+        <button class="btn split" id="btnSplit" onclick="playerAction('split')">Séparer</button>
+      </div>
+    </div>
+
+    <div id="nextZone" style="display:none">
+      <div class="actions">
+        <button class="btn deal" onclick="newRound()">NOUVELLE MAIN</button>
+      </div>
+    </div>
+
+    <div class="coach" id="coachBox"></div>
+
+    <div class="toggle-row">
+      <label><input type="checkbox" id="coachOn" checked> Coach expert</label>
+      <label><input type="checkbox" id="showCount" onchange="toggleCount()"> Afficher le compte (Hi-Lo)</label>
+    </div>
+    <div class="statline">
+      <span>Décisions expertes : <b id="accPlay">—</b></span>
+      <span>Mains gagnées : <b id="winCount">0</b></span>
+      <span>Mains perdues : <b id="loseCount">0</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ENTRAINEMENT ================= -->
+<section class="tab" id="tab-train">
+  <div class="panel">
+    <h2 class="sec">🎯 Entraînement stratégie de base</h2>
+    <p class="hint" style="margin-bottom:10px">Une situation, une seule bonne réponse. Enchaîne les bonnes décisions !</p>
+    <div class="score-big">
+      Score : <b id="trainScore">0/0</b> &nbsp;•&nbsp; Série : <b class="streak" id="trainStreak">0</b> 🔥
+      &nbsp;•&nbsp; Record : <b id="trainBest">0</b>
+    </div>
+
+    <div class="panel" style="margin-bottom:8px">
+      <div class="zone-label">Croupier montre</div>
+      <div class="cards" id="tDealer"></div>
+    </div>
+    <div class="panel">
+      <div class="zone-label">Ta main <span class="total-badge" id="tTotal"></span></div>
+      <div class="cards" id="tPlayer"></div>
+    </div>
+
+    <div class="quiz-q">Que fait un expert ?</div>
+    <div class="actions">
+      <button class="btn hit" onclick="trainAnswer('hit')">Tirer</button>
+      <button class="btn stand" onclick="trainAnswer('stand')">Rester</button>
+      <button class="btn double" onclick="trainAnswer('double')">Doubler</button>
+      <button class="btn split" id="tBtnSplit" onclick="trainAnswer('split')">Séparer</button>
+    </div>
+    <div class="coach" id="trainCoach"></div>
+    <div class="actions" id="trainNextZone" style="display:none">
+      <button class="btn deal" onclick="trainNew()">SITUATION SUIVANTE</button>
+    </div>
+    <div class="toggle-row">
+      <label><input type="checkbox" id="trainHardMode"> Mode difficile (uniquement les cas piégeux)</label>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COMPTAGE ================= -->
+<section class="tab" id="tab-count">
+  <div class="panel">
+    <h2 class="sec">🧮 Entraînement au comptage Hi-Lo</h2>
+    <p style="font-size:.88rem;line-height:1.5;text-align:center;margin-bottom:10px">
+      2-6 = <b style="color:#7fe0a0">+1</b> &nbsp;•&nbsp; 7-9 = <b>0</b> &nbsp;•&nbsp; 10, J, Q, K, As = <b style="color:#ff9b8a">−1</b><br>
+      Des cartes vont défiler : garde le compte dans ta tête !
+    </p>
+
+    <div class="opts" id="speedOpts">
+      Vitesse :
+      <button data-v="1600" class="sel">Lent</button>
+      <button data-v="1000">Moyen</button>
+      <button data-v="600">Rapide</button>
+      <button data-v="350">Expert</button>
+    </div>
+    <div class="opts" id="nbOpts">
+      Cartes :
+      <button data-n="10" class="sel">10</button>
+      <button data-n="20">20</button>
+      <button data-n="40">40</button>
+    </div>
+
+    <div class="count-stage" id="countStage">
+      <p style="opacity:.7">Appuie sur Démarrer quand tu es prêt.</p>
+    </div>
+
+    <div class="actions" id="countStartZone">
+      <button class="btn deal" onclick="startCountDrill()">DÉMARRER</button>
+    </div>
+
+    <div id="countAnswerZone" style="display:none">
+      <p style="text-align:center">Quel est le compte final ?</p>
+      <div class="count-input">
+        <button class="btn ghost small" onclick="bumpGuess(-1)">−</button>
+        <input type="number" id="countGuess" value="0" inputmode="numeric">
+        <button class="btn ghost small" onclick="bumpGuess(1)">+</button>
+      </div>
+      <div class="actions">
+        <button class="btn stand" onclick="checkCount()">VALIDER</button>
+      </div>
+    </div>
+
+    <div class="coach" id="countCoach"></div>
+    <div class="statline">
+      <span>Réussites : <b id="countScore">0/0</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TABLEAU ================= -->
+<section class="tab" id="tab-chart">
+  <h2 class="sec">📋 Stratégie de base (6 jeux, croupier reste sur 17 souple)</h2>
+  <div class="legend">
+    <span><i style="background:#d35d4e"></i> T = Tirer</span>
+    <span><i style="background:#37a45f"></i> R = Rester</span>
+    <span><i style="background:#3d84c6"></i> D = Doubler (sinon tirer)</span>
+    <span><i style="background:#7fb3d9"></i> DR = Doubler (sinon rester)</span>
+    <span><i style="background:#9b59b6"></i> S = Séparer</span>
+  </div>
+  <h3 style="text-align:center;font-size:.95rem;margin-bottom:6px">Totaux durs (sans As compté 11)</h3>
+  <div class="chart-wrap"><table class="chart" id="chartHard"></table></div>
+  <h3 style="text-align:center;font-size:.95rem;margin-bottom:6px">Totaux souples (avec un As compté 11)</h3>
+  <div class="chart-wrap"><table class="chart" id="chartSoft"></table></div>
+  <h3 style="text-align:center;font-size:.95rem;margin-bottom:6px">Paires</h3>
+  <div class="chart-wrap"><table class="chart" id="chartPairs"></table></div>
+  <p class="hint">Ligne = ta main • Colonne = carte visible du croupier</p>
+</section>
+
+<!-- ================= LEÇONS ================= -->
+<section class="tab" id="tab-lessons">
+  <h2 class="sec">📖 Devenir un expert, étape par étape</h2>
+
+  <details class="lesson" open>
+    <summary>1. Les règles du blackjack</summary>
+    <div class="body">
+      <p>Le but : battre le croupier en s'approchant de <b>21</b> sans le dépasser.</p>
+      <ul>
+        <li>Les cartes 2 à 10 valent leur chiffre. Les figures (J, Q, K) valent <b>10</b>. L'As vaut <b>1 ou 11</b>, au choix.</li>
+        <li>Tu reçois 2 cartes, le croupier aussi (une cachée).</li>
+        <li><b>Tirer</b> : prendre une carte de plus. <b>Rester</b> : garder sa main.</li>
+        <li><b>Doubler</b> : doubler sa mise, recevoir UNE seule carte, puis rester.</li>
+        <li><b>Séparer</b> : avec une paire, jouer deux mains (nouvelle mise égale).</li>
+        <li>Si tu dépasses 21, tu <b>sautes</b> : perdu, même si le croupier saute aussi.</li>
+        <li>Le croupier tire jusqu'à 17 minimum, puis s'arrête. Il ne choisit jamais.</li>
+        <li>Un <b>Blackjack</b> (As + carte de 10 dès le départ) paie 3 pour 2.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="lesson">
+    <summary>2. La stratégie de base : le vrai secret des experts</summary>
+    <div class="body">
+      <p>Pour chaque combinaison (ta main + carte du croupier), il existe <b>UNE décision mathématiquement optimale</b>. C'est la stratégie de base, calculée par ordinateur sur des millions de mains.</p>
+      <p>Les 3 grandes idées :</p>
+      <ul>
+        <li><b>Croupier faible (2-6)</b> : il risque de sauter. Ne prends pas de risque (reste sur 12-16), et attaque en doublant.</li>
+        <li><b>Croupier fort (7-As)</b> : il finira sûrement à 17+. Tire jusqu'à avoir au moins 17.</li>
+        <li><b>Les mains souples (avec As)</b> : impossible de sauter en tirant une carte, donc joue-les agressivement.</li>
+      </ul>
+      <p>Règles d'or à mémoriser en premier :</p>
+      <ul>
+        <li>Toujours séparer les <b>As</b> et les <b>8</b>. Jamais les 10 ni les 5.</li>
+        <li>Toujours doubler sur <b>11</b> (sauf contre As).</li>
+        <li>12 à 16 : rester si croupier 2-6, tirer si croupier 7-As. (Exception : 12 contre 2 ou 3 → tirer.)</li>
+        <li>Rester à partir de 17 dur, toujours.</li>
+        <li><b>Ne jamais prendre l'assurance</b> : c'est un piège du casino.</li>
+      </ul>
+      <p>Jouée parfaitement, la stratégie de base réduit l'avantage du casino à environ <b>0,5%</b> — contre 2 à 4% pour un joueur qui joue au feeling.</p>
+    </div>
+  </details>
+
+  <details class="lesson">
+    <summary>3. Le comptage de cartes (système Hi-Lo)</summary>
+    <div class="body">
+      <p>Quand il reste beaucoup de <b>grosses cartes</b> (10 et As) dans le sabot, le joueur est avantagé : plus de blackjacks (payés 3:2 !) et le croupier saute plus souvent.</p>
+      <p>Le système <b>Hi-Lo</b>, utilisé par les vrais compteurs :</p>
+      <ul>
+        <li>2, 3, 4, 5, 6 → <b>+1</b> (les petites cartes sorties, c'est bon pour toi)</li>
+        <li>7, 8, 9 → <b>0</b></li>
+        <li>10, J, Q, K, As → <b>−1</b></li>
+      </ul>
+      <p>Additionne pour CHAQUE carte visible : c'est le <b>compte courant</b> (running count).</p>
+      <p>Le <b>compte vrai</b> (true count) = compte courant ÷ nombre de jeux restants. Exemple : compte +8 avec 4 jeux restants → compte vrai +2.</p>
+      <ul>
+        <li>Compte vrai <b>+2 ou plus</b> : le sabot est chaud → augmente ta mise.</li>
+        <li>Compte négatif : mise le minimum.</li>
+      </ul>
+      <p>⚠️ Compter est légal mais les casinos détestent ça : ils peuvent te refuser l'accès. Ici, entraîne-toi sans risque !</p>
+    </div>
+  </details>
+
+  <details class="lesson">
+    <summary>4. Gérer son argent comme un pro</summary>
+    <div class="body">
+      <ul>
+        <li>Ne joue qu'avec de l'argent que tu peux te permettre de perdre.</li>
+        <li>Ta mise de base = <b>1% à 2%</b> de ton budget total maximum.</li>
+        <li>Ne poursuis JAMAIS tes pertes en augmentant les mises pour « te refaire ».</li>
+        <li>Les martingales (doubler après chaque perte) finissent toujours par ruiner le joueur.</li>
+        <li>Fixe-toi une limite de perte ET de gain avant de jouer, et respecte-les.</li>
+        <li>Même en jouant parfaitement, tu perdras certaines sessions : c'est la variance, pas ta faute.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="lesson">
+    <summary>5. Ton plan d'entraînement</summary>
+    <div class="body">
+      <ul>
+        <li><b>Étape 1</b> — Lis les leçons 1 et 2, puis étudie l'onglet 📋 Tableau.</li>
+        <li><b>Étape 2</b> — Onglet 🎯 Entraînement : vise <b>20 bonnes réponses d'affilée</b>. Puis active le mode difficile.</li>
+        <li><b>Étape 3</b> — Onglet 🎰 Jouer avec le coach activé : vise <b>95% de décisions expertes</b> sur 50 mains.</li>
+        <li><b>Étape 4</b> — Onglet 🧮 Comptage : commence lent avec 10 cartes, monte jusqu'à Expert avec 40 cartes sans erreur.</li>
+        <li><b>Étape 5</b> — Joue en affichant le compte Hi-Lo, et vérifie que ton compte de tête est juste.</li>
+        <li><b>Étape finale</b> — Coach désactivé, compte masqué : si tu gardes 95%+ de bonnes décisions, tu joues comme un expert. 🏆</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+</main>
+
+<script>
+/* ============================================================
+   MOTEUR DE CARTES
+============================================================ */
+const SUITS=[{s:'♠',red:false},{s:'♥',red:true},{s:'♦',red:true},{s:'♣',red:false}];
+const RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+let shoe=[], runningCount=0;
+const NB_DECKS=6;
+
+function newShoe(){
+  shoe=[];
+  for(let d=0;d<NB_DECKS;d++)
+    for(const su of SUITS)
+      for(const r of RANKS) shoe.push({r,s:su.s,red:su.red});
+  for(let i=shoe.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [shoe[i],shoe[j]]=[shoe[j],shoe[i]];
+  }
+  runningCount=0;
+}
+function drawCard(counted=true){
+  if(shoe.length<52){ newShoe(); flashCoach('info','🔄 Nouveau sabot mélangé — le compte repart à zéro.'); }
+  const c=shoe.pop();
+  if(counted) runningCount+=hiLo(c);
+  return c;
+}
+function hiLo(c){
+  const v=rankVal(c.r);
+  if(v>=2&&v<=6) return 1;
+  if(v>=10||c.r==='A') return -1;
+  return 0;
+}
+function rankVal(r){
+  if(r==='A') return 11;
+  if(['J','Q','K'].includes(r)) return 10;
+  return parseInt(r);
+}
+function handValue(cards){
+  let total=0, aces=0;
+  for(const c of cards){ total+=rankVal(c.r); if(c.r==='A') aces++; }
+  while(total>21&&aces>0){ total-=10; aces--; }
+  return {total, soft:aces>0};
+}
+function isBJ(cards){ return cards.length===2 && handValue(cards).total===21; }
+
+function cardHTML(c, big=false){
+  if(!c) return `<div class="card back${big?' big':''}"></div>`;
+  return `<div class="card${c.red?' red':''}${big?' big':''}">
+    <div class="top">${c.r}<br>${c.s}</div>
+    <div class="mid">${c.s}</div>
+    <div class="bot">${c.r}<br>${c.s}</div>
+  </div>`;
+}
+
+/* ============================================================
+   STRATÉGIE DE BASE (6 jeux, S17, doubler après séparation OK)
+============================================================ */
+function bestAction(cards, dealerUp, canDouble, canSplit){
+  const up=rankVal(dealerUp.r);
+  const {total, soft}=handValue(cards);
+
+  if(canSplit && cards.length===2 && rankVal(cards[0].r)===rankVal(cards[1].r)){
+    const p=rankVal(cards[0].r);
+    if(p===11) return 'split';
+    if(p===8) return 'split';
+    if(p===9 && up!==7 && up<10) return 'split';
+    if(p===7 && up<=7) return 'split';
+    if(p===6 && up<=6) return 'split';
+    if(p===4 && (up===5||up===6)) return 'split';
+    if((p===2||p===3) && up<=7) return 'split';
+  }
+
+  if(soft){
+    if(total>=19) return 'stand';
+    if(total===18){
+      if(up>=3&&up<=6) return canDouble?'double':'stand';
+      if(up<=8) return 'stand';
+      return 'hit';
+    }
+    if(total===17) return (canDouble&&up>=3&&up<=6)?'double':'hit';
+    if(total>=15) return (canDouble&&up>=4&&up<=6)?'double':'hit';
+    return (canDouble&&up>=5&&up<=6)?'double':'hit';
+  }
+
+  if(total>=17) return 'stand';
+  if(total>=13) return up<=6?'stand':'hit';
+  if(total===12) return (up>=4&&up<=6)?'stand':'hit';
+  if(total===11) return (canDouble&&up<=10)?'double':'hit';
+  if(total===10) return (canDouble&&up<=9)?'double':'hit';
+  if(total===9)  return (canDouble&&up>=3&&up<=6)?'double':'hit';
+  return 'hit';
+}
+
+const ACTION_FR={hit:'Tirer', stand:'Rester', double:'Doubler', split:'Séparer'};
+
+function explain(best, cards, dealerUp){
+  const up=rankVal(dealerUp.r);
+  const {total, soft}=handValue(cards);
+  const upTxt=dealerUp.r==='A'?'un As':(up===10?'une carte de 10':'un '+up);
+  const pair=cards.length===2&&rankVal(cards[0].r)===rankVal(cards[1].r);
+
+  if(best==='split'){
+    if(cards[0].r==='A') return "On sépare TOUJOURS les As : deux chances de faire 21 au lieu d'une main moyenne.";
+    if(rankVal(cards[0].r)===8) return "On sépare TOUJOURS les 8 : un 16 est la pire main possible, deux mains à 8 valent bien mieux.";
+    return `Contre ${upTxt}, séparer cette paire est plus rentable que de la jouer comme un ${total}.`;
+  }
+  if(best==='double'){
+    if(soft) return `Main souple : impossible de sauter avec une carte. Contre ${upTxt} (croupier en difficulté), on double pour gagner plus.`;
+    return `Avec ${total} contre ${upTxt}, tu as l'avantage : une seule carte suffit souvent. On double la mise pour maximiser le gain.`;
+  }
+  if(best==='stand'){
+    if(pair&&rankVal(cards[0].r)===10) return "On ne sépare JAMAIS les 10 : un 20 gagne presque toujours, ne le casse pas.";
+    if(soft) return `${total} souple contre ${upTxt} : c'est une main solide, on la garde.`;
+    if(total>=17) return `Avec ${total} dur, on reste toujours : le risque de sauter est trop grand.`;
+    return `Le croupier montre ${upTxt} : une carte faible. Il va probablement sauter, ne prends aucun risque.`;
+  }
+  // hit
+  if(soft) return `${total} souple : tu ne peux pas sauter en tirant une carte. Contre ${upTxt}, il faut améliorer la main.`;
+  if(total>=12) return `Ça fait mal, mais contre ${upTxt} (carte forte), ton ${total} perdra presque toujours si tu restes. Il faut tirer.`;
+  return `Avec seulement ${total}, aucune carte ne peut te faire sauter : on tire.`;
+}
+
+/* ============================================================
+   ONGLETS
+============================================================ */
+document.querySelectorAll('nav button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('show'));
+    b.classList.add('active');
+    document.getElementById('tab-'+b.dataset.tab).classList.add('show');
+  };
+});
+
+/* ============================================================
+   MODE JOUER
+============================================================ */
+let bank=1000, bet=0, phase='bet';
+let dealerCards=[], hands=[], activeHand=0, insuranceBet=0;
+let holeCounted=false;
+let stats={dec:0, ok:0, win:0, lose:0};
+
+const $=id=>document.getElementById(id);
+
+function addBet(v){
+  if(phase!=='bet') return;
+  if(bet+v>bank){ flashCoach('info','Pas assez de jetons pour cette mise.'); return; }
+  bet+=v; refreshBar();
+  $('dealBtn').disabled=bet<=0;
+}
+function clearBet(){ if(phase!=='bet')return; bet=0; refreshBar(); $('dealBtn').disabled=true; }
+
+function refreshBar(){
+  $('bank').textContent=bank;
+  $('betShow').textContent=bet;
+  $('rcShow').textContent=(runningCount>0?'+':'')+runningCount;
+  const decksLeft=Math.max(1,Math.round(shoe.length/52*2)/2);
+  const tc=Math.round(runningCount/decksLeft*10)/10;
+  $('tcShow').textContent='(vrai : '+(tc>0?'+':'')+tc+')';
+  $('shoeInfo').textContent=shoe.length+' cartes dans le sabot';
+  $('winCount').textContent=stats.win;
+  $('loseCount').textContent=stats.lose;
+  $('accPlay').textContent=stats.dec?Math.round(stats.ok/stats.dec*100)+'% ('+stats.ok+'/'+stats.dec+')':'—';
+}
+function toggleCount(){ $('countShow').style.display=$('showCount').checked?'':'none'; }
+
+function flashCoach(type,msg){
+  const box=$('coachBox');
+  box.className='coach '+type;
+  box.innerHTML=msg;
+}
+function hideCoach(){ $('coachBox').className='coach'; }
+
+function deal(){
+  if(bet<=0) return;
+  bank-=bet;
+  hideCoach();
+  dealerCards=[drawCard(), drawCard(false)]; // carte cachée pas comptée pour l'instant
+  holeCounted=false;
+  hands=[{cards:[drawCard(),drawCard()], bet:bet, done:false, result:null, isSplitAce:false}];
+  activeHand=0; insuranceBet=0;
+  phase='player';
+  $('betZone').style.display='none';
+
+  if(dealerCards[0].r==='A'){
+    phase='insurance';
+    $('insuranceZone').style.display='';
+    render();
+    return;
+  }
+  afterInsurance();
+}
+
+function insurance(take){
+  $('insuranceZone').style.display='none';
+  if($('coachOn').checked){
+    if(take) flashCoach('ko',"❌ <b>Erreur d'expert :</b> l'assurance est toujours perdante sur le long terme (sauf pour les compteurs avec un compte très élevé). Un expert refuse.");
+    else flashCoach('ok','✅ <b>Bien joué !</b> Un expert ne prend jamais l\'assurance.');
+  }
+  stats.dec++; if(!take) stats.ok++;
+  if(take && bank>=hands[0].bet/2){ insuranceBet=hands[0].bet/2; bank-=insuranceBet; }
+  phase='player';
+  afterInsurance();
+}
+
+function afterInsurance(){
+  // le croupier vérifie le blackjack si As ou 10 visible
+  const upV=rankVal(dealerCards[0].r);
+  if((upV===10||upV===11) && isBJ(dealerCards)){
+    revealHole();
+    if(insuranceBet>0){ bank+=insuranceBet*3; flashCoach('info','L\'assurance paie : le croupier a Blackjack.'); }
+    settle();
+    return;
+  }
+  if(insuranceBet>0) insuranceBet=0; // assurance perdue
+  if(isBJ(hands[0].cards)){
+    revealHole();
+    settle();
+    return;
+  }
+  phase='player';
+  $('actionZone').style.display='';
+  render();
+}
+
+function revealHole(){
+  if(!holeCounted){ runningCount+=hiLo(dealerCards[1]); holeCounted=true; }
+}
+
+function currentHand(){ return hands[activeHand]; }
+function canDoubleNow(h){ return h.cards.length===2 && bank>=h.bet && !h.isSplitAce; }
+function canSplitNow(h){
+  return h.cards.length===2 && rankVal(h.cards[0].r)===rankVal(h.cards[1].r)
+    && hands.length<4 && bank>=h.bet;
+}
+
+function playerAction(act){
+  if(phase!=='player') return;
+  const h=currentHand();
+  if(act==='double'&&!canDoubleNow(h)) return;
+  if(act==='split'&&!canSplitNow(h)) return;
+
+  // coach
+  const best=bestAction(h.cards, dealerCards[0], canDoubleNow(h), canSplitNow(h));
+  stats.dec++;
+  if(act===best){ stats.ok++;
+    if($('coachOn').checked) flashCoach('ok','✅ <b>'+ACTION_FR[act]+'</b> : exactement ce que ferait un expert !');
+  } else {
+    if($('coachOn').checked) flashCoach('ko','❌ Un expert aurait choisi <b>'+ACTION_FR[best]+'</b>.<br>'+explain(best,h.cards,dealerCards[0]));
+  }
+
+  if(act==='hit'){
+    h.cards.push(drawCard());
+    if(handValue(h.cards).total>=21) h.done=true;
+  } else if(act==='stand'){
+    h.done=true;
+  } else if(act==='double'){
+    bank-=h.bet; h.bet*=2;
+    h.cards.push(drawCard());
+    h.done=true;
+  } else if(act==='split'){
+    bank-=h.bet;
+    const isAces=h.cards[0].r==='A';
+    const c2=h.cards.pop();
+    const newHand={cards:[c2], bet:h.bet, done:false, result:null, isSplitAce:isAces};
+    h.isSplitAce=isAces;
+    h.cards.push(drawCard());
+    newHand.cards.push(drawCard());
+    hands.splice(activeHand+1,0,newHand);
+    if(isAces){ h.done=true; newHand.done=true; } // un seul tirage sur les As
+  }
+  advance();
+}
+
+function advance(){
+  while(activeHand<hands.length && hands[activeHand].done) activeHand++;
+  if(activeHand>=hands.length){
+    dealerPlay();
+  } else {
+    render();
+  }
+}
+
+function dealerPlay(){
+  phase='dealer';
+  $('actionZone').style.display='none';
+  revealHole();
+  const anyAlive=hands.some(h=>handValue(h.cards).total<=21);
+  if(anyAlive){
+    let dv=handValue(dealerCards);
+    while(dv.total<17){
+      dealerCards.push(drawCard());
+      dv=handValue(dealerCards);
+    }
+  }
+  settle();
+}
+
+function settle(){
+  phase='end';
+  $('actionZone').style.display='none';
+  $('insuranceZone').style.display='none';
+  revealHole();
+  const dv=handValue(dealerCards).total;
+  const dealerBJ=isBJ(dealerCards);
+
+  for(const h of hands){
+    const pv=handValue(h.cards).total;
+    const playerBJ=isBJ(h.cards)&&hands.length===1;
+    if(pv>21){ h.result='💥 Sauté ! −'+h.bet+' €'; stats.lose++; }
+    else if(playerBJ && !dealerBJ){ const g=Math.floor(h.bet*1.5); bank+=h.bet+g; h.result='🎉 BLACKJACK ! +'+g+' €'; stats.win++; }
+    else if(dealerBJ && !playerBJ){ h.result='Croupier Blackjack. −'+h.bet+' €'; stats.lose++; }
+    else if(dealerBJ && playerBJ){ bank+=h.bet; h.result='Égalité (deux Blackjacks).'; }
+    else if(dv>21){ bank+=h.bet*2; h.result='✅ Croupier saute ! +'+h.bet+' €'; stats.win++; }
+    else if(pv>dv){ bank+=h.bet*2; h.result='✅ Gagné ! +'+h.bet+' €'; stats.win++; }
+    else if(pv<dv){ h.result='❌ Perdu. −'+h.bet+' €'; stats.lose++; }
+    else { bank+=h.bet; h.result='🤝 Égalité.'; }
+  }
+  $('nextZone').style.display='';
+  render();
+  if(bank<=0){
+    flashCoach('info','💸 Plus de jetons ! La banque t\'offre 1000 € pour continuer à t\'entraîner. (Au vrai casino, personne ne fait ça : leçon n°4 !)');
+    bank=1000;
+    refreshBar();
+  }
+}
+
+function newRound(){
+  bet=Math.min(bet,bank)||0;
+  hands=[]; dealerCards=[]; phase='bet';
+  $('nextZone').style.display='none';
+  $('betZone').style.display='';
+  $('dealBtn').disabled=bet<=0;
+  hideCoach();
+  render();
+}
+
+function render(){
+  // croupier
+  const dc=$('dealerCards');
+  const hideHole=(phase==='player'||phase==='insurance');
+  dc.innerHTML=dealerCards.map((c,i)=> (i===1&&hideHole)?cardHTML(null):cardHTML(c)).join('');
+  if(dealerCards.length){
+    $('dealerTotal').textContent=hideHole
+      ? rankVal(dealerCards[0].r)+(dealerCards[0].r==='A'?' / 11':'')
+      : handValue(dealerCards).total;
+  } else $('dealerTotal').textContent='';
+
+  // joueur
+  const ph=$('playerHands');
+  ph.innerHTML=hands.map((h,i)=>{
+    const v=handValue(h.cards);
+    return `<div class="hand-box${(i===activeHand&&phase==='player')?' active':''}">
+      <div class="zone-label" style="color:var(--cream);opacity:.8">
+        ${hands.length>1?('Main '+(i+1)+' — '):''}${h.bet} €
+        <span class="total-badge">${v.total}${v.soft?' souple':''}</span>
+      </div>
+      <div class="cards">${h.cards.map(c=>cardHTML(c)).join('')}</div>
+      ${h.result?'<div class="hand-result">'+h.result+'</div>':''}
+    </div>`;
+  }).join('');
+
+  // boutons
+  if(phase==='player'&&hands.length){
+    const h=currentHand();
+    $('btnDouble').disabled=!canDoubleNow(h);
+    $('btnSplit').disabled=!canSplitNow(h);
+    $('btnHit').disabled=h.isSplitAce;
+    $('actionZone').style.display='';
+  }
+  refreshBar();
+}
+
+/* ============================================================
+   MODE ENTRAINEMENT
+============================================================ */
+let tScore={ok:0,total:0,streak:0,best:parseInt(localStorage.getItem('bjBest')||'0')};
+let tHand=null, tUp=null, tAnswered=false;
+
+// situations piégeuses pour le mode difficile
+const HARD_CASES=[
+  ['9','3',3],['A','7',9],['A','7',2],['8','8',10],['9','9',7],['A','6',2],
+  ['10','2',2],['10','2',3],['10','6',10],['7','7',8],['A','8',6],['5','5',10],
+  ['4','4',5],['2','2',3],['6','6',7],['A','2',5],['A','7',10],['9','9',9],
+  ['10','3',2],['A','A',11],['10','10',6],['A','4',4],['3','3',8],['9','2',2]
+];
+
+function rndCard(r){
+  const su=SUITS[Math.floor(Math.random()*SUITS.length)];
+  return {r, s:su.s, red:su.red};
+}
+function rndRank(){ return RANKS[Math.floor(Math.random()*RANKS.length)]; }
+
+function trainNew(){
+  tAnswered=false;
+  $('trainCoach').className='coach';
+  $('trainNextZone').style.display='none';
+  if($('trainHardMode').checked){
+    const c=HARD_CASES[Math.floor(Math.random()*HARD_CASES.length)];
+    tHand=[rndCard(c[0]),rndCard(c[1])];
+    const upR = c[2]===11?'A':(c[2]===10?['10','J','Q','K'][Math.floor(Math.random()*4)]:String(c[2]));
+    tUp=rndCard(upR);
+  } else {
+    tHand=[rndCard(rndRank()),rndCard(rndRank())];
+    tUp=rndCard(rndRank());
+    // éviter les mains à 21 direct (aucune décision)
+    if(handValue(tHand).total===21) return trainNew();
+  }
+  $('tDealer').innerHTML=cardHTML(tUp,true);
+  $('tPlayer').innerHTML=tHand.map(c=>cardHTML(c,true)).join('');
+  const v=handValue(tHand);
+  $('tTotal').textContent=v.total+(v.soft?' souple':'');
+  $('tBtnSplit').disabled=!(rankVal(tHand[0].r)===rankVal(tHand[1].r));
+  refreshTrainScore();
+}
+
+function trainAnswer(act){
+  if(tAnswered) return;
+  tAnswered=true;
+  const canSplit=rankVal(tHand[0].r)===rankVal(tHand[1].r);
+  const best=bestAction(tHand,tUp,true,canSplit);
+  tScore.total++;
+  const box=$('trainCoach');
+  if(act===best){
+    tScore.ok++; tScore.streak++;
+    if(tScore.streak>tScore.best){ tScore.best=tScore.streak; localStorage.setItem('bjBest',tScore.best); }
+    box.className='coach ok';
+    box.innerHTML='✅ <b>'+ACTION_FR[act]+'</b> — parfait !<br>'+explain(best,tHand,tUp);
+  } else {
+    tScore.streak=0;
+    box.className='coach ko';
+    box.innerHTML='❌ La bonne réponse était <b>'+ACTION_FR[best]+'</b>.<br>'+explain(best,tHand,tUp);
+  }
+  refreshTrainScore();
+  $('trainNextZone').style.display='';
+}
+function refreshTrainScore(){
+  $('trainScore').textContent=tScore.ok+'/'+tScore.total+(tScore.total?' ('+Math.round(tScore.ok/tScore.total*100)+'%)':'');
+  $('trainStreak').textContent=tScore.streak;
+  $('trainBest').textContent=tScore.best;
+}
+
+/* ============================================================
+   MODE COMPTAGE
+============================================================ */
+let drillSpeed=1600, drillN=10, drillCount=0, drillTimer=null;
+let cScore={ok:0,total:0};
+
+document.querySelectorAll('#speedOpts button').forEach(b=>{
+  b.onclick=()=>{ document.querySelectorAll('#speedOpts button').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel'); drillSpeed=parseInt(b.dataset.v); };
+});
+document.querySelectorAll('#nbOpts button').forEach(b=>{
+  b.onclick=()=>{ document.querySelectorAll('#nbOpts button').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel'); drillN=parseInt(b.dataset.n); };
+});
+
+function startCountDrill(){
+  clearInterval(drillTimer);
+  $('countStartZone').style.display='none';
+  $('countAnswerZone').style.display='none';
+  $('countCoach').className='coach';
+  drillCount=0;
+  let shown=0;
+  const stage=$('countStage');
+  const seq=[];
+  for(let i=0;i<drillN;i++){
+    const su=SUITS[Math.floor(Math.random()*SUITS.length)];
+    seq.push({r:rndRank(), s:su.s, red:su.red});
+  }
+  function next(){
+    if(shown>=seq.length){
+      clearInterval(drillTimer);
+      stage.innerHTML='<p style="font-size:1.2rem">🧠 Alors, ton compte ?</p>';
+      $('countAnswerZone').style.display='';
+      $('countGuess').value=0;
+      return;
+    }
+    const c=seq[shown];
+    drillCount+=hiLo(c);
+    stage.innerHTML=cardHTML(c,true)+'<p style="opacity:.5;font-size:.8rem">carte '+(shown+1)+' / '+seq.length+'</p>';
+    shown++;
+  }
+  next();
+  drillTimer=setInterval(next, drillSpeed);
+}
+
+function bumpGuess(d){ $('countGuess').value=parseInt($('countGuess').value||0)+d; }
+
+function checkCount(){
+  $('countAnswerZone').style.display='none';
+  $('countStartZone').style.display='';
+  const guess=parseInt($('countGuess').value||0);
+  const box=$('countCoach');
+  cScore.total++;
+  if(guess===drillCount){
+    cScore.ok++;
+    box.className='coach ok';
+    box.innerHTML='✅ Exact ! Le compte était bien <b>'+(drillCount>0?'+':'')+drillCount+'</b>. Passe à la vitesse supérieure !';
+  } else {
+    box.className='coach ko';
+    box.innerHTML='❌ Le compte était <b>'+(drillCount>0?'+':'')+drillCount+'</b> (tu as dit '+(guess>0?'+':'')+guess+'). Réessaie plus lentement, la précision avant la vitesse.';
+  }
+  $('countScore').textContent=cScore.ok+'/'+cScore.total;
+  $('countStage').innerHTML='<p style="opacity:.7">Encore une série ?</p>';
+}
+
+/* ============================================================
+   TABLEAU DE STRATÉGIE
+============================================================ */
+function buildCharts(){
+  const ups=[2,3,4,5,6,7,8,9,10,11];
+  const upLbl=v=>v===11?'A':v;
+  const th='<tr><th></th>'+ups.map(u=>'<th>'+upLbl(u)+'</th>').join('')+'</tr>';
+  const dealerCardOf=v=>({r:v===11?'A':(v===10?'10':String(v)), s:'♠', red:false});
+
+  // durs 5..17
+  let rows=th;
+  for(let t=5;t<=17;t++){
+    let cards;
+    if(t<=11) cards=[{r:String(Math.min(t-2,9))},{r:'2'}]; // approx pour totals bas
+    // construit une main dure exacte sans as ni paire
+    cards=hardHand(t);
+    rows+='<tr><th>'+t+'</th>'+ups.map(u=>{
+      const a=bestAction(cards,dealerCardOf(u),true,false);
+      return cellTd(a,cards,dealerCardOf(u));
+    }).join('')+'</tr>';
+  }
+  document.getElementById('chartHard').innerHTML=rows;
+
+  // souples A2..A9
+  rows=th;
+  for(let x=2;x<=9;x++){
+    const cards=[{r:'A'},{r:String(x)}];
+    rows+='<tr><th>A,'+x+'</th>'+ups.map(u=>{
+      const a=bestAction(cards,dealerCardOf(u),true,false);
+      return cellTd(a,cards,dealerCardOf(u));
+    }).join('')+'</tr>';
+  }
+  document.getElementById('chartSoft').innerHTML=rows;
+
+  // paires
+  rows=th;
+  const pairRanks=['A','10','9','8','7','6','5','4','3','2'];
+  for(const r of pairRanks){
+    const cards=[{r},{r}];
+    rows+='<tr><th>'+r+','+r+'</th>'+ups.map(u=>{
+      const a=bestAction(cards,dealerCardOf(u),true,true);
+      return cellTd(a,cards,dealerCardOf(u));
+    }).join('')+'</tr>';
+  }
+  document.getElementById('chartPairs').innerHTML=rows;
+}
+function hardHand(total){
+  // deux cartes sans As, non-paire, total exact
+  for(let a=2;a<=10;a++){
+    const b=total-a;
+    if(b>=2&&b<=10&&b!==a) return [{r:String(a)},{r:String(b)}];
+  }
+  return [{r:'10'},{r:String(total-10)}];
+}
+function cellTd(a,cards,up){
+  if(a==='split') return '<td class="A-S">S</td>';
+  if(a==='double'){
+    // doubler sinon rester ? (cas soft 18)
+    const fallback=bestAction(cards,up,false,false);
+    return fallback==='stand'?'<td class="A-DR">DR</td>':'<td class="A-D">D</td>';
+  }
+  if(a==='stand') return '<td class="A-R">R</td>';
+  return '<td class="A-T">T</td>';
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+newShoe();
+refreshBar();
+render();
+trainNew();
+buildCharts();
+</script>
+</body>
+</html>
