@@ -237,6 +237,7 @@ const sndOut=()=>beep(392,.12,'triangle',.05,0,523);
 const sndFinish=()=>{[523,659,784].forEach((f,i)=>beep(f,.14,'triangle',.05,i*0.09))};
 const sndWin=()=>{[523,659,784,1046,784,1046,1318].forEach((f,i)=>beep(f,.18,'triangle',.06,i*0.13))};
 const sndNo=()=>beep(180,.2,'sawtooth',.035,0,120);
+const sndPunch=()=>beep(150+Math.random()*70,.07,'sawtooth',.055,0,80);
 window.addEventListener('pointerdown',()=>ac(),{once:false});
 
 /* ------- musique de fond (boucle chiptune, rien à télécharger) ------- */
@@ -305,6 +306,8 @@ function drawChar(c,x,y,h,ti,vi,pose,t,o){
   if(pose==='idle'){jump=Math.max(0,Math.sin(t*2.2+seed))*h*0.012;}
   else if(pose==='walk'){const ph=(o.phase||0)*Math.PI*2;const sw=Math.sin(ph);legL=sw*h*0.09;legR=-sw*h*0.09;}
   else if(pose==='victory'){jump=Math.abs(Math.sin(t*5+seed))*h*0.06;armsUp=true;sway=Math.sin(t*5+seed)*0.06;}
+  else if(pose==='punch'){sway=(o.dir||1)*0.10;legL=h*0.04;legR=-h*0.04;}
+  else if(pose==='hit'){sway=(o.dir||1)*0.12+Math.sin(t*26+seed)*0.07;}
   const fy=y-jump;
   // socle de pion
   if(!o.noBase){
@@ -334,7 +337,15 @@ function drawChar(c,x,y,h,ti,vi,pose,t,o){
   function arm(sx,dir){
     c.strokeStyle=V.sleeve;c.lineWidth=h*0.075;
     let hx,hy;
-    if(armsUp){hx=x+dir*h*0.25;hy=fy-h*0.95;}
+    if(pose==='punch'){
+      const fd=o.dir||1;
+      const jabL=Math.sin(t*19+seed)>0;
+      const punching=(jabL&&dir===-1)||(!jabL&&dir===1);
+      if(punching){hx=x+fd*h*0.42;hy=fy-h*0.54;}
+      else{hx=x+fd*h*0.05+dir*h*0.07;hy=fy-h*0.57;}
+    }else if(pose==='hit'){
+      hx=x+dir*h*0.24;hy=fy-h*0.78+Math.sin(t*24+dir*2)*h*0.05;
+    }else if(armsUp){hx=x+dir*h*0.25;hy=fy-h*0.95;}
     else{const sw=(legL*dir*-0.5);hx=x+dir*h*0.19;hy=fy-h*0.40+sw;}
     c.beginPath();c.moveTo(sx,shY);c.lineTo(hx,hy);c.stroke();
     c.fillStyle=V.skin;c.beginPath();c.arc(hx,hy,h*0.035,0,7);c.fill();
@@ -531,6 +542,8 @@ function render(now){
         const [gx,gy]=staticCell(p);
         let [tx,ty]=cellPx(gx,gy);
         if(g.length>1)tx+=(idx-(g.length-1)/2)*cs*0.30;
+        if(p.fightPose==='punch')tx-=cs*0.30;
+        else if(p.fightPose==='hit')tx+=cs*0.30;
         p.tx=tx;p.ty=ty;p.crowd=g.length;
       });
     }
@@ -561,10 +574,11 @@ function render(now){
         ctx.beginPath();ctx.ellipse(p.px,p.py+cs*0.12,cs*0.5+pu*cs*0.06,cs*0.2+pu*cs*0.03,0,0,7);ctx.stroke();
       }
       let pose='idle';
-      if(p.anim)pose=p.anim.spin?'idle':'walk';
+      if(p.fightPose)pose=p.fightPose;
+      else if(p.anim)pose=p.anim.spin?'idle':'walk';
       else if(inGoal)pose='victory';
       drawChar(ctx,p.px,p.py+(p.hl?-Math.abs(Math.sin(t*7))*cs*0.1:0),h,p.team,p.i,pose,t,
-        {phase:p.phase,seed:p.seed,rot:p.rot,noBase:false});
+        {phase:p.phase,seed:p.seed,rot:p.rot,dir:1,noBase:false});
     }
   }
 
@@ -573,14 +587,15 @@ function render(now){
   for(const e of effects){
     const k=(now-e.t0)/e.dur;
     if(e.type==='pow'){
+      const sc=e.small?0.55:1;
       ctx.save();ctx.translate(e.x,e.y);ctx.rotate(0.3-k*0.6);
-      const r=cs*(0.5+k*0.9);
+      const r=cs*(0.5+k*0.9)*sc;
       ctx.globalAlpha=1-k;
       ctx.fillStyle='#ffd700';star(ctx,0,0,r,0);ctx.fill();
       ctx.fillStyle='#ff3b2f';star(ctx,0,0,r*0.7,0.3);ctx.fill();
-      ctx.fillStyle='#fff';ctx.font='700 '+cs*0.55+'px Oswald,sans-serif';
+      ctx.fillStyle='#fff';ctx.font='700 '+cs*0.55*sc+'px Oswald,sans-serif';
       ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText('PAF !',0,0);
+      ctx.fillText(e.txt||'PAF !',0,0);
       ctx.restore();
     }else if(e.type==='spark'){
       ctx.globalAlpha=1-k;
@@ -639,11 +654,25 @@ async function doMove(p,roll){
     if(!SAFE.has(a)){
       const victims=pawns.filter(q=>q.team!==p.team&&q.pos>=0&&q.pos<=50&&absOf(q)===a);
       if(victims.length){
-        extra=true;sndCapture();
+        extra=true;
         const [ex,ey]=cellPx(TRACK[a][0],TRACK[a][1]);
+        toast(TEAMS[p.team].name+' tabasse '+TEAMS[victims[0].team].name+' ! 🥊',TEAMS[p.team].color);
+        // baston : rafale de coups de poing
+        p.fightPose='punch';
+        victims.forEach(v=>v.fightPose='hit');
+        const cris=['PAF !','BAM !','POW !'];
+        for(let k=0;k<6;k++){
+          sndPunch();
+          effects.push({type:'pow',small:true,txt:cris[k%3],
+            x:ex+cs*(0.05+Math.random()*0.55),y:ey-cs*(0.35+Math.random()*0.75),
+            t0:performance.now(),dur:420});
+          await sleep(165);
+        }
+        p.fightPose=null;
+        victims.forEach(v=>v.fightPose=null);
+        sndCapture();
         effects.push({type:'pow',x:ex,y:ey-cs*0.6,t0:performance.now(),dur:750});
-        toast(TEAMS[p.team].name+' mange '+TEAMS[victims[0].team].name+' ! 🥊',TEAMS[p.team].color);
-        await sleep(350);
+        await sleep(150);
         await Promise.all(victims.map(v=>{
           v.pos=-1;
           const [gx,gy]=staticCell(v);
@@ -779,7 +808,7 @@ async function gameLoop(){
       if(sixes===3){sndNo();toast('3 six d’affilée, tour perdu ! 😅',T.color);await sleep(900);break;}
       const mv=pawns.filter(p=>p.team===T.id&&movable(p,roll));
       if(!mv.length){
-        sndNo();toast('Aucun coup possible 😕',T.color);await sleep(850);
+        await sleep(600);
         again=(roll===6);continue;
       }
       const p=roles[T.id]==='humain'?await humanChoose(mv):botChoose(mv,roll,T);
@@ -928,7 +957,8 @@ resize();
 buildMenu();
 syncModeButtons();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawBoardStatic);
-window._state=()=>({pawns:pawns.map(p=>({t:p.team,pos:p.pos})),turn:order[turnPtr],over:gameOver});
+window._state=()=>({pawns:pawns.map(p=>({t:p.team,pos:p.pos,f:p.fightPose||null})),turn:order[turnPtr],over:gameOver});
+window._set=(i,pos)=>{const p=pawns[i];if(p)p.pos=pos;};
 </script>
 </body>
 </html>
