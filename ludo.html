@@ -20,6 +20,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1c1c22;
   padding:5px 16px;font-size:17px;font-weight:700;letter-spacing:1px;transition:border-color .3s}
 #turnChip .dot{width:14px;height:14px;border-radius:50%;background:#888;box-shadow:0 0 8px rgba(0,0,0,.5)}
 #turnMsg{font-size:14px;color:#c9c9d0;font-weight:500}
+#musicBtn{width:38px;height:38px;border-radius:50%;border:2px solid #555;
+  background:rgba(255,255,255,0.08);font-size:17px;cursor:pointer;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;color:#fff}
+#musicBtn.off{opacity:.45;filter:grayscale(1)}
 
 /* ------- plateau ------- */
 #boardWrap{position:relative;flex:0 0 auto}
@@ -51,6 +55,12 @@ canvas{display:block;border-radius:14px}
 .overlay h1{font-family:'Bebas Neue',cursive;font-size:clamp(34px,8vw,58px);letter-spacing:3px;
   color:#ffd700;text-shadow:3px 3px 0 #000,0 0 30px rgba(255,215,0,.35);line-height:1.05}
 .overlay .sub{color:#b9b9c4;font-size:15px;margin:6px 0 16px;font-weight:500}
+#modeRow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;width:min(420px,94vw)}
+.modeBtn{border:2px solid #3a3a44;border-radius:24px;background:rgba(255,255,255,0.06);
+  color:#c9c9d0;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:.5px;
+  padding:9px 13px;cursor:pointer;transition:all .15s}
+.modeBtn.on{background:linear-gradient(180deg,#ffe15c,#f0b90b);color:#3a2500;border-color:#f0b90b;
+  box-shadow:0 0 14px rgba(240,185,11,.4)}
 #teamList{display:flex;flex-direction:column;gap:10px;width:min(420px,94vw);margin-bottom:18px}
 .teamRow{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);
   border:2px solid #3a3a44;border-radius:14px;padding:8px 12px}
@@ -80,6 +90,7 @@ canvas{display:block;border-radius:14px}
   <div id="turnbar">
     <span id="turnChip"><span class="dot"></span><span id="turnName">—</span></span>
     <span id="turnMsg"></span>
+    <button id="musicBtn" title="Musique">🎵</button>
   </div>
   <div id="boardWrap">
     <canvas id="board"></canvas>
@@ -95,6 +106,12 @@ canvas{display:block;border-radius:14px}
 <div id="menu" class="overlay">
   <h1>🎲 Ludo des Quartiers</h1>
   <div class="sub">Les Pins · Le Liourat · Frescool · Les Hermes</div>
+  <div id="modeRow">
+    <button class="modeBtn" data-n="1">👤 1 joueur</button>
+    <button class="modeBtn" data-n="2">👥 2 joueurs</button>
+    <button class="modeBtn" data-n="3">👥 3 joueurs</button>
+    <button class="modeBtn" data-n="4">👥 4 joueurs</button>
+  </div>
   <div id="teamList"></div>
   <button class="bigbtn" id="playBtn">JOUER</button>
   <div class="rules">
@@ -211,13 +228,70 @@ function beep(f,d,type,g,when,f2){
   o.start(a.currentTime+(when||0));o.stop(a.currentTime+(when||0)+d+0.02);
 }
 const sndHop=()=>beep(280+Math.random()*90,.07,'square',.03);
-const sndDice=()=>{for(let i=0;i<6;i++)beep(160+Math.random()*240,.04,'square',.025,i*0.09)};
+const sndDice=()=>{
+  for(let i=0;i<8;i++)beep(700+Math.random()*900,.03,'square',.03,i*0.065);
+  beep(95,.12,'sine',.07,0.55);
+};
 const sndCapture=()=>{beep(300,.12,'sawtooth',.05);beep(140,.25,'sawtooth',.05,.1,70)};
 const sndOut=()=>beep(392,.12,'triangle',.05,0,523);
 const sndFinish=()=>{[523,659,784].forEach((f,i)=>beep(f,.14,'triangle',.05,i*0.09))};
 const sndWin=()=>{[523,659,784,1046,784,1046,1318].forEach((f,i)=>beep(f,.18,'triangle',.06,i*0.13))};
 const sndNo=()=>beep(180,.2,'sawtooth',.035,0,120);
 window.addEventListener('pointerdown',()=>ac(),{once:false});
+
+/* ------- musique de fond (boucle chiptune, rien à télécharger) ------- */
+let musicOn=true, musicTimer=null, musicStep=0, nextNoteT=0, noiseBuf=null;
+const MBPM=94, MSTEP=60/MBPM/2; // croches
+const midi=n=>440*Math.pow(2,(n-69)/12);
+const M_BASS=[45,0,0,45, 48,0,43,0, 41,0,0,41, 43,0,45,0,
+              45,0,0,45, 48,0,50,0, 41,0,43,0, 40,0,43,0];
+const M_LEAD=[0,0,69,0, 72,0,0,71, 69,0,0,0, 67,0,64,0,
+              0,0,69,0, 72,0,76,0, 74,0,71,0, 69,0,0,0];
+function mNote(m,type,d,g,t){
+  const a=ac();if(!a)return;
+  const o=a.createOscillator(),v=a.createGain();
+  o.type=type;o.frequency.value=midi(m);
+  v.gain.setValueAtTime(g,t);
+  v.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(v);v.connect(a.destination);
+  o.start(t);o.stop(t+d+0.02);
+}
+function mHat(t,g){
+  const a=ac();if(!a)return;
+  if(!noiseBuf){
+    noiseBuf=a.createBuffer(1,2205,a.sampleRate);
+    const d=noiseBuf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  }
+  const s=a.createBufferSource(),f=a.createBiquadFilter(),v=a.createGain();
+  s.buffer=noiseBuf;f.type='highpass';f.frequency.value=7500;
+  v.gain.setValueAtTime(g,t);
+  v.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+  s.connect(f);f.connect(v);v.connect(a.destination);
+  s.start(t);s.stop(t+0.06);
+}
+function schedMusic(){
+  const a=ac();if(!a||!musicOn)return;
+  if(nextNoteT<a.currentTime)nextNoteT=a.currentTime+0.05;
+  while(nextNoteT<a.currentTime+0.45){
+    const s=musicStep%32;
+    if(M_BASS[s])mNote(M_BASS[s],'triangle',MSTEP*1.7,0.075,nextNoteT);
+    if(M_LEAD[s])mNote(M_LEAD[s],'square',MSTEP*0.85,0.028,nextNoteT);
+    mHat(nextNoteT,s%4===0?0.045:0.016);
+    musicStep++;nextNoteT+=MSTEP;
+  }
+}
+function startMusic(){
+  const a=ac();if(!a||musicTimer)return;
+  nextNoteT=a.currentTime+0.1;musicStep=0;
+  musicTimer=setInterval(schedMusic,150);
+}
+const musicBtn=document.getElementById('musicBtn');
+musicBtn.addEventListener('click',()=>{
+  musicOn=!musicOn;
+  musicBtn.classList.toggle('off',!musicOn);
+  if(musicOn){const a=ac();if(a)nextNoteT=a.currentTime+0.1;startMusic();}
+});
 
 /* ================= DESSIN DU PERSONNAGE ================= */
 
@@ -669,7 +743,8 @@ async function animRoll(){
 async function getRoll(T){
   diceEl.style.borderColor=T.color;
   if(roles[T.id]==='humain'){
-    document.getElementById('hint').textContent='À toi ! Touche le dé 🎲';
+    const nbH=roles.filter(r=>r==='humain').length;
+    document.getElementById('hint').textContent=nbH>1?('À toi, '+T.name+' ! Touche le dé 🎲'):'À toi ! Touche le dé 🎲';
     diceEl.classList.remove('off');diceEl.classList.add('pulse');
     await new Promise(r=>{rollResolve=r;});
     document.getElementById('hint').textContent='';
@@ -773,7 +848,9 @@ function buildMenu(){
     btn.onclick=()=>{
       const next={humain:'bot',bot:'absent',absent:'humain'}[roles[T.id]];
       roles[T.id]=next;btn.className='roleBtn '+next;btn.textContent=ROLE_LABEL[next];
+      syncModeButtons();
     };
+    T._roleBtn=btn;
     row.append(pc,nm,btn);list.appendChild(row);
     T._preview=pc.getContext('2d');
   });
@@ -787,6 +864,25 @@ function buildMenu(){
     requestAnimationFrame(pl);
   })(performance.now());
 }
+
+/* modes rapides : N humains, le reste en bots */
+function setMode(n){
+  TEAMS.forEach(T=>{
+    roles[T.id]=T.id<n?'humain':'bot';
+    if(T._roleBtn){T._roleBtn.className='roleBtn '+roles[T.id];T._roleBtn.textContent=ROLE_LABEL[roles[T.id]];}
+  });
+  syncModeButtons();
+}
+function syncModeButtons(){
+  document.querySelectorAll('.modeBtn').forEach(b=>{
+    const n=+b.dataset.n;
+    const match=TEAMS.every(T=>roles[T.id]===(T.id<n?'humain':'bot'));
+    b.classList.toggle('on',match);
+  });
+}
+document.querySelectorAll('.modeBtn').forEach(b=>{
+  b.addEventListener('click',()=>setMode(+b.dataset.n));
+});
 
 document.getElementById('playBtn').addEventListener('click',()=>{
   const active=TEAMS.filter(T=>roles[T.id]!=='absent');
@@ -803,6 +899,7 @@ document.getElementById('playBtn').addEventListener('click',()=>{
   menuEl.style.display='none';
   started=true;
   drawBoardStatic();
+  startMusic();
   gameLoop();
 });
 function toastMenu(){
@@ -829,6 +926,7 @@ function resize(){
 window.addEventListener('resize',resize);
 resize();
 buildMenu();
+syncModeButtons();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawBoardStatic);
 window._state=()=>({pawns:pawns.map(p=>({t:p.team,pos:p.pos})),turn:order[turnPtr],over:gameOver});
 </script>
