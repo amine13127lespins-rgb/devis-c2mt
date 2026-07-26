@@ -24,6 +24,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1c1c22;
   background:rgba(255,255,255,0.08);font-size:17px;cursor:pointer;line-height:1;
   display:inline-flex;align-items:center;justify-content:center;color:#fff}
 #musicBtn.off{opacity:.45;filter:grayscale(1)}
+#endBtn{border-radius:24px;border:2px solid #f0b90b;background:rgba(240,185,11,0.15);
+  color:#ffd700;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:.5px;
+  padding:8px 14px;cursor:pointer;display:none;align-items:center}
 
 /* ------- plateau ------- */
 #boardWrap{position:relative;flex:0 0 auto}
@@ -91,6 +94,7 @@ canvas{display:block;border-radius:14px}
     <span id="turnChip"><span class="dot"></span><span id="turnName">—</span></span>
     <span id="turnMsg"></span>
     <button id="musicBtn" title="Musique">🎵</button>
+    <button id="endBtn" style="display:none">🏁 Podium</button>
   </div>
   <div id="boardWrap">
     <canvas id="board"></canvas>
@@ -193,6 +197,7 @@ function variant(ti,vi){
 
 let roles=['humain','bot','bot','bot'];   // par équipe
 let order=[];                              // équipes actives dans l'ordre de jeu
+let finishedOrder=[];                      // équipes arrivées, dans l'ordre (1er, 2e...)
 let pawns=[];                              // {team,i,pos,px,py,anim,hl,finSlot,seed}
 let turnPtr=0, gameOver=false, started=false;
 let effects=[];
@@ -313,6 +318,7 @@ function startMusic(){
   nextNoteT=a.currentTime+0.1;musicStep=0;
   musicTimer=setInterval(schedMusic,150);
 }
+document.getElementById('endBtn').addEventListener('click',()=>{if(started&&!gameOver)showWin();});
 const musicBtn=document.getElementById('musicBtn');
 musicBtn.addEventListener('click',()=>{
   musicOn=!musicOn;
@@ -875,10 +881,11 @@ async function gameLoop(){
   while(!gameOver){
     const T=TEAMS[order[turnPtr]];
     updateTurnUI(T);
-    let sixes=0, again=true;
+    let sixes=0, again=true, finished=false;
     while(again&&!gameOver){
       again=false;
       const roll=await getRoll(T);
+      if(gameOver)return;
       if(roll===6)sixes++;else sixes=0;
       if(sixes===3){sndNo();toast('3 six d’affilée, tour perdu ! 😅',T.color);await sleep(900);break;}
       const mv=pawns.filter(p=>p.team===T.id&&movable(p,roll));
@@ -887,29 +894,50 @@ async function gameLoop(){
         again=(roll===6);continue;
       }
       const p=roles[T.id]==='humain'?await humanChoose(mv):botChoose(mv,roll,T);
+      if(gameOver)return;
       if(roles[T.id]!=='humain'){p.hl=true;await sleep(500);p.hl=false;}
       again=await doMove(p,roll);
-      // victoire ?
+      // équipe arrivée au complet : elle prend sa place, les autres continuent
       if(pawns.filter(q=>q.team===T.id&&q.pos===56).length===4){
-        gameOver=true;showWin(T);return;
+        finished=true;
+        finishedOrder.push(T.id);
+        const rk=finishedOrder.length;
+        if(rk===1)sndWin();else sndFinish();
+        toast(['🥇','🥈','🥉'][rk-1]+' '+T.name+' termine '+(rk===1?'1er':rk+'e')+' !',T.color);
+        order=order.filter(id=>id!==T.id);
+        document.getElementById('endBtn').style.display=order.length>1?'inline-flex':'none';
+        await sleep(1600);
+        if(gameOver)return;
+        if(order.length<=1){
+          if(order.length===1)finishedOrder.push(order[0]);
+          showWin();return;
+        }
+        break;
       }
       if(again&&!gameOver){toast(T.name+' rejoue ! 🎲',T.color);await sleep(500);}
     }
-    turnPtr=(turnPtr+1)%order.length;
+    if(gameOver)return;
+    if(finished){if(turnPtr>=order.length)turnPtr=0;}
+    else turnPtr=(turnPtr+1)%order.length;
   }
 }
 
 /* ------- écran de victoire ------- */
-function showWin(T){
+function showWin(){
+  gameOver=true;
+  document.getElementById('endBtn').style.display='none';
+  // classement : les équipes arrivées dans l'ordre, puis les autres selon leur avancée
+  const mk=id=>({id,
+    fin:pawns.filter(q=>q.team===id&&q.pos===56).length,
+    prog:pawns.filter(q=>q.team===id).reduce((s,q)=>s+(q.pos<0?0:q.pos),0)});
+  const played=ORDER_ALL.filter(id=>roles[id]!=='absent');
+  const remaining=played.filter(id=>!finishedOrder.includes(id)).map(mk)
+    .sort((a,b)=>b.fin-a.fin||b.prog-a.prog);
+  const rank=[...finishedOrder.map(mk),...remaining];
+  const T=TEAMS[rank[0].id];
   sndWin();
   const ws=document.getElementById('winscreen');
   document.getElementById('winTitle').textContent='🏆 '+T.name+' GAGNE !';
-  // classement
-  const rank=order.map(id=>{
-    const fin=pawns.filter(q=>q.team===id&&q.pos===56).length;
-    const prog=pawns.filter(q=>q.team===id).reduce((s,q)=>s+(q.pos<0?0:q.pos),0);
-    return {id,fin,prog};
-  }).sort((a,b)=>b.fin-a.fin||b.prog-a.prog);
   const medals=['🥇','🥈','🥉','4️⃣'];
   document.getElementById('rankList').innerHTML=rank.map((r,i)=>
     '<div><span class="medal">'+medals[i]+'</span><span style="color:'+TEAMS[r.id].color+'">'+
