@@ -215,8 +215,16 @@ function staticCell(p){ // case (en unités cellule) où se trouve le pion
 
 /* ================= SONS ================= */
 
-let AC=null;
-function ac(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}} if(AC&&AC.state==='suspended')AC.resume(); return AC; }
+let AC=null,MASTER=null;
+function ac(){
+  if(!AC){try{
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    MASTER=AC.createGain();MASTER.gain.value=1.5;MASTER.connect(AC.destination);
+  }catch(e){}}
+  if(AC&&AC.state==='suspended')AC.resume();
+  return AC;
+}
+const out=()=>MASTER||AC.destination;
 function beep(f,d,type,g,when,f2){
   const a=ac(); if(!a)return;
   const o=a.createOscillator(),v=a.createGain();
@@ -224,7 +232,7 @@ function beep(f,d,type,g,when,f2){
   if(f2)o.frequency.exponentialRampToValueAtTime(f2,a.currentTime+(when||0)+d);
   v.gain.setValueAtTime(g||0.04,a.currentTime+(when||0));
   v.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+(when||0)+d);
-  o.connect(v);v.connect(a.destination);
+  o.connect(v);v.connect(out());
   o.start(a.currentTime+(when||0));o.stop(a.currentTime+(when||0)+d+0.02);
 }
 const sndHop=()=>beep(280+Math.random()*90,.07,'square',.03);
@@ -238,7 +246,25 @@ const sndFinish=()=>{[523,659,784].forEach((f,i)=>beep(f,.14,'triangle',.05,i*0.
 const sndWin=()=>{[523,659,784,1046,784,1046,1318].forEach((f,i)=>beep(f,.18,'triangle',.06,i*0.13))};
 const sndNo=()=>beep(180,.2,'sawtooth',.035,0,120);
 const sndPunch=()=>beep(150+Math.random()*70,.07,'sawtooth',.055,0,80);
-window.addEventListener('pointerdown',()=>ac(),{once:false});
+
+/* Déblocage audio mobile (iPhone/Android) : au premier geste, on joue un
+   son silencieux pour déverrouiller le haut-parleur, même en mode silencieux */
+let audioUnlocked=false;
+const silentAudio=new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==');
+silentAudio.loop=true;
+function unlockAudio(){
+  const a=ac();if(!a)return;
+  if(a.state==='suspended')a.resume();
+  if(!audioUnlocked){
+    try{
+      const b=a.createBuffer(1,1,22050);
+      const s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);
+      silentAudio.play().then(()=>{audioUnlocked=true;}).catch(()=>{});
+    }catch(e){}
+  }
+}
+['pointerdown','pointerup','touchend','click','keydown'].forEach(ev=>
+  window.addEventListener(ev,unlockAudio,{passive:true}));
 
 /* ------- musique de fond (boucle chiptune, rien à télécharger) ------- */
 let musicOn=true, musicTimer=null, musicStep=0, nextNoteT=0, noiseBuf=null;
@@ -254,7 +280,7 @@ function mNote(m,type,d,g,t){
   o.type=type;o.frequency.value=midi(m);
   v.gain.setValueAtTime(g,t);
   v.gain.exponentialRampToValueAtTime(0.0001,t+d);
-  o.connect(v);v.connect(a.destination);
+  o.connect(v);v.connect(out());
   o.start(t);o.stop(t+d+0.02);
 }
 function mHat(t,g){
@@ -268,7 +294,7 @@ function mHat(t,g){
   s.buffer=noiseBuf;f.type='highpass';f.frequency.value=7500;
   v.gain.setValueAtTime(g,t);
   v.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
-  s.connect(f);f.connect(v);v.connect(a.destination);
+  s.connect(f);f.connect(v);v.connect(out());
   s.start(t);s.stop(t+0.06);
 }
 function schedMusic(){
