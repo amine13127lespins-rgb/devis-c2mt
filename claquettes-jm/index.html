@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claquettes Hermès Oran — Maison JM</title>
-<meta name="description" content="Claquettes Hermès modèle Oran — 200 € — 4 coloris disponibles. Maison JM, French Elegance.">
+<meta name="description" content="Claquettes Hermès modèle Oran — 100 € — 4 coloris disponibles. Maison JM, French Elegance.">
 <link rel="icon" href="images/logo.webp">
 <style>
 :root{
@@ -16,6 +16,8 @@
   --brun-doux:#6b5d48;
   --orange:#e8650d;
   --blanc:#fffdf8;
+  --rouge:#c0392b;
+  --vert:#27ae60;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -73,7 +75,7 @@ header .marque span{font-size:.62rem;letter-spacing:.42em;text-transform:upperca
   padding:16px 46px;border:1px solid var(--or);
   color:var(--brun);text-decoration:none;
   letter-spacing:.25em;text-transform:uppercase;font-size:.8rem;
-  position:relative;overflow:hidden;transition:color .35s;
+  position:relative;overflow:hidden;
   background:linear-gradient(var(--or),var(--or)) left/0% 100% no-repeat;
   transition:background-size .4s,color .4s;
 }
@@ -103,24 +105,45 @@ header .marque span{font-size:.62rem;letter-spacing:.42em;text-transform:upperca
   animation:pulse 2.6s ease-in-out infinite;
 }
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+/* Badge best-seller superposé sur la photo */
+.badge-best{
+  position:absolute;top:18px;left:18px;z-index:5;
+  background:linear-gradient(135deg,var(--orange),#ff8c3a);
+  color:#fff;padding:10px 18px;border-radius:8px;
+  font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;
+  box-shadow:0 8px 24px rgba(232,101,13,.45);
+  transform:rotate(-4deg);
+  animation:bestPulse 2.2s ease-in-out infinite;
+  display:none;
+}
+.badge-best.visible{display:block}
+@keyframes bestPulse{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(-4deg) scale(1.08)}}
 .infos h3{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:normal;letter-spacing:.04em}
 .infos .sous-titre{color:var(--or);letter-spacing:.3em;text-transform:uppercase;font-size:.75rem;margin-bottom:14px}
-.infos .prix{
-  font-size:2rem;color:var(--brun);margin:18px 0 6px;
-}
+.infos .prix{font-size:2rem;color:var(--brun);margin:18px 0 6px}
 .infos .prix small{font-size:.9rem;color:var(--brun-doux);font-style:italic}
 .infos .desc{color:var(--brun-doux);line-height:1.8;margin:18px 0 26px;font-size:1.02rem}
 /* couleurs */
 .choix-titre{font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--brun);margin-bottom:12px}
-.couleurs{display:flex;gap:14px;margin-bottom:28px}
+.couleurs{display:flex;gap:14px;margin-bottom:14px}
 .pastille{
+  position:relative;
   width:46px;height:46px;border-radius:50%;cursor:pointer;
   border:2px solid transparent;outline:2px solid rgba(179,146,79,.35);outline-offset:3px;
   transition:transform .25s,outline-color .25s;
 }
 .pastille:hover{transform:scale(1.15)}
 .pastille.active{outline-color:var(--or);outline-width:2px;transform:scale(1.12);box-shadow:0 4px 14px rgba(61,52,39,.25)}
-.nom-couleur{font-style:italic;color:var(--brun-doux);margin-bottom:26px;min-height:1.4em}
+.pastille.epuise{opacity:.35;cursor:not-allowed}
+.pastille.epuise::after{
+  content:"✕";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--brun);font-size:1.2rem;
+}
+.nom-couleur{font-style:italic;color:var(--brun-doux);min-height:1.4em}
+.stock-info{margin:6px 0 24px;font-size:.9rem;letter-spacing:.04em}
+.stock-info .ok{color:var(--vert)}
+.stock-info .peu{color:var(--orange);font-weight:bold}
+.stock-info .zero{color:var(--rouge);font-weight:bold}
 /* tailles */
 .tailles{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px}
 .taille{
@@ -139,12 +162,12 @@ header .marque span{font-size:.62rem;letter-spacing:.42em;text-transform:upperca
   color:var(--blanc);font-family:inherit;font-size:.95rem;
   letter-spacing:.22em;text-transform:uppercase;border-radius:10px;
   box-shadow:0 12px 30px rgba(179,146,79,.4);
-  transition:transform .25s,box-shadow .25s;
+  transition:transform .25s,box-shadow .25s,opacity .25s;
   animation:brillance 4s ease infinite;
-  text-decoration:none;
 }
 @keyframes brillance{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 .commander:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(179,146,79,.55)}
+.commander:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .note-commande{text-align:center;margin-top:12px;font-size:.85rem;color:var(--brun-doux);font-style:italic}
 /* ---------- Galerie ---------- */
 .galerie{background:var(--creme-fonce);padding:90px 24px}
@@ -153,6 +176,7 @@ header .marque span{font-size:.62rem;letter-spacing:.42em;text-transform:upperca
 .galerie .sous{color:var(--or);letter-spacing:.3em;text-transform:uppercase;font-size:.75rem;margin-bottom:50px;margin-top:8px}
 .grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px}
 .carte{
+  position:relative;
   border-radius:16px;overflow:hidden;background:var(--blanc);
   box-shadow:0 14px 36px rgba(61,52,39,.14);
   transition:transform .35s,box-shadow .35s;cursor:pointer;
@@ -160,6 +184,18 @@ header .marque span{font-size:.62rem;letter-spacing:.42em;text-transform:upperca
 .carte:hover{transform:translateY(-10px);box-shadow:0 26px 54px rgba(61,52,39,.24)}
 .carte img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover}
 .carte p{padding:16px;font-style:italic;color:var(--brun-doux)}
+.carte .mini-best{
+  position:absolute;top:12px;left:12px;
+  background:linear-gradient(135deg,var(--orange),#ff8c3a);
+  color:#fff;padding:6px 12px;border-radius:6px;
+  font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;
+  box-shadow:0 6px 16px rgba(232,101,13,.4);transform:rotate(-4deg);
+}
+.carte .mini-stock{
+  position:absolute;top:12px;right:12px;
+  background:rgba(61,52,39,.85);color:var(--or-clair);
+  padding:6px 10px;border-radius:6px;font-size:.7rem;letter-spacing:.06em;
+}
 /* ---------- Détails ---------- */
 .details{max-width:1000px;margin:0 auto;padding:90px 24px;text-align:center}
 .details h3{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:normal;margin-bottom:8px}
@@ -182,8 +218,6 @@ footer{
 footer img{width:80px;border-radius:50%;margin-bottom:18px;opacity:.95}
 footer .nom{letter-spacing:.3em;font-size:1.05rem}
 footer .slogan{color:var(--or-clair);letter-spacing:.35em;text-transform:uppercase;font-size:.65rem;margin-top:6px}
-footer .contact{margin-top:24px;font-size:.9rem;color:rgba(245,239,228,.75);line-height:1.9}
-footer .contact a{color:var(--or-clair);text-decoration:none}
 footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
 /* ---------- Lightbox ---------- */
 .lightbox{
@@ -193,6 +227,52 @@ footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
 }
 .lightbox.ouvert{display:flex}
 .lightbox img{max-width:92vw;max-height:88vh;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+/* ---------- Modale de commande ---------- */
+.voile{
+  position:fixed;inset:0;z-index:90;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(30,25,18,.75);padding:20px;
+}
+.voile.ouvert{display:flex}
+.modale{
+  background:var(--blanc);border-radius:20px;max-width:460px;width:100%;
+  padding:34px 30px;box-shadow:0 40px 100px rgba(0,0,0,.4);
+  animation:apparait .35s ease;max-height:92vh;overflow-y:auto;
+}
+@keyframes apparait{from{opacity:0;transform:translateY(30px) scale(.96)}to{opacity:1;transform:none}}
+.modale h4{font-size:1.4rem;font-weight:normal;text-align:center;letter-spacing:.05em}
+.modale .recap{
+  text-align:center;color:var(--brun-doux);font-style:italic;margin:10px 0 24px;line-height:1.6;
+}
+.modale label{display:block;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;margin:16px 0 6px;color:var(--brun)}
+.modale input{
+  width:100%;padding:14px;border:1px solid rgba(107,93,72,.4);border-radius:10px;
+  font-family:inherit;font-size:1rem;background:var(--creme);color:var(--brun);
+  transition:border-color .25s;
+}
+.modale input:focus{outline:none;border-color:var(--or)}
+.modale .erreur{color:var(--rouge);font-size:.85rem;margin-top:14px;text-align:center;min-height:1.2em}
+.modale .actions{display:flex;gap:12px;margin-top:22px}
+.modale .actions button{
+  flex:1;padding:15px;border:none;border-radius:10px;cursor:pointer;
+  font-family:inherit;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;
+  transition:transform .2s,opacity .2s;
+}
+.modale .actions button:hover{transform:translateY(-2px)}
+.btn-annuler{background:var(--creme-fonce);color:var(--brun)}
+.btn-envoyer{background:linear-gradient(135deg,var(--or),#c9a45e);color:#fff;box-shadow:0 8px 22px rgba(179,146,79,.4)}
+.btn-envoyer:disabled{opacity:.5;cursor:wait;transform:none}
+/* confirmation */
+.confirm{text-align:center;padding:10px 0}
+.confirm .coche{
+  width:74px;height:74px;border-radius:50%;margin:0 auto 20px;
+  background:var(--vert);color:#fff;font-size:2.2rem;
+  display:flex;align-items:center;justify-content:center;
+  animation:pop .5s cubic-bezier(.2,1.6,.4,1);
+}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.confirm h4{margin-bottom:12px}
+.confirm p{color:var(--brun-doux);line-height:1.7}
 /* ---------- Animations d'apparition ---------- */
 .reveal{opacity:0;transform:translateY(34px);transition:opacity .8s ease,transform .8s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
@@ -227,14 +307,15 @@ footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
 <section class="produit" id="produit">
   <div class="visuel reveal">
     <div class="cadre" id="zoomable">
+      <div class="badge-best" id="badge-best">★ Best-seller</div>
       <img id="photo-principale" src="images/oran-bleu.webp" alt="Claquettes Hermès Oran">
     </div>
-    <div class="badge-prix">200 €</div>
+    <div class="badge-prix">100 €</div>
   </div>
   <div class="infos reveal">
     <div class="sous-titre">Maison JM — Sélection</div>
     <h3>Claquettes Hermès<br>Modèle Oran</h3>
-    <div class="prix">200 € <small>— livrées dans leur coffret</small></div>
+    <div class="prix">100 € <small>— livrées dans leur coffret</small></div>
     <p class="desc">
       La sandale Oran est un classique absolu : une lanière en cuir découpée
       en forme de « H », une semelle plate et confortable, une silhouette
@@ -243,13 +324,14 @@ footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
       pochon de protection.
     </p>
     <div class="choix-titre">Choisissez votre coloris</div>
-    <div class="couleurs">
-      <div class="pastille active" style="background:#cfe4e6" data-img="images/oran-bleu.webp" data-nom="Bleu Glacier" title="Bleu Glacier"></div>
-      <div class="pastille" style="background:#e8776a" data-img="images/oran-corail.webp" data-nom="Corail" title="Corail"></div>
-      <div class="pastille" style="background:#77444d" data-img="images/oran-bordeaux.webp" data-nom="Bordeaux" title="Bordeaux"></div>
-      <div class="pastille" style="background:#e9e27f" data-img="images/oran-jaune.webp" data-nom="Jaune Citron" title="Jaune Citron"></div>
+    <div class="couleurs" id="couleurs">
+      <div class="pastille active" style="background:#cfe4e6" data-couleur="Bleu Glacier" data-img="images/oran-bleu.webp" title="Bleu Glacier"></div>
+      <div class="pastille" style="background:#e8776a" data-couleur="Corail" data-img="images/oran-corail.webp" title="Corail"></div>
+      <div class="pastille" style="background:#77444d" data-couleur="Bordeaux" data-img="images/oran-bordeaux.webp" title="Bordeaux"></div>
+      <div class="pastille" style="background:#e9e27f" data-couleur="Jaune Citron" data-img="images/oran-jaune.webp" title="Jaune Citron"></div>
     </div>
     <div class="nom-couleur" id="nom-couleur">Coloris : Bleu Glacier</div>
+    <div class="stock-info" id="stock-info"></div>
     <div class="choix-titre">Votre pointure</div>
     <div class="tailles" id="tailles">
       <div class="taille">36</div>
@@ -259,10 +341,8 @@ footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
       <div class="taille">40</div>
       <div class="taille">41</div>
     </div>
-    <a class="commander" id="btn-commander" href="#" target="_blank" rel="noopener">
-      Commander — 200 €
-    </a>
-    <p class="note-commande">Commande directe par WhatsApp — réponse rapide</p>
+    <button class="commander" id="btn-commander">Commander — 100 €</button>
+    <p class="note-commande">Commande en ligne — nous vous rappelons pour confirmer</p>
   </div>
 </section>
 
@@ -272,10 +352,23 @@ footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
     <h3 class="reveal">Les quatre coloris</h3>
     <div class="sous reveal">Collection Oran</div>
     <div class="grille">
-      <div class="carte reveal"><img src="images/oran-bleu.webp" alt="Oran Bleu Glacier" loading="lazy"><p>Bleu Glacier</p></div>
-      <div class="carte reveal"><img src="images/oran-corail.webp" alt="Oran Corail" loading="lazy"><p>Corail</p></div>
-      <div class="carte reveal"><img src="images/oran-bordeaux.webp" alt="Oran Bordeaux" loading="lazy"><p>Bordeaux</p></div>
-      <div class="carte reveal"><img src="images/oran-jaune.webp" alt="Oran Jaune Citron" loading="lazy"><p>Jaune Citron</p></div>
+      <div class="carte reveal" data-couleur="Bleu Glacier">
+        <div class="mini-best">★ Best-seller</div>
+        <div class="mini-stock" data-stock="Bleu Glacier"></div>
+        <img src="images/oran-bleu.webp" alt="Oran Bleu Glacier" loading="lazy"><p>Bleu Glacier</p>
+      </div>
+      <div class="carte reveal" data-couleur="Corail">
+        <div class="mini-stock" data-stock="Corail"></div>
+        <img src="images/oran-corail.webp" alt="Oran Corail" loading="lazy"><p>Corail</p>
+      </div>
+      <div class="carte reveal" data-couleur="Bordeaux">
+        <div class="mini-stock" data-stock="Bordeaux"></div>
+        <img src="images/oran-bordeaux.webp" alt="Oran Bordeaux" loading="lazy"><p>Bordeaux</p>
+      </div>
+      <div class="carte reveal" data-couleur="Jaune Citron">
+        <div class="mini-stock" data-stock="Jaune Citron"></div>
+        <img src="images/oran-jaune.webp" alt="Oran Jaune Citron" loading="lazy"><p>Jaune Citron</p>
+      </div>
     </div>
   </div>
 </section>
@@ -297,10 +390,6 @@ footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
   <img src="images/logo.webp" alt="Maison JM">
   <div class="nom">MAISON JM</div>
   <div class="slogan">French Elegance</div>
-  <div class="contact">
-    Commandes &amp; questions :<br>
-    <a href="#" id="lien-whatsapp">WhatsApp</a>
-  </div>
   <div class="copy">© 2026 Maison JM — Tous droits réservés</div>
 </footer>
 
@@ -309,31 +398,135 @@ footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
   <img src="" alt="Agrandissement" id="lightbox-img">
 </div>
 
+<!-- MODALE DE COMMANDE -->
+<div class="voile" id="voile">
+  <div class="modale">
+    <div id="formulaire">
+      <h4>Votre commande</h4>
+      <p class="recap" id="recap"></p>
+      <label for="prenom">Prénom</label>
+      <input type="text" id="prenom" placeholder="Votre prénom" autocomplete="given-name">
+      <label for="nom">Nom</label>
+      <input type="text" id="nom" placeholder="Votre nom" autocomplete="family-name">
+      <label for="tel">Numéro de téléphone</label>
+      <input type="tel" id="tel" placeholder="06 12 34 56 78" autocomplete="tel">
+      <div class="erreur" id="erreur"></div>
+      <div class="actions">
+        <button class="btn-annuler" id="btn-annuler">Annuler</button>
+        <button class="btn-envoyer" id="btn-envoyer">Envoyer</button>
+      </div>
+    </div>
+    <div class="confirm" id="confirmation" style="display:none">
+      <div class="coche">✓</div>
+      <h4>Commande envoyée !</h4>
+      <p>Merci <span id="confirm-prenom"></span> !<br>
+      Nous vous rappellerons très vite au numéro indiqué pour confirmer votre commande.</p>
+      <div class="actions">
+        <button class="btn-envoyer" id="btn-fermer-confirm">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// ===== CONFIGURATION =====
-// Mettre ici le numéro WhatsApp au format international, sans + ni espaces.
-// Exemple pour la France : 33612345678
-const NUMERO_WHATSAPP = "";
-// =========================
+// ===== FIREBASE =====
+const firebaseConfig = {
+  apiKey: "AIzaSyDh0f3x8Vj2u8S7-NBjVmV7KNE2RY5bLA8",
+  authDomain: "bene-diners.firebaseapp.com",
+  databaseURL: "https://bene-diners-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bene-diners",
+  storageBucket: "bene-diners.firebasestorage.app",
+  messagingSenderId: "655264478961",
+  appId: "1:655264478961:web:848148ab9f1d52951d1b50"
+};
+let REF_COMMANDES = null;
+try {
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  REF_COMMANDES = firebase.database().ref('claquettesJM/commandes');
+} catch(e) {
+  console.error('Firebase indisponible :', e);
+}
+
+// ===== STOCK =====
+// Stock de départ par coloris. Le stock restant = départ - commandes VALIDÉES.
+const STOCK_INITIAL = {
+  "Bleu Glacier": 6,
+  "Corail": 20,
+  "Bordeaux": 20,
+  "Jaune Citron": 20
+};
+const BEST_SELLER = "Bleu Glacier";
+let stockRestant = {...STOCK_INITIAL};
 
 const photo = document.getElementById("photo-principale");
 const nomCouleur = document.getElementById("nom-couleur");
+const stockInfo = document.getElementById("stock-info");
+const badgeBest = document.getElementById("badge-best");
+const btnCommander = document.getElementById("btn-commander");
 const pastilles = document.querySelectorAll(".pastille");
 let couleurActive = "Bleu Glacier";
 let tailleActive = "";
 
+// Écoute en direct : recalcule le stock dès qu'une commande est validée
+if (REF_COMMANDES) REF_COMMANDES.on('value', snap => {
+  stockRestant = {...STOCK_INITIAL};
+  const data = snap.val() || {};
+  Object.values(data).forEach(c => {
+    if (c.statut === 'validee' && stockRestant[c.couleur] !== undefined) {
+      stockRestant[c.couleur] = Math.max(0, stockRestant[c.couleur] - 1);
+    }
+  });
+  majAffichageStock();
+});
+
+function majAffichageStock(){
+  // pastilles épuisées
+  pastilles.forEach(p => {
+    const c = p.dataset.couleur;
+    p.classList.toggle('epuise', stockRestant[c] === 0);
+  });
+  // mini-badges de la galerie
+  document.querySelectorAll('.mini-stock').forEach(el => {
+    const c = el.dataset.stock;
+    const n = stockRestant[c];
+    el.textContent = n === 0 ? "Épuisé" : (n <= 6 ? "Plus que " + n + " !" : n + " en stock");
+  });
+  majZoneStock();
+}
+
+function majZoneStock(){
+  const n = stockRestant[couleurActive];
+  if (n === 0){
+    stockInfo.innerHTML = '<span class="zero">Épuisé — victime de son succès</span>';
+    btnCommander.disabled = true;
+    btnCommander.textContent = "Épuisé";
+  } else {
+    if (n <= 6){
+      stockInfo.innerHTML = '<span class="peu">🔥 Plus que ' + n + ' paire' + (n>1?'s':'') + ' en stock !</span>';
+    } else {
+      stockInfo.innerHTML = '<span class="ok">✔ En stock — ' + n + ' paires disponibles</span>';
+    }
+    btnCommander.disabled = false;
+    btnCommander.textContent = "Commander — 100 €";
+  }
+  badgeBest.classList.toggle('visible', couleurActive === BEST_SELLER);
+}
+
 pastilles.forEach(p => {
   p.addEventListener("click", () => {
+    if (p.classList.contains('epuise')) return;
     pastilles.forEach(x => x.classList.remove("active"));
     p.classList.add("active");
-    couleurActive = p.dataset.nom;
+    couleurActive = p.dataset.couleur;
     nomCouleur.textContent = "Coloris : " + couleurActive;
     photo.classList.add("change");
     setTimeout(() => {
       photo.src = p.dataset.img;
       photo.onload = () => photo.classList.remove("change");
     }, 250);
-    majLienCommande();
+    majZoneStock();
   });
 });
 
@@ -342,30 +535,72 @@ document.querySelectorAll(".taille").forEach(t => {
     document.querySelectorAll(".taille").forEach(x => x.classList.remove("active"));
     t.classList.add("active");
     tailleActive = t.textContent;
-    majLienCommande();
   });
 });
 
-function majLienCommande(){
-  let msg = "Bonjour, je souhaite commander les claquettes Oran (200 €)." +
-    " Coloris : " + couleurActive + "." +
-    (tailleActive ? " Pointure : " + tailleActive + "." : "");
-  const url = NUMERO_WHATSAPP
-    ? "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + encodeURIComponent(msg)
-    : "#";
-  document.getElementById("btn-commander").href = url;
-  document.getElementById("lien-whatsapp").href = NUMERO_WHATSAPP ? "https://wa.me/" + NUMERO_WHATSAPP : "#";
-}
-majLienCommande();
+// ===== MODALE DE COMMANDE =====
+const voile = document.getElementById("voile");
+const erreur = document.getElementById("erreur");
+const btnEnvoyer = document.getElementById("btn-envoyer");
 
-document.getElementById("btn-commander").addEventListener("click", e => {
-  if (!NUMERO_WHATSAPP){
-    e.preventDefault();
-    alert("Le numéro WhatsApp n'est pas encore configuré.");
+btnCommander.addEventListener("click", () => {
+  if (!tailleActive){
+    document.getElementById("tailles").scrollIntoView({behavior:"smooth", block:"center"});
+    document.querySelectorAll(".taille").forEach(t => {
+      t.style.borderColor = "var(--rouge)";
+      setTimeout(() => t.style.borderColor = "", 1200);
+    });
+    return;
   }
+  document.getElementById("recap").textContent =
+    "Claquettes Oran — " + couleurActive + " — pointure " + tailleActive + " — 100 €";
+  erreur.textContent = "";
+  document.getElementById("formulaire").style.display = "block";
+  document.getElementById("confirmation").style.display = "none";
+  voile.classList.add("ouvert");
 });
 
-// Lightbox sur la photo principale et les cartes
+document.getElementById("btn-annuler").addEventListener("click", () => voile.classList.remove("ouvert"));
+document.getElementById("btn-fermer-confirm").addEventListener("click", () => voile.classList.remove("ouvert"));
+voile.addEventListener("click", e => { if (e.target === voile) voile.classList.remove("ouvert"); });
+
+btnEnvoyer.addEventListener("click", async () => {
+  const prenom = document.getElementById("prenom").value.trim();
+  const nom = document.getElementById("nom").value.trim();
+  const tel = document.getElementById("tel").value.trim();
+  if (!prenom || !nom){ erreur.textContent = "Merci d'indiquer votre nom et votre prénom."; return; }
+  if (!/^[0-9+\s().-]{8,}$/.test(tel)){ erreur.textContent = "Merci d'indiquer un numéro de téléphone valide."; return; }
+  if (stockRestant[couleurActive] === 0){ erreur.textContent = "Désolé, ce coloris vient d'être épuisé."; return; }
+  if (!REF_COMMANDES){ erreur.textContent = "Connexion impossible, vérifiez votre réseau et rechargez la page."; return; }
+
+  btnEnvoyer.disabled = true;
+  btnEnvoyer.textContent = "Envoi...";
+  try {
+    await REF_COMMANDES.push({
+      prenom: prenom,
+      nom: nom,
+      tel: tel,
+      produit: "Claquettes Oran",
+      couleur: couleurActive,
+      pointure: tailleActive,
+      prix: 100,
+      statut: "attente",
+      date: Date.now()
+    });
+    document.getElementById("formulaire").style.display = "none";
+    document.getElementById("confirmation").style.display = "block";
+    document.getElementById("confirm-prenom").textContent = prenom;
+    document.getElementById("prenom").value = "";
+    document.getElementById("nom").value = "";
+    document.getElementById("tel").value = "";
+  } catch(e){
+    erreur.textContent = "Erreur d'envoi, réessayez. (" + e.message + ")";
+  }
+  btnEnvoyer.disabled = false;
+  btnEnvoyer.textContent = "Envoyer";
+});
+
+// ===== Lightbox =====
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 function ouvrirLightbox(src){
@@ -388,6 +623,8 @@ const obs = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add("visible"); obs.unobserve(e.target); } });
 }, {threshold:.12});
 document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
+
+majAffichageStock();
 </script>
 </body>
 </html>
