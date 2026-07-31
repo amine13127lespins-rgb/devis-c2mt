@@ -53,11 +53,35 @@ header .marque span{font-size:.62rem;letter-spacing:.42em;text-transform:upperca
     var(--creme);
 }
 .hero img.logo-hero{
-  width:min(300px,64vw);border-radius:22px;
+  width:min(210px,48vw);border-radius:18px;
   box-shadow:0 24px 60px rgba(61,52,39,.18);
   animation:flotte 6s ease-in-out infinite;
 }
 @keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+/* ---------- Carrousel d'ambiance ---------- */
+.carrousel{
+  position:relative;margin-top:30px;
+  width:min(400px,86vw);aspect-ratio:3/4;
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 26px 64px rgba(61,52,39,.24);
+  background:var(--creme-fonce);
+}
+.carrousel img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transform:scale(1.06);
+  transition:opacity 1.1s ease,transform 6s ease;
+}
+.carrousel img.actif{opacity:1;transform:scale(1)}
+.carrousel .points{
+  position:absolute;bottom:14px;left:0;right:0;z-index:5;
+  display:flex;justify-content:center;gap:9px;
+}
+.carrousel .point{
+  width:9px;height:9px;border-radius:50%;cursor:pointer;
+  background:rgba(255,253,248,.55);border:1px solid rgba(61,52,39,.25);
+  transition:transform .3s,background .3s;
+}
+.carrousel .point.actif{background:var(--or);transform:scale(1.35)}
 .hero h2{
   margin-top:38px;font-size:clamp(1.9rem,6vw,3.2rem);
   font-weight:normal;letter-spacing:.06em;
@@ -296,6 +320,13 @@ footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
 <!-- HERO -->
 <section class="hero">
   <img class="logo-hero" src="images/logo.webp" alt="Maison JM — French Elegance">
+  <div class="carrousel" id="carrousel">
+    <img src="images/ambiance-corail.webp" class="actif" alt="Claquettes Oran corail au bord de la piscine">
+    <img src="images/ambiance-jaune.webp" alt="Claquettes Oran jaunes en terrasse parisienne">
+    <img src="images/ambiance-bordeaux.webp" alt="Claquettes Oran bordeaux dans un escalier">
+    <img src="images/ambiance-bleu.webp" alt="Claquettes Oran bleues dans la rue">
+    <div class="points" id="points"></div>
+  </div>
   <h2>Claquettes Hermès Oran</h2>
   <div class="filet"></div>
   <p>L'icône intemporelle de l'élégance parisienne. Cuir souple, découpe « H » signature, disponible en quatre coloris d'exception.</p>
@@ -612,6 +643,44 @@ document.querySelectorAll(".carte").forEach(c => {
   c.addEventListener("click", () => ouvrirLightbox(c.querySelector("img").src));
 });
 lightbox.addEventListener("click", () => lightbox.classList.remove("ouvert"));
+
+// ===== Carrousel d'ambiance (défilement automatique) =====
+const diapos = document.querySelectorAll("#carrousel > img");
+const pointsBox = document.getElementById("points");
+let diapoActive = 0;
+let carrouselTimer = null;
+
+diapos.forEach((img, i) => {
+  const pt = document.createElement("div");
+  pt.className = "point" + (i === 0 ? " actif" : "");
+  pt.addEventListener("click", () => { allerDiapo(i); relancerCarrousel(); });
+  pointsBox.appendChild(pt);
+});
+const points = pointsBox.querySelectorAll(".point");
+
+function allerDiapo(i){
+  diapos[diapoActive].classList.remove("actif");
+  points[diapoActive].classList.remove("actif");
+  diapoActive = (i + diapos.length) % diapos.length;
+  diapos[diapoActive].classList.add("actif");
+  points[diapoActive].classList.add("actif");
+}
+function relancerCarrousel(){
+  clearInterval(carrouselTimer);
+  carrouselTimer = setInterval(() => allerDiapo(diapoActive + 1), 3500);
+}
+relancerCarrousel();
+
+// glisser du doigt sur mobile
+let departX = null;
+const carrousel = document.getElementById("carrousel");
+carrousel.addEventListener("touchstart", e => departX = e.touches[0].clientX, {passive:true});
+carrousel.addEventListener("touchend", e => {
+  if (departX === null) return;
+  const delta = e.changedTouches[0].clientX - departX;
+  if (Math.abs(delta) > 40){ allerDiapo(diapoActive + (delta < 0 ? 1 : -1)); relancerCarrousel(); }
+  departX = null;
+}, {passive:true});
 
 // Ombre du header au scroll
 window.addEventListener("scroll", () => {
