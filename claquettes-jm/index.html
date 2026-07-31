@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claquettes Hermès Oran — Maison JM</title>
+<meta name="description" content="Claquettes Hermès modèle Oran — 200 € — 4 coloris disponibles. Maison JM, French Elegance.">
+<link rel="icon" href="images/logo.webp">
+<style>
+:root{
+  --creme:#f5efe4;
+  --creme-fonce:#ece3d2;
+  --or:#b3924f;
+  --or-clair:#d4bc85;
+  --brun:#3d3427;
+  --brun-doux:#6b5d48;
+  --orange:#e8650d;
+  --blanc:#fffdf8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:Georgia,'Times New Roman',serif;
+  background:var(--creme);
+  color:var(--brun);
+  overflow-x:hidden;
+}
+/* ---------- Header ---------- */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:12px 20px;
+  background:rgba(245,239,228,.88);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(179,146,79,.25);
+  transition:box-shadow .3s;
+}
+header.ombre{box-shadow:0 4px 24px rgba(61,52,39,.10)}
+header img{width:52px;height:52px;border-radius:50%;object-fit:cover;box-shadow:0 2px 10px rgba(179,146,79,.35)}
+header .marque{text-align:left}
+header .marque h1{font-size:1.15rem;letter-spacing:.28em;font-weight:normal;color:var(--brun)}
+header .marque span{font-size:.62rem;letter-spacing:.42em;text-transform:uppercase;color:var(--or)}
+/* ---------- Hero ---------- */
+.hero{
+  min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:110px 24px 60px;
+  background:
+    radial-gradient(ellipse at 70% 20%, rgba(212,188,133,.28), transparent 55%),
+    radial-gradient(ellipse at 20% 85%, rgba(232,101,13,.10), transparent 50%),
+    var(--creme);
+}
+.hero img.logo-hero{
+  width:min(300px,64vw);border-radius:22px;
+  box-shadow:0 24px 60px rgba(61,52,39,.18);
+  animation:flotte 6s ease-in-out infinite;
+}
+@keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.hero h2{
+  margin-top:38px;font-size:clamp(1.9rem,6vw,3.2rem);
+  font-weight:normal;letter-spacing:.06em;
+}
+.hero .filet{
+  width:70px;height:1px;background:var(--or);margin:22px auto;position:relative;
+}
+.hero .filet::after{
+  content:"✦";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:var(--creme);padding:0 10px;color:var(--or);font-size:.8rem;
+}
+.hero p{max-width:520px;color:var(--brun-doux);font-size:1.05rem;line-height:1.7;font-style:italic}
+.hero .cta{
+  margin-top:36px;display:inline-block;
+  padding:16px 46px;border:1px solid var(--or);
+  color:var(--brun);text-decoration:none;
+  letter-spacing:.25em;text-transform:uppercase;font-size:.8rem;
+  position:relative;overflow:hidden;transition:color .35s;
+  background:linear-gradient(var(--or),var(--or)) left/0% 100% no-repeat;
+  transition:background-size .4s,color .4s;
+}
+.hero .cta:hover{background-size:100% 100%;color:var(--blanc)}
+.hero .fleche{margin-top:60px;color:var(--or);font-size:1.4rem;animation:descend 1.8s ease-in-out infinite}
+@keyframes descend{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(10px);opacity:1}}
+/* ---------- Produit ---------- */
+.produit{
+  display:grid;grid-template-columns:1fr 1fr;gap:60px;
+  max-width:1100px;margin:0 auto;padding:90px 24px;align-items:center;
+}
+.visuel{position:relative}
+.visuel .cadre{
+  position:relative;border-radius:18px;overflow:hidden;
+  box-shadow:0 30px 70px rgba(61,52,39,.22);
+  background:var(--creme-fonce);
+}
+.visuel img{width:100%;display:block;transition:opacity .35s ease, transform .6s ease}
+.visuel img.change{opacity:0}
+.visuel .cadre:hover img{transform:scale(1.04)}
+.badge-prix{
+  position:absolute;top:18px;right:18px;
+  background:var(--brun);color:var(--or-clair);
+  padding:12px 20px;border-radius:999px;
+  font-size:1.15rem;letter-spacing:.08em;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
+  animation:pulse 2.6s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.infos h3{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:normal;letter-spacing:.04em}
+.infos .sous-titre{color:var(--or);letter-spacing:.3em;text-transform:uppercase;font-size:.75rem;margin-bottom:14px}
+.infos .prix{
+  font-size:2rem;color:var(--brun);margin:18px 0 6px;
+}
+.infos .prix small{font-size:.9rem;color:var(--brun-doux);font-style:italic}
+.infos .desc{color:var(--brun-doux);line-height:1.8;margin:18px 0 26px;font-size:1.02rem}
+/* couleurs */
+.choix-titre{font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--brun);margin-bottom:12px}
+.couleurs{display:flex;gap:14px;margin-bottom:28px}
+.pastille{
+  width:46px;height:46px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;outline:2px solid rgba(179,146,79,.35);outline-offset:3px;
+  transition:transform .25s,outline-color .25s;
+}
+.pastille:hover{transform:scale(1.15)}
+.pastille.active{outline-color:var(--or);outline-width:2px;transform:scale(1.12);box-shadow:0 4px 14px rgba(61,52,39,.25)}
+.nom-couleur{font-style:italic;color:var(--brun-doux);margin-bottom:26px;min-height:1.4em}
+/* tailles */
+.tailles{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px}
+.taille{
+  min-width:52px;padding:12px 0;text-align:center;cursor:pointer;
+  border:1px solid rgba(107,93,72,.4);border-radius:8px;
+  transition:all .25s;font-size:.95rem;
+}
+.taille:hover{border-color:var(--or)}
+.taille.active{background:var(--brun);color:var(--or-clair);border-color:var(--brun)}
+/* bouton commander */
+.commander{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  width:100%;padding:18px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--or) 0%,#c9a45e 50%,var(--or) 100%);
+  background-size:200% 200%;
+  color:var(--blanc);font-family:inherit;font-size:.95rem;
+  letter-spacing:.22em;text-transform:uppercase;border-radius:10px;
+  box-shadow:0 12px 30px rgba(179,146,79,.4);
+  transition:transform .25s,box-shadow .25s;
+  animation:brillance 4s ease infinite;
+  text-decoration:none;
+}
+@keyframes brillance{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.commander:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(179,146,79,.55)}
+.note-commande{text-align:center;margin-top:12px;font-size:.85rem;color:var(--brun-doux);font-style:italic}
+/* ---------- Galerie ---------- */
+.galerie{background:var(--creme-fonce);padding:90px 24px}
+.galerie-inner{max-width:1100px;margin:0 auto;text-align:center}
+.galerie h3{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:normal}
+.galerie .sous{color:var(--or);letter-spacing:.3em;text-transform:uppercase;font-size:.75rem;margin-bottom:50px;margin-top:8px}
+.grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px}
+.carte{
+  border-radius:16px;overflow:hidden;background:var(--blanc);
+  box-shadow:0 14px 36px rgba(61,52,39,.14);
+  transition:transform .35s,box-shadow .35s;cursor:pointer;
+}
+.carte:hover{transform:translateY(-10px);box-shadow:0 26px 54px rgba(61,52,39,.24)}
+.carte img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover}
+.carte p{padding:16px;font-style:italic;color:var(--brun-doux)}
+/* ---------- Détails ---------- */
+.details{max-width:1000px;margin:0 auto;padding:90px 24px;text-align:center}
+.details h3{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:normal;margin-bottom:8px}
+.details .sous{color:var(--or);letter-spacing:.3em;text-transform:uppercase;font-size:.75rem;margin-bottom:50px}
+.atouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:26px}
+.atout{
+  background:var(--blanc);border-radius:16px;padding:34px 24px;
+  box-shadow:0 10px 30px rgba(61,52,39,.10);
+  transition:transform .3s;
+}
+.atout:hover{transform:translateY(-6px)}
+.atout .ico{font-size:2rem;margin-bottom:14px}
+.atout h4{font-weight:normal;letter-spacing:.08em;margin-bottom:10px}
+.atout p{color:var(--brun-doux);font-size:.92rem;line-height:1.6}
+/* ---------- Footer ---------- */
+footer{
+  background:var(--brun);color:var(--creme);
+  text-align:center;padding:60px 24px 40px;
+}
+footer img{width:80px;border-radius:50%;margin-bottom:18px;opacity:.95}
+footer .nom{letter-spacing:.3em;font-size:1.05rem}
+footer .slogan{color:var(--or-clair);letter-spacing:.35em;text-transform:uppercase;font-size:.65rem;margin-top:6px}
+footer .contact{margin-top:24px;font-size:.9rem;color:rgba(245,239,228,.75);line-height:1.9}
+footer .contact a{color:var(--or-clair);text-decoration:none}
+footer .copy{margin-top:30px;font-size:.75rem;color:rgba(245,239,228,.45)}
+/* ---------- Lightbox ---------- */
+.lightbox{
+  position:fixed;inset:0;z-index:100;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(30,25,18,.9);padding:24px;cursor:zoom-out;
+}
+.lightbox.ouvert{display:flex}
+.lightbox img{max-width:92vw;max-height:88vh;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+/* ---------- Animations d'apparition ---------- */
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+/* ---------- Responsive ---------- */
+@media(max-width:820px){
+  .produit{grid-template-columns:1fr;gap:40px;padding:70px 20px}
+  .hero{padding-top:100px}
+}
+</style>
+</head>
+<body>
+
+<header id="entete">
+  <img src="images/logo.webp" alt="Logo Maison JM">
+  <div class="marque">
+    <h1>MAISON JM</h1>
+    <span>French Elegance</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <img class="logo-hero" src="images/logo.webp" alt="Maison JM — French Elegance">
+  <h2>Claquettes Hermès Oran</h2>
+  <div class="filet"></div>
+  <p>L'icône intemporelle de l'élégance parisienne. Cuir souple, découpe « H » signature, disponible en quatre coloris d'exception.</p>
+  <a href="#produit" class="cta">Découvrir</a>
+  <div class="fleche">▼</div>
+</section>
+
+<!-- PRODUIT -->
+<section class="produit" id="produit">
+  <div class="visuel reveal">
+    <div class="cadre" id="zoomable">
+      <img id="photo-principale" src="images/oran-bleu.webp" alt="Claquettes Hermès Oran">
+    </div>
+    <div class="badge-prix">200 €</div>
+  </div>
+  <div class="infos reveal">
+    <div class="sous-titre">Maison JM — Sélection</div>
+    <h3>Claquettes Hermès<br>Modèle Oran</h3>
+    <div class="prix">200 € <small>— livrées dans leur coffret</small></div>
+    <p class="desc">
+      La sandale Oran est un classique absolu : une lanière en cuir découpée
+      en forme de « H », une semelle plate et confortable, une silhouette
+      épurée qui accompagne aussi bien une tenue de plage qu'une robe de
+      soirée. Chaque paire est livrée dans son coffret orange avec son
+      pochon de protection.
+    </p>
+    <div class="choix-titre">Choisissez votre coloris</div>
+    <div class="couleurs">
+      <div class="pastille active" style="background:#cfe4e6" data-img="images/oran-bleu.webp" data-nom="Bleu Glacier" title="Bleu Glacier"></div>
+      <div class="pastille" style="background:#e8776a" data-img="images/oran-corail.webp" data-nom="Corail" title="Corail"></div>
+      <div class="pastille" style="background:#77444d" data-img="images/oran-bordeaux.webp" data-nom="Bordeaux" title="Bordeaux"></div>
+      <div class="pastille" style="background:#e9e27f" data-img="images/oran-jaune.webp" data-nom="Jaune Citron" title="Jaune Citron"></div>
+    </div>
+    <div class="nom-couleur" id="nom-couleur">Coloris : Bleu Glacier</div>
+    <div class="choix-titre">Votre pointure</div>
+    <div class="tailles" id="tailles">
+      <div class="taille">36</div>
+      <div class="taille">37</div>
+      <div class="taille">38</div>
+      <div class="taille">39</div>
+      <div class="taille">40</div>
+      <div class="taille">41</div>
+    </div>
+    <a class="commander" id="btn-commander" href="#" target="_blank" rel="noopener">
+      Commander — 200 €
+    </a>
+    <p class="note-commande">Commande directe par WhatsApp — réponse rapide</p>
+  </div>
+</section>
+
+<!-- GALERIE -->
+<section class="galerie">
+  <div class="galerie-inner">
+    <h3 class="reveal">Les quatre coloris</h3>
+    <div class="sous reveal">Collection Oran</div>
+    <div class="grille">
+      <div class="carte reveal"><img src="images/oran-bleu.webp" alt="Oran Bleu Glacier" loading="lazy"><p>Bleu Glacier</p></div>
+      <div class="carte reveal"><img src="images/oran-corail.webp" alt="Oran Corail" loading="lazy"><p>Corail</p></div>
+      <div class="carte reveal"><img src="images/oran-bordeaux.webp" alt="Oran Bordeaux" loading="lazy"><p>Bordeaux</p></div>
+      <div class="carte reveal"><img src="images/oran-jaune.webp" alt="Oran Jaune Citron" loading="lazy"><p>Jaune Citron</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- DÉTAILS -->
+<section class="details">
+  <h3 class="reveal">Pourquoi vous allez les adorer</h3>
+  <div class="sous reveal">Les atouts</div>
+  <div class="atouts">
+    <div class="atout reveal"><div class="ico">✨</div><h4>Cuir souple</h4><p>Une lanière en cuir à la découpe « H » emblématique, douce et résistante.</p></div>
+    <div class="atout reveal"><div class="ico">👡</div><h4>Confort plat</h4><p>Semelle plate moulée qui épouse le pied — parfaite du matin au soir.</p></div>
+    <div class="atout reveal"><div class="ico">🎁</div><h4>Coffret complet</h4><p>Livrées dans leur boîte orange avec pochon de protection.</p></div>
+    <div class="atout reveal"><div class="ico">🎨</div><h4>4 coloris</h4><p>Bleu Glacier, Corail, Bordeaux ou Jaune Citron : à chacune son style.</p></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <img src="images/logo.webp" alt="Maison JM">
+  <div class="nom">MAISON JM</div>
+  <div class="slogan">French Elegance</div>
+  <div class="contact">
+    Commandes &amp; questions :<br>
+    <a href="#" id="lien-whatsapp">WhatsApp</a>
+  </div>
+  <div class="copy">© 2026 Maison JM — Tous droits réservés</div>
+</footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <img src="" alt="Agrandissement" id="lightbox-img">
+</div>
+
+<script>
+// ===== CONFIGURATION =====
+// Mettre ici le numéro WhatsApp au format international, sans + ni espaces.
+// Exemple pour la France : 33612345678
+const NUMERO_WHATSAPP = "";
+// =========================
+
+const photo = document.getElementById("photo-principale");
+const nomCouleur = document.getElementById("nom-couleur");
+const pastilles = document.querySelectorAll(".pastille");
+let couleurActive = "Bleu Glacier";
+let tailleActive = "";
+
+pastilles.forEach(p => {
+  p.addEventListener("click", () => {
+    pastilles.forEach(x => x.classList.remove("active"));
+    p.classList.add("active");
+    couleurActive = p.dataset.nom;
+    nomCouleur.textContent = "Coloris : " + couleurActive;
+    photo.classList.add("change");
+    setTimeout(() => {
+      photo.src = p.dataset.img;
+      photo.onload = () => photo.classList.remove("change");
+    }, 250);
+    majLienCommande();
+  });
+});
+
+document.querySelectorAll(".taille").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".taille").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    tailleActive = t.textContent;
+    majLienCommande();
+  });
+});
+
+function majLienCommande(){
+  let msg = "Bonjour, je souhaite commander les claquettes Oran (200 €)." +
+    " Coloris : " + couleurActive + "." +
+    (tailleActive ? " Pointure : " + tailleActive + "." : "");
+  const url = NUMERO_WHATSAPP
+    ? "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + encodeURIComponent(msg)
+    : "#";
+  document.getElementById("btn-commander").href = url;
+  document.getElementById("lien-whatsapp").href = NUMERO_WHATSAPP ? "https://wa.me/" + NUMERO_WHATSAPP : "#";
+}
+majLienCommande();
+
+document.getElementById("btn-commander").addEventListener("click", e => {
+  if (!NUMERO_WHATSAPP){
+    e.preventDefault();
+    alert("Le numéro WhatsApp n'est pas encore configuré.");
+  }
+});
+
+// Lightbox sur la photo principale et les cartes
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightbox-img");
+function ouvrirLightbox(src){
+  lightboxImg.src = src;
+  lightbox.classList.add("ouvert");
+}
+document.getElementById("zoomable").addEventListener("click", () => ouvrirLightbox(photo.src));
+document.querySelectorAll(".carte").forEach(c => {
+  c.addEventListener("click", () => ouvrirLightbox(c.querySelector("img").src));
+});
+lightbox.addEventListener("click", () => lightbox.classList.remove("ouvert"));
+
+// Ombre du header au scroll
+window.addEventListener("scroll", () => {
+  document.getElementById("entete").classList.toggle("ombre", window.scrollY > 30);
+});
+
+// Apparition au scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add("visible"); obs.unobserve(e.target); } });
+}, {threshold:.12});
+document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
