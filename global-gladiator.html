@@ -130,7 +130,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;
   <div class="screen on" id="scTitle">
     <a href="index.html" class="back">← Menu</a>
     <div class="title">GLOBAL<span>GLADIATOR</span></div>
-    <div class="sub">Les usines ont tout pollué. Attrape ton <b>super soaker</b>, ramasse les
+    <div class="sub">Attrape ton <b>super soaker</b>, ramasse les
       <b style="color:#ffd21e">arches dorées</b>, nettoie les 4 mondes et colle une raclée au Roi Gluant.</div>
     <div class="btn" id="btnStart">JOUER</div>
     <div class="btn alt small" id="btnHow">COMMANDES</div>
@@ -206,8 +206,31 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 const $=id=>document.getElementById(id);
 
 /* ----------------------------- Constantes ------------------------------- */
-const VW=960, VH=540, TS=32, ROWS=18;
+/* Resolution Mega Drive (320x224) affichee au double : 640x448.
+   Les graphismes sont decoupes dans une video du jeu d'origine, donc
+   1 pixel du jeu = 2 pixels a l'ecran, sans deformation. */
+const NAT_W=320, NAT_H=224, PX=2;
+const VW=NAT_W*PX, VH=NAT_H*PX;      // 640 x 448
+const HUD_H=30*PX;                   // le panneau du bas fait 30 px natifs
+const VIEW_H=VH-HUD_H;               // 388 : hauteur reellement jouable
+const TS=32, ROWS=18;                // tuile de 32 ecran = 16 px natifs
 const HERO_SCALE=1.3;
+
+/* ---- Graphismes tires du jeu d'origine ---- */
+const ART={};
+const ART_FILES={
+  bg:'gg-bg-slime.png', rock:'gg-rock.png', slime:'gg-slime.png',
+  hud:'gg-hud.png', hero:'gg-hero.png'
+};
+let artLoaded=0, artTotal=Object.keys(ART_FILES).length, artReady=false;
+for(const k in ART_FILES){
+  const im=new Image();
+  im.onload =()=>{ if(++artLoaded===artTotal) artReady=true; };
+  im.onerror=()=>{ if(++artLoaded===artTotal) artReady=true; };  // on continue meme si une image manque
+  im.src=ART_FILES[k];
+  ART[k]=im;
+}
+const hasArt=k=>ART[k] && ART[k].complete && ART[k].naturalWidth>0;
 const EMPTY=0, SOLID=1, PLAT=2, TOXIC=3, SPIKE=4, CRATE=5;
 
 const GRAV=0.62, MAXFALL=15.5;
@@ -362,22 +385,22 @@ const INK='#120d08';   // le noir des contours facon dessin anime 16 bits
 
 // Les 4 mondes du jeu d'origine
 const WORLDS=[
-  { name:'SLIME WORLD', kind:'slime', sky:['#16330c','#3d7a16','#82c62e'],
+  { name:'SLIME WORLD  ACTE 1', kind:'slime', sky:['#16330c','#3d7a16','#82c62e'],
     solid:'#7a5228', top:'#9a6c38', dark:'#2a1a0c', spec:'#b98a4e',
     plat:'#8a5f2c', platTop:'#c09050',
     ooze:'#8ee62c', oozeD:'#4d9c12',
     liquid:'#8ee62c', liquid2:'#3c8a0e', fog:'rgba(140,230,60,0.07)' },
-  { name:'MYSTICAL FOREST', kind:'forest', sky:['#150a30','#3a1c72','#7b46c4'],
+  { name:'SLIME WORLD  ACTE 2', kind:'forest', sky:['#150a30','#3a1c72','#7b46c4'],
     solid:'#4d3a72', top:'#6d55a0', dark:'#1c1230', spec:'#9b7ad6',
     plat:'#5c3f86', platTop:'#8f6ecb',
     ooze:'#c77aff', oozeD:'#7a2ecb',
     liquid:'#c77aff', liquid2:'#5c1ba0', fog:'rgba(160,100,255,0.08)' },
-  { name:'TOXI-TOWN', kind:'city', sky:['#2e1d06','#6b4512','#b07a24'],
+  { name:'SLIME WORLD  ACTE 3', kind:'city', sky:['#2e1d06','#6b4512','#b07a24'],
     solid:'#5e5e66', top:'#86868f', dark:'#212126', spec:'#a8a8b2',
     plat:'#4a4a54', platTop:'#7e7e8a',
     ooze:'#c8e022', oozeD:'#6f8e10',
     liquid:'#c8e022', liquid2:'#5f7d0c', fog:'rgba(210,170,60,0.09)' },
-  { name:'ARCTIC WORLD', kind:'ice', sky:['#041b3a','#0e4e86','#43a0d8'],
+  { name:'SLIME WORLD  LE BOSS', kind:'ice', sky:['#041b3a','#0e4e86','#43a0d8'],
     solid:'#6d90ad', top:'#cfeaf9', dark:'#1e3346', spec:'#f2fbff',
     plat:'#547c96', platTop:'#a4d2e8',
     ooze:'#7fe8ff', oozeD:'#1d87b4',
@@ -608,7 +631,7 @@ function makeBoss(x,y){
 function resetPlayer(full){
   const cp=[...L.checkpoints].reverse().find(c=>c.on);
   const s=cp?{x:cp.x,y:cp.y}:L.spawn;
-  P={ x:s.x, y:s.y, w:26, h:56, vx:0, vy:0, dir:1,
+  P={ x:s.x, y:s.y, w:26, h:68, vx:0, vy:0, dir:1,
       onGround:false, coyote:0, buffer:0, jumping:false,
       inv: full?0:90, run:0, shootT:0, cd:0, crouch:false, dead:false, deadT:0 };
   if(full){ G.hp=G.maxHp; G.spread=0; }
@@ -683,7 +706,7 @@ function shoot(){
   if(P.cd>0||P.dead) return;
   P.cd = G.spread>0?9:12;
   P.shootT=10;
-  const bx=P.x+P.dir*32, by=P.y-(P.crouch?18:26);
+  const bx=P.x+P.dir*34, by=P.y-(P.crouch?24:36);
   const mk=vy=>bullets.push({x:bx,y:by,vx:P.dir*10.5,vy,life:52,r:6,t:0});
   mk(0);
   if(G.spread>0){ mk(-2.1); mk(2.1); }
@@ -1043,7 +1066,7 @@ function updateCamera(){
   // pendant le combat de boss, on cadre les deux combattants
   if(G.boss && !G.boss.dead) focus=(P.x + G.boss.x)/2;
   const tx=clamp(focus-VW/2, 0, Math.max(0,L.w-VW));
-  const ty=clamp(P.y-VH*0.62, 0, Math.max(0,L.h-VH));
+  const ty=clamp(P.y-VIEW_H*0.62, 0, Math.max(0,L.h-VIEW_H));
   cam.x=lerp(cam.x,tx,0.09);
   cam.y=lerp(cam.y,ty,0.11);
 }
@@ -1069,7 +1092,19 @@ function bgTree(x,baseY,w,h,col){
   ctx.closePath(); ctx.fill();
 }
 
+/* Fond : la vraie foret d'arbres morts de Slime World, decoupee dans la video
+   et repetee horizontalement avec un defilement plus lent que le sol. */
+function drawBackdropArt(){
+  const im=ART.bg;
+  const w=im.naturalWidth*PX, h=im.naturalHeight*PX;   // 1366 x 388 = VIEW_H
+  let off=(cam.x*0.35)%w; if(off<0) off+=w;
+  for(let x=-off; x<VW; x+=w) ctx.drawImage(im, 0,0,im.naturalWidth,im.naturalHeight, Math.round(x),0, w,h);
+  // si la vue est plus haute que le fond, on prolonge avec sa derniere ligne
+  if(h<VIEW_H) ctx.drawImage(im, 0,im.naturalHeight-1,im.naturalWidth,1, 0,h, VW,VIEW_H-h);
+}
+
 function drawBackdrop(){
+  if(hasArt('bg')){ drawBackdropArt(); return; }
   const T=L.theme, bg=L.bg, idx=L.idx;
   const g=ctx.createLinearGradient(0,0,0,VH);
   g.addColorStop(0,T.sky[0]); g.addColorStop(0.55,T.sky[1]); g.addColorStop(1,T.sky[2]);
@@ -1187,14 +1222,29 @@ function drawGroundDeco(c,x,y,T){
   }
 }
 
+let slimeTops=[];
 function drawTiles(){
   const T=L.theme;
+  slimeTops.length=0;
   const c0=Math.max(0,Math.floor(cam.x/TS)-1), c1=Math.min(L.cols-1,Math.ceil((cam.x+VW)/TS)+1);
   const r0=Math.max(0,Math.floor(cam.y/TS)-1), r1=Math.min(L.rows-1,Math.ceil((cam.y+VH)/TS)+1);
   for(let r=r0;r<=r1;r++){
     for(let c=c0;c<=c1;c++){
       const t=L.grid[r][c]; if(t===EMPTY) continue;
+      if(c===0 || c===L.cols-1) continue;   // murs invisibles au bord du niveau
       const x=c*TS-cam.x, y=r*TS-cam.y;
+      if(t===SOLID && hasArt('rock')){
+        // vraie roche du jeu : tuile native de 16 px affichee en 32
+        ctx.drawImage(ART.rock, x, y, TS, TS);
+        if(tile(c,r-1)!==SOLID) slimeTops.push([c,x,y,54]);
+        continue;
+      }
+      if(t===PLAT && hasArt('rock')){
+        // plateforme traversable : dalle de roche coiffee d'une crete de slime
+        ctx.drawImage(ART.rock, 0,6, TS/PX,10, x, y+9, TS, 15);
+        slimeTops.push([c,x,y+3,13]);   // la crete seule, pas les longues coulures
+        continue;
+      }
       if(t===SOLID){
         const openTop = tile(c,r-1)!==SOLID;
         const openB   = tile(c,r+1)!==SOLID;
@@ -1289,6 +1339,19 @@ function drawTiles(){
           px(x+13,y+22,4,4,T.liquid);
         }
       }
+    }
+  }
+
+  // Couche de slime : dessinee apres la roche pour que les coulures passent
+  // par-dessus. La decoupe suit la position dans le monde, donc le motif
+  // s'enchaine sans coupure d'une tuile a l'autre.
+  if(hasArt('slime')){
+    const im=ART.slime, sw=im.naturalWidth, sh=im.naturalHeight;
+    for(let i=0;i<slimeTops.length;i++){
+      const c=slimeTops[i][0], x=slimeTops[i][1], y=slimeTops[i][2];
+      const hh=Math.min(slimeTops[i][3]||sh, sh);
+      const sx=((c*(TS/PX))%sw+sw)%sw;
+      ctx.drawImage(im, sx,0, TS/PX,hh, x, y-8, TS, hh*PX);
     }
   }
 }
@@ -1434,12 +1497,24 @@ function drawPlayer(){
 
   ctx.save();
   if(P.dead){ ctx.translate(x, y); ctx.rotate(P.deadT*0.13); ctx.translate(-x,-y); }
-  drawHero(x, y, P.dir, P.run*2, state, pal, HERO_SCALE);
+  if(hasArt('hero')){
+    // vrai sprite decoupe dans le jeu, retourne selon le sens de marche
+    const im=ART.hero, w=im.naturalWidth*PX, h=im.naturalHeight*PX;
+    const bob = (state==='run') ? -Math.abs(Math.sin(P.run*2))*3 : 0;
+    ctx.save();
+    ctx.translate(x, y+bob);
+    if(P.dir<0) ctx.scale(-1,1);
+    if(state==='crouch') ctx.scale(1,0.72);
+    ctx.drawImage(im, -w/2, -h+4, w, h);
+    ctx.restore();
+  }else{
+    drawHero(x, y, P.dir, P.run*2, state, pal, HERO_SCALE);
+  }
   ctx.restore();
 
   // flash du canon
   if(P.shootT>6){
-    const fx=x+P.dir*35, fy=y-(P.crouch?18:26);
+    const fx=x+P.dir*38, fy=y-(P.crouch?24:36);
     ctx.globalAlpha=0.9;
     px(fx-7,fy-7,14,14,GOO_HI);
     px(fx-4,fy-4,8,8,'#fff');
@@ -1729,16 +1804,46 @@ function drawParts(){
 }
 
 function drawFog(){
-  ctx.fillStyle=L.theme.fog; ctx.fillRect(0,0,VW,VH);
-  // vignette
-  const g=ctx.createRadialGradient(VW/2,VH/2,VH*0.35,VW/2,VH/2,VH*0.95);
+  if(hasArt('bg')) return;          // les vrais decors se suffisent a eux-memes
+  ctx.fillStyle=L.theme.fog; ctx.fillRect(0,0,VW,VIEW_H);
+  const g=ctx.createRadialGradient(VW/2,VIEW_H/2,VIEW_H*0.35,VW/2,VIEW_H/2,VIEW_H*0.95);
   g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,0.5)');
-  ctx.fillStyle=g; ctx.fillRect(0,0,VW,VH);
+  ctx.fillStyle=g; ctx.fillRect(0,0,VW,VIEW_H);
+}
+
+/* Le panneau du bas, decoupe dans le jeu, avec nos compteurs par-dessus. */
+function drawHudPanel(){
+  if(!hasArt('hud')) return;
+  const im=ART.hud;
+  ctx.drawImage(im, 0,0, im.naturalWidth,im.naturalHeight, 0,VIEW_H, VW,HUD_H);
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const txt=(s,x,y,col,size,outline)=>{
+    ctx.font='900 '+size+'px Trebuchet MS';
+    ctx.lineJoin='round'; ctx.lineWidth=4;
+    ctx.strokeStyle=outline||'#2a1200'; ctx.strokeText(s,x,y);
+    ctx.fillStyle=col; ctx.fillText(s,x,y);
+  };
+  // Score : dans la rainure centrale, en gros chiffres rouges comme l'original
+  txt(String(G.score).padStart(6,'0'), 317, VIEW_H+18, '#e02424', 27, '#3a0c00');
+  // Vies dans la boite de gauche, arches dans celle de droite
+  txt('x'+Math.max(0,G.lives), 100, VIEW_H+47, '#ffe14d', 16);
+  txt(G.arches+'/'+G.archTotal, 543, VIEW_H+47, '#ffe14d', 16);
+  // Barre de vie dans la rainure du bas, a la place de la fleche d'origine
+  const bx=208, by=VIEW_H+37, bw=216, bh=9;
+  ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(bx-2,by-2,bw+4,bh+4);
+  const frac=Math.max(0,G.hp)/G.maxHp;
+  const grad=ctx.createLinearGradient(bx,0,bx+bw,0);
+  grad.addColorStop(0,'#c81818'); grad.addColorStop(0.5,'#e8c820'); grad.addColorStop(1,'#48c820');
+  ctx.fillStyle=grad; ctx.fillRect(bx,by,bw*frac,bh);
+  ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fillRect(bx,by,bw*frac,2);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 }
 
 function render(){
   if(!L){ ctx.fillStyle='#05060a'; ctx.fillRect(0,0,VW,VH); return; }
   ctx.save();
+  // le monde est dessine au-dessus du panneau, jamais dessous
+  ctx.beginPath(); ctx.rect(0,0,VW,VIEW_H); ctx.clip();
   if(G.shake>0.4){
     ctx.translate((Math.random()-0.5)*G.shake, (Math.random()-0.5)*G.shake);
   }
@@ -1754,6 +1859,7 @@ function render(){
   drawParts();
   drawFog();
   ctx.restore();
+  drawHudPanel();
 
   // fondu de transition
   if(transition>0){
@@ -1813,7 +1919,7 @@ function loadLevel(i,fullReset){
   bullets=[]; ebullets=[]; parts=[]; floats=[];
   G.arches=0; G.archTotal=items.filter(i=>i.t==='orb').length;
   resetPlayer(fullReset!==false);
-  showBanner('MONDE '+(i+1), WORLDS[i].name);
+  showBanner('NIVEAU '+(i+1), WORLDS[i].name);
   updateHUD();
   syncChrome();
 }
@@ -1884,7 +1990,7 @@ function hideAll(){ document.querySelectorAll('.screen').forEach(s=>s.classList.
 // HUD et boutons tactiles : visibles seulement en jeu
 function syncChrome(){
   const inGame = (G.state==='play'||G.state==='pause') && !!L;
-  $('hud').classList.toggle('on', inGame);
+  $('hud').classList.toggle('on', inGame && !hasArt('hud'));
   $('touch').classList.toggle('playing', G.state==='play' && !!L);
 }
 
